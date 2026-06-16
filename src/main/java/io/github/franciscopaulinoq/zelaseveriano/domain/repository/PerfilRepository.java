@@ -10,5 +10,5 @@ public interface PerfilRepository {
 
     public Optional<Perfil> findById(UUID perfilId);
 
-    public Optional<Perfil> findByUserId(UUID usuarioId);
+    public Optional<Perfil> findByUsuarioId(UUID usuarioId);
 }
