@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -20,5 +20,5 @@ public class Endereco {
     private String bairro;
     private String cidade;
     private String uf;
-    private LocalDateTime criadoEm;
+    private OffsetDateTime criadoEm;
 }

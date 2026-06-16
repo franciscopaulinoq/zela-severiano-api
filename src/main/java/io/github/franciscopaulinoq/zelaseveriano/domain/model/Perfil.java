@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -15,5 +15,5 @@ public class Perfil {
     private Usuario usuario;
     private String nomeCompleto;
     private String email;
-    private LocalDateTime criadoEm;
+    private OffsetDateTime criadoEm;
 }

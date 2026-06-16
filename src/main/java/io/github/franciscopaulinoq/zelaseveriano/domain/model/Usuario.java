@@ -3,7 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -11,15 +11,15 @@ public class Usuario {
     private UUID id;
     private String cpf;
     private String senhaHash;
-    private LocalDateTime criadoEm;
+    private OffsetDateTime criadoEm;
 
     @Builder
-    public Usuario(UUID id, String cpf, String senhaHash, LocalDateTime criadoEm) {
+    public Usuario(UUID id, String cpf, String senhaHash, OffsetDateTime criadoEm) {
         validateCpf(cpf);
         this.id = id != null ? id : UUID.randomUUID();
         this.cpf = cpf;
         this.senhaHash = senhaHash;
-        this.criadoEm = criadoEm != null ? criadoEm : LocalDateTime.now();
+        this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
     }
 
     private void validateCpf(String cpf) {

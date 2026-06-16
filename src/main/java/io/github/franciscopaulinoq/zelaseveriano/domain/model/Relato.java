@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -19,5 +19,5 @@ public class Relato {
     private String urlFoto;
     private double latitude;
     private double longitude;
-    private LocalDateTime criadoEm;
+    private OffsetDateTime criadoEm;
 }
