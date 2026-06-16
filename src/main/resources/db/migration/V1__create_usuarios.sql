@@ -4,5 +4,5 @@ CREATE TABLE "usuarios" (
                             "senha_hash" varchar(255) NOT NULL,
                             "criado_em" timestamp with time zone DEFAULT (now()),
 
-                            CONSTRAINT uq_usuario_cpf UNIQUE (cpf)
+                            CONSTRAINT uq_usuario_cpf UNIQUE ("cpf")
 );
