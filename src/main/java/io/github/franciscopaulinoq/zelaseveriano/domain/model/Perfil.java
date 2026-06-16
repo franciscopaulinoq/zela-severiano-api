@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 public class Perfil {
     private UUID id;
-    private UUID usuarioId;
+    private Usuario usuario;
     private String nomeCompleto;
     private String email;
     private LocalDateTime criadoEm;

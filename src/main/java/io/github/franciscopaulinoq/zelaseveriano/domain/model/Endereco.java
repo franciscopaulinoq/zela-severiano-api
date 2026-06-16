@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 public class Endereco {
     private UUID id;
-    private UUID perfilId;
+    private Perfil perfil;
     private String cep;
     private String logradouro;
     private String numero;

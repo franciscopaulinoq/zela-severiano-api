@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Builder
 public class Usuario {
     private UUID id;
     private String cpf;
     private String senhaHash;
     private LocalDateTime criadoEm;
 
+    @Builder
     public Usuario(UUID id, String cpf, String senhaHash, LocalDateTime criadoEm) {
         validateCpf(cpf);
         this.id = id != null ? id : UUID.randomUUID();

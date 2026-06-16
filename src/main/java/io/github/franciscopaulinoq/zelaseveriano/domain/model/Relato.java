@@ -6,15 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @Builder
 public class Relato {
     private int id;
-    private UUID perfilId;
-    private int categoriaId;
+    private Perfil perfil;
+    private Categoria categoria;
     private StatusRelato status;
     private String descricao;
     private String urlFoto;
