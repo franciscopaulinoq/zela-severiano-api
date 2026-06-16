@@ -1,0 +1,26 @@
+# Zela Severiano API
+
+API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
+
+## 🚀 Tecnologias
+- Java 25
+- Spring Boot 4.1.0
+- PostgreSQL
+- Maven
+
+## 🛠 Pré-requisitos
+- Docker & Docker Compose
+- JDK 25
+
+## ⚙️ Como executar
+1. Clone o repositório.
+2. Copie o arquivo de exemplo de ambiente: `cp .env.example .env`
+3. Suba o banco de dados: `docker-compose up -d`
+4. Execute a aplicação: `./mvnw spring-boot:run`
+
+## 🏗 Arquitetura
+O projeto segue os princípios da **Clean Architecture**, dividindo as responsabilidades em:
+- **domain**: Entidades e regras de negócio puras.
+- **application**: Casos de uso e DTOs.
+- **adapter**: Controladores e mappers de interface.
+- **infrastructure**: Implementações de persistência, banco de dados e drivers.
