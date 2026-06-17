@@ -51,10 +51,10 @@ public class RelatoEntity {
     @Column(name = "url_foto", nullable = true, length = 255)
     private String urlFoto;
 
-    @Column(name = "latitude", nullable = false, precision = 10, scale = 8)
+    @Column(name = "latitude", nullable = false, columnDefinition = "NUMERIC(10,8)")
     private Double latitude;
 
-    @Column(name = "longitude", nullable = false, precision = 11, scale = 8)
+    @Column(name = "longitude", nullable = false, columnDefinition = "NUMERIC(11,8)")
     private Double longitude;
 
     @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")

@@ -5,8 +5,8 @@ CREATE TABLE "relatos" (
                            "status" varchar(20) NOT NULL,
                            "descricao" text,
                            "url_foto" varchar(255),
-                           "latitude" decimal(10,8) NOT NULL,
-                           "longitude" decimal(11,8) NOT NULL,
+                           "latitude" numeric(10,8) NOT NULL,
+                           "longitude" numeric(11,8) NOT NULL,
                            "criado_em" timestamp with time zone DEFAULT (now()),
 
                            CONSTRAINT fk_relato_perfil
