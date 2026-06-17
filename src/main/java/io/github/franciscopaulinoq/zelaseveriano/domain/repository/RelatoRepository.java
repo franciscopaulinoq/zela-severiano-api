@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RelatoRepository {
-    public Relato save(Relato relato);
+    Relato save(Relato relato);
 
-    public Optional<Relato> findByPerfilIdAndId(UUID perfilId, int relatoId);
+    Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 }

@@ -11,13 +11,13 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Builder
 public class Relato {
-    private int id;
+    private Long id;
     private Perfil perfil;
     private Categoria categoria;
     private StatusRelato status;
     private String descricao;
     private String urlFoto;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private OffsetDateTime criadoEm;
 }
