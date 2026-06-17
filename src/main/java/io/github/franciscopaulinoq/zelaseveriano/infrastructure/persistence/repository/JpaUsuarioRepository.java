@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface JpaUsuarioRepository extends JpaRepository<UsuarioEntity, UUID> {
-    public Optional<UsuarioEntity> findByCpf(String cpf);
+    Optional<UsuarioEntity> findByCpf(String cpf);
 
-    public boolean existsByCpf(String cpf);
+    boolean existsByCpf(String cpf);
 }

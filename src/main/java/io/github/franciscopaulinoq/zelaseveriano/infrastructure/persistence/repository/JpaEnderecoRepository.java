@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface JpaEnderecoRepository extends JpaRepository<EnderecoEntity, UUID> {
-    public Optional<EnderecoEntity> findByPerfilId(UUID perfilId);
+    Optional<EnderecoEntity> findByPerfilId(UUID perfilId);
 }

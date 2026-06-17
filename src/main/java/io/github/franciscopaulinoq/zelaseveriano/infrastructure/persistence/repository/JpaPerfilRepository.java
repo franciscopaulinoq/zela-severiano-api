@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface JpaPerfilRepository extends JpaRepository<PerfilEntity, UUID> {
-    public Optional<PerfilEntity> findByUsuarioId(UUID usuarioId);
+    Optional<PerfilEntity> findByUsuarioId(UUID usuarioId);
 }
