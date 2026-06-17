@@ -25,7 +25,7 @@ import java.time.OffsetDateTime;
 public class CategoriaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "nome", nullable = false, length = 50)
     private String nome;

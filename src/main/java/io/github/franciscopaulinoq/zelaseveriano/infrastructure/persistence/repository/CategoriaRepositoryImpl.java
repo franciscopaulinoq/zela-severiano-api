@@ -18,7 +18,7 @@ public class CategoriaRepositoryImpl implements CategoriaRepository {
     private final CategoriaMapper mapper;
 
     @Override
-    public Optional<Categoria> findById(Long categoriaId) {
+    public Optional<Categoria> findById(Integer categoriaId) {
         return jpaRepository.findById(categoriaId)
                 .map(mapper::map);
     }
@@ -31,7 +31,7 @@ public class CategoriaRepositoryImpl implements CategoriaRepository {
     }
 
     @Override
-    public boolean existsById(Long categoriaId) {
+    public boolean existsById(Integer categoriaId) {
         return jpaRepository.existsById(categoriaId);
     }
 }

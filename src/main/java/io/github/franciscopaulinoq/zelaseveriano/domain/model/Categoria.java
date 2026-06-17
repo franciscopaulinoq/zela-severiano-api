@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Builder
 public class Categoria {
-    private Long id;
+    private Integer id;
     private String nome;
     private String iconeNome;
     private OffsetDateTime criadoEm;
