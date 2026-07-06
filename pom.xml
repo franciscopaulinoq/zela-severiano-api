@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
+		<aws.sdk.version>2.25.15</aws.sdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -50,6 +51,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
@@ -71,6 +78,12 @@
 			<artifactId>mapstruct</artifactId>
 			<version>${org.mapstruct.version}</version>
 			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws.sdk.version}</version>
 		</dependency>
 
 		<dependency>

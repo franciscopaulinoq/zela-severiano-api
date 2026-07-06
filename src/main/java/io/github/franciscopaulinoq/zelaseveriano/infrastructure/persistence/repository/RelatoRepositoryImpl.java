@@ -7,8 +7,10 @@ import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapp
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,5 +29,12 @@ public class RelatoRepositoryImpl implements RelatoRepository {
     public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
         return jpaRepository.findByPerfilIdAndId(perfilId, relatoId)
                 .map(mapper::map);
+    }
+
+    @Override
+    public List<Relato> findAllByPerfilId(UUID perfilId) {
+        return jpaRepository.findAllByPerfilIdOrderByCriadoEmDesc(perfilId).stream()
+                .map(mapper::map)
+                .collect(Collectors.toList());
     }
 }

@@ -13,3 +13,20 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+cloudflare:
+  r2:
+    endpoint: ${CLOUDFLARE_R2_ENDPOINT}
+    access-key: ${CLOUDFLARE_R2_ACCESS_KEY}
+    secret-key: ${CLOUDFLARE_R2_SECRET_KEY}
+    bucket-name: ${CLOUDFLARE_R2_BUCKET_NAME}
+    public-url: ${CLOUDFLARE_R2_PUBLIC_URL}
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:zela-secret-key-default}
