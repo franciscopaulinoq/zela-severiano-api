@@ -32,8 +32,21 @@ public class RelatoRepositoryImpl implements RelatoRepository {
     }
 
     @Override
+    public Optional<Relato> findById(Long relatoId) {
+        return jpaRepository.findById(relatoId)
+                .map(mapper::map);
+    }
+
+    @Override
     public List<Relato> findAllByPerfilId(UUID perfilId) {
         return jpaRepository.findAllByPerfilIdOrderByCriadoEmDesc(perfilId).stream()
+                .map(mapper::map)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Relato> findAll() {
+        return jpaRepository.findAll().stream()
                 .map(mapper::map)
                 .collect(Collectors.toList());
     }

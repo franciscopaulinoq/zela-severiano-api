@@ -57,7 +57,13 @@ public class RelatoEntity {
     @Column(name = "longitude", nullable = false, columnDefinition = "NUMERIC(11,8)")
     private Double longitude;
 
+    @Column(name = "observacao_resolucao", nullable = true, columnDefinition = "TEXT")
+    private String observacaoResolucao;
+
     @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     @CreationTimestamp
     private OffsetDateTime criadoEm;
+
+    @Column(name = "atualizado_em", nullable = true, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime atualizadoEm;
 }

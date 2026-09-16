@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -26,13 +27,12 @@ public class SecurityFilter extends OncePerRequestFilter {
         var token = this.recoverToken(request);
 
         if (token != null) {
-            var subject = jwtService.validarToken(token);
-
-            if (!subject.isEmpty()) {
-                UserDetails user = new User(subject, "", Collections.emptyList());
+            jwtService.validarToken(token).ifPresent(payload -> {
+                var authority = new SimpleGrantedAuthority("ROLE_" + payload.role().name());
+                UserDetails user = new User(payload.usuarioId().toString(), "", List.of(authority));
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            });
         }
         filterChain.doFilter(request, response);
     }

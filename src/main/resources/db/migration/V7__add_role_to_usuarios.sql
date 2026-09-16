@@ -1,0 +1,5 @@
+ALTER TABLE "usuarios"
+    ADD COLUMN "role" varchar(20) NOT NULL DEFAULT 'CIDADAO';
+
+ALTER TABLE "usuarios"
+    ALTER COLUMN "role" DROP DEFAULT;

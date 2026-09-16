@@ -1,7 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -30,6 +33,10 @@ public class UsuarioEntity {
 
     @Column(name = "senha_hash", nullable = false, length = 255)
     private String senhaHash;
+
+    @Column(name = "role", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     @CreationTimestamp

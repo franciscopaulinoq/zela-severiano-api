@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/cidadaos/res").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categorias").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/gestao/**").hasRole("GESTOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
