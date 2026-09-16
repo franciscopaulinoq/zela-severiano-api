@@ -1,0 +1,59 @@
+"""Configuração central do pipeline de revisão automática por IA.
+
+Todas as chaves de API e o token do GitHub vêm de variáveis de ambiente
+(nunca hardcoded), para poderem ser injetadas como Secrets no GitHub Actions
+sem tocar em código versionado.
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+@dataclass(frozen=True)
+class Settings:
+    github_token: str
+    github_repo: str
+
+    openai_api_key: str | None
+    openai_model: str
+
+    anthropic_api_key: str | None
+    anthropic_model: str
+
+    gemini_api_key: str | None
+    gemini_model: str
+
+    request_timeout_seconds: float
+    max_retries: int
+
+    results_csv_path: str
+    project_context_path: str
+
+
+def load_settings() -> Settings:
+    return Settings(
+        github_token=_require("GITHUB_TOKEN"),
+        github_repo=_require("GITHUB_REPOSITORY", default="franciscopaulinoq/zela-severiano-api"),
+        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        openai_model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5"),
+        gemini_api_key=os.getenv("GEMINI_API_KEY"),
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-1.5-pro"),
+        request_timeout_seconds=float(os.getenv("PR_REVIEW_TIMEOUT_SECONDS", "60")),
+        max_retries=int(os.getenv("PR_REVIEW_MAX_RETRIES", "4")),
+        results_csv_path=os.getenv("PR_REVIEW_RESULTS_CSV", "results/pr_reviews.csv"),
+        project_context_path=os.getenv("PR_REVIEW_PROJECT_CONTEXT", "context/project_context.md"),
+    )
+
+
+def _require(name: str, default: str | None = None) -> str:
+    value = os.getenv(name, default)
+    if not value:
+        raise RuntimeError(f"Variável de ambiente obrigatória ausente: {name}")
+    return value

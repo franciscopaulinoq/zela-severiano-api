@@ -1,0 +1,54 @@
+name: Revisão automática de PR por IA
+
+# Dispara só na abertura do PR (não a cada push) de propósito: o objetivo do
+# estudo é comparar uma revisão "de primeira leitura" dos três modelos sobre
+# o diff completo da issue, não reagir a cada commit incremental. Ver
+# docs/tcc/03-decisoes-script-revisao.md.
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências do pipeline
+        working-directory: scripts/pr-review
+        run: pip install -r requirements.txt
+
+      - name: Gerar contexto do projeto
+        working-directory: scripts/pr-review
+        run: python build_project_context.py
+
+      - name: Executar revisão automática nos 3 modelos
+        working-directory: scripts/pr-review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python review_pr.py --pr ${{ github.event.pull_request.number }} --post-comments
+
+      # Os resultados sobem como artifact (não são commitados de volta no
+      # repo) para não poluir o histórico de git com dados que ainda serão
+      # classificados manualmente. Ver docs/tcc/03-decisoes-script-revisao.md.
+      - name: Publicar resultados como artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-review-results-${{ github.event.pull_request.number }}
+          path: scripts/pr-review/results/pr_reviews.csv
+          retention-days: 90

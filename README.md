@@ -24,3 +24,10 @@ O projeto segue os princípios da **Clean Architecture**, dividindo as responsab
 - **application**: Casos de uso e DTOs.
 - **adapter**: Controladores e mappers de interface.
 - **infrastructure**: Implementações de persistência, banco de dados e drivers.
+
+## 🎓 TCC — Revisão de código por IA
+Este repositório também é o objeto de estudo de um TCC comparando GPT-4o,
+Claude e Gemini como revisores automáticos de código. Documentação completa
+(plano, requisitos, modelo de dados, decisões de design) em
+[`docs/tcc/`](docs/tcc/README.md); pipeline de revisão automática em
+[`scripts/pr-review/`](scripts/pr-review/README.md).

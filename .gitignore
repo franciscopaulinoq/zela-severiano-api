@@ -34,3 +34,10 @@ build/
 
 ### Envs ###
 .env
+
+### Pipeline de revisão automática (scripts/pr-review) ###
+scripts/pr-review/.venv/
+scripts/pr-review/__pycache__/
+scripts/pr-review/**/__pycache__/
+scripts/pr-review/results/
+context/
