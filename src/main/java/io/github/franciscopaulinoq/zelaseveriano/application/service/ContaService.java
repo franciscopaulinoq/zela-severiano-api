@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.application.usecase;
+package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
@@ -9,6 +9,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.EnderecoRepos
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
+import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +18,28 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class RegistrarCidadaoUseCase {
+public class ContaService {
 
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
     private final EnderecoRepository enderecoRepository;
     private final PasswordHasher passwordHasher;
+    private final TokenService tokenService;
+
+    @Transactional(readOnly = true)
+    public String autenticar(String cpf, String senha) {
+        Usuario usuario = usuarioRepository.findByCpf(cpf)
+                .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
+
+        if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {
+            throw new IllegalArgumentException("CPF ou senha inválidos");
+        }
+
+        return tokenService.gerarToken(usuario);
+    }
 
     @Transactional
-    public RegistrarCidadaoDTO execute(RegistrarCidadaoDTO dto, String senhaPura) {
+    public RegistrarCidadaoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
         if (usuarioRepository.existsByCpf(dto.getCpf())) {
             throw new CidadaoJaRegistradoException("CPF já registrado no sistema");
         }

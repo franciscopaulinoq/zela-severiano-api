@@ -3,8 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarStatusRelatoRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.AtualizarStatusRelatoUseCase;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.ListarTodosRelatosUseCase;
+import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +21,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GestaoRelatoController {
 
-    private final ListarTodosRelatosUseCase listarTodosRelatosUseCase;
-    private final AtualizarStatusRelatoUseCase atualizarStatusRelatoUseCase;
+    private final RelatoService relatoService;
     private final RelatoRestMapper mapper;
 
     @GetMapping
     public ResponseEntity<List<RelatoGestaoResponse>> listarTodos() {
-        return ResponseEntity.ok(mapper.mapGestao(listarTodosRelatosUseCase.execute()));
+        return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos()));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> atualizarStatus(
             @PathVariable("id") Long relatoId,
             @Valid @RequestBody AtualizarStatusRelatoRequest request) {
-        atualizarStatusRelatoUseCase.execute(relatoId, request.getStatus(), request.getObservacao());
+        relatoService.atualizarStatus(relatoId, request.getStatus(), request.getObservacao());
         return ResponseEntity.noContent().build();
     }
 }

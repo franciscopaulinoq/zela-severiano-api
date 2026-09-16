@@ -41,3 +41,6 @@ scripts/pr-review/__pycache__/
 scripts/pr-review/**/__pycache__/
 scripts/pr-review/results/
 context/
+
+### Notas locais do autor (não expor no repositório público) ###
+.local/

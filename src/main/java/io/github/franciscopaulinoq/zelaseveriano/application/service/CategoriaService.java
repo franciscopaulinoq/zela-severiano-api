@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.application.usecase;
+package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
@@ -7,22 +7,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ListarCategoriasUseCase {
+public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
     @Transactional(readOnly = true)
-    public List<CategoriaDTO> execute() {
+    public List<CategoriaDTO> listar() {
         return categoriaRepository.findAll().stream()
                 .map(categoria -> CategoriaDTO.builder()
                         .id(categoria.getId())
                         .nome(categoria.getNome())
                         .iconeNome(categoria.getIconeNome())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 }

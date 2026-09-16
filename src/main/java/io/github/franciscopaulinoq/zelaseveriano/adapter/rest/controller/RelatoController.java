@@ -3,12 +3,10 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RelatoRegistroRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoCriadoResponse;
-import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
-import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDetalheResponse;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.VisualizarMeusRelatosUseCase;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.ObterDetalheRelatoUseCase;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.RegistrarRelatoUseCase;
+import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,9 +31,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RelatoController {
 
-    private final RegistrarRelatoUseCase registrarRelatoUseCase;
-    private final VisualizarMeusRelatosUseCase visualizarMeusRelatosUseCase;
-    private final ObterDetalheRelatoUseCase obterDetalheRelatoUseCase;
+    private final RelatoService relatoService;
     private final RelatoRestMapper mapper;
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
@@ -53,21 +49,21 @@ public class RelatoController {
         String originalFilename = (foto != null) ? foto.getOriginalFilename() : null;
         String contentType = (foto != null) ? foto.getContentType() : null;
 
-        var resultado = registrarRelatoUseCase.execute(usuarioId, dto, fileBytes, originalFilename, contentType);
+        var resultado = relatoService.registrar(usuarioId, dto, fileBytes, originalFilename, contentType);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(resultado));
     }
 
     @GetMapping
-    public ResponseEntity<List<RelatoListagemDTO>> listarMeusRelatos(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<RelatoListagemResponse>> listarMeusRelatos(@AuthenticationPrincipal UserDetails userDetails) {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        return ResponseEntity.ok(visualizarMeusRelatosUseCase.execute(usuarioId));
+        return ResponseEntity.ok(mapper.mapListagem(relatoService.visualizarMeus(usuarioId)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RelatoDetalheDTO> obterDetalhe(
+    public ResponseEntity<RelatoDetalheResponse> obterDetalhe(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("id") Long relatoId) {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        return ResponseEntity.ok(obterDetalheRelatoUseCase.execute(usuarioId, relatoId));
+        return ResponseEntity.ok(mapper.mapDetalhe(relatoService.obterDetalhe(usuarioId, relatoId)));
     }
 }

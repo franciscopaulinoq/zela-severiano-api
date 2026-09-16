@@ -4,7 +4,7 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RegistrarCi
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RegistrarCidadaoRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RegistrarCidadaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
-import io.github.franciscopaulinoq.zelaseveriano.application.usecase.RegistrarCidadaoUseCase;
+import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CidadaoController {
 
-    private final RegistrarCidadaoUseCase registrarCidadaoUseCase;
+    private final ContaService contaService;
     private final RegistrarCidadaoMapper mapper;
 
     @PostMapping
@@ -28,7 +28,7 @@ public class CidadaoController {
 
         RegistrarCidadaoDTO dto = mapper.map(request);
 
-        RegistrarCidadaoDTO resultado = registrarCidadaoUseCase.execute(dto, request.getSenha());
+        RegistrarCidadaoDTO resultado = contaService.registrarCidadao(dto, request.getSenha());
 
         RegistrarCidadaoResponse response = mapper.map(resultado);
 

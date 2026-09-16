@@ -2,8 +2,7 @@ name: Revisão automática de PR por IA
 
 # Dispara só na abertura do PR (não a cada push) de propósito: o objetivo do
 # estudo é comparar uma revisão "de primeira leitura" dos três modelos sobre
-# o diff completo da issue, não reagir a cada commit incremental. Ver
-# docs/tcc/03-decisoes-script-revisao.md.
+# o diff completo da issue, não reagir a cada commit incremental.
 on:
   pull_request:
     types: [opened]
@@ -44,7 +43,7 @@ jobs:
 
       # Os resultados sobem como artifact (não são commitados de volta no
       # repo) para não poluir o histórico de git com dados que ainda serão
-      # classificados manualmente. Ver docs/tcc/03-decisoes-script-revisao.md.
+      # classificados manualmente.
       - name: Publicar resultados como artifact
         if: always()
         uses: actions/upload-artifact@v4

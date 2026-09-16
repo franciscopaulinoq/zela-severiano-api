@@ -1,7 +1,7 @@
 <!--
 Prompt padrão enviado, sem nenhuma alteração, aos três modelos (GPT-4o,
-Claude, Gemini) para cada PR analisado. Ver docs/tcc/04-prompt-padrao.md
-para a justificativa de cada decisão de design deste template.
+Claude, Gemini) para cada PR analisado. A justificativa de cada decisão de
+design deste template fica registrada separadamente pelo autor.
 -->
 Você é um revisor de código sênior, especialista em Java, Spring Boot e Clean
 Architecture, revisando um Pull Request real do projeto "Zela Severiano" —

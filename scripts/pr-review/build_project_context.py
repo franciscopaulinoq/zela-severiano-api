@@ -1,11 +1,11 @@
 """Gera um snapshot estático do contexto do projeto (context/project_context.md).
 
-Motivação (ver docs/tcc/03-decisoes-script-revisao.md): pedir para os
-modelos revisarem só o diff faz eles alucinarem sobre a arquitetura ao
-redor (ex.: sugerir algo que já existe em outra camada, ou não perceber
-que aquele pacote é "domain" e não pode depender de Spring). Este script
-roda avulso (não a cada PR — só quando a estrutura do projeto muda de
-verdade) e produz um arquivo único que é anexado a todo prompt.
+Motivação: pedir para os modelos revisarem só o diff faz eles alucinarem
+sobre a arquitetura ao redor (ex.: sugerir algo que já existe em outra
+camada, ou não perceber que aquele pacote é "domain" e não pode depender
+de Spring). Este script roda avulso (não a cada PR — só quando a estrutura
+do projeto muda de verdade) e produz um arquivo único que é anexado a todo
+prompt.
 
 Uso: `python build_project_context.py` a partir da raiz do repositório.
 """
@@ -16,7 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src" / "main" / "java"
 README_PATH = REPO_ROOT / "README.md"
-PROJECT_RULES_PATH = REPO_ROOT / "docs" / "tcc" / "regras_projeto.md"
+PROJECT_RULES_PATH = REPO_ROOT / "docs" / "public" / "regras_projeto.md"
 OUTPUT_PATH = REPO_ROOT / "context" / "project_context.md"
 
 CAMADAS = ["domain", "application", "adapter", "infrastructure"]

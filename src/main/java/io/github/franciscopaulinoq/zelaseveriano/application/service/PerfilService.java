@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.application.usecase;
+package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
@@ -11,12 +11,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ObterMeuPerfilUseCase {
+public class PerfilService {
 
     private final PerfilRepository perfilRepository;
 
     @Transactional(readOnly = true)
-    public PerfilMeDTO execute(UUID usuarioId) {
+    public PerfilMeDTO obterMeuPerfil(UUID usuarioId) {
         Perfil perfil = perfilRepository.findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado para o usuário logado."));
 

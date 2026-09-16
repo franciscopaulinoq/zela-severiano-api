@@ -2,7 +2,7 @@
 PRContext de um PR específico. O mesmo template, sem nenhuma variação por
 modelo, é enviado a GPT-4o, Claude e Gemini — é o que garante validade
 interna à comparação (qualquer diferença nas respostas vem do modelo, não do
-prompt). Ver docs/tcc/04-prompt-padrao.md.
+prompt).
 """
 from __future__ import annotations
 

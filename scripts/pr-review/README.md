@@ -6,8 +6,8 @@ contexto do projeto, envia o mesmo prompt para GPT-4o, Claude e Gemini em
 paralelo, e registra cada resposta em `results/pr_reviews.csv`.
 
 As decisões de design (por que Python, por que GitHub Actions, por que o
-contexto foi estendido além do diff, etc.) estão documentadas em
-[`docs/tcc/03-decisoes-script-revisao.md`](../../docs/tcc/03-decisoes-script-revisao.md).
+contexto foi estendido além do diff, etc.) ficam registradas separadamente
+pelo autor como parte da documentação do TCC.
 
 ## Uso local
 

@@ -3,7 +3,7 @@
 Usamos `requests` puro (em vez de PyGithub) de propósito: o pipeline só
 precisa de meia dúzia de chamadas (PR, diff, arquivos, conteúdo, issue,
 comentário) e uma dependência a menos é mais fácil de auditar/justificar
-numa monografia. Ver docs/tcc/03-decisoes-script-revisao.md.
+numa monografia.
 """
 from __future__ import annotations
 

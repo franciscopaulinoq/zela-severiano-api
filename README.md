@@ -19,15 +19,23 @@ API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
 4. Execute a aplicação: `./mvnw spring-boot:run`
 
 ## 🏗 Arquitetura
-O projeto segue os princípios da **Clean Architecture**, dividindo as responsabilidades em:
-- **domain**: Entidades e regras de negócio puras.
-- **application**: Casos de uso e DTOs.
-- **adapter**: Controladores e mappers de interface.
+O projeto usa uma variação pragmática da Clean Architecture (ver
+[ADR 0001](docs/adr/0001-camadas-pragmaticas.md)): 4 camadas, com DTOs
+para desacoplar o contrato HTTP do modelo de domínio, mas agrupando casos
+de uso por agregado em vez de uma classe por operação de negócio.
+- **domain**: Entidades e regras de negócio puras, sem depender de Spring/JPA.
+- **application**: `Service`s agrupados por agregado/recurso REST (um por operação de negócio dentro do método, não da classe) e DTOs de entrada/saída.
+- **adapter**: Controladores, request/response REST e mappers (MapStruct) entre DTOs e o contrato HTTP.
 - **infrastructure**: Implementações de persistência, banco de dados e drivers.
+
+Detalhes e convenções completas em [`docs/public/regras_projeto.md`](docs/public/regras_projeto.md).
 
 ## 🎓 TCC — Revisão de código por IA
 Este repositório também é o objeto de estudo de um TCC comparando GPT-4o,
-Claude e Gemini como revisores automáticos de código. Documentação completa
-(plano, requisitos, modelo de dados, decisões de design) em
-[`docs/tcc/`](docs/tcc/README.md); pipeline de revisão automática em
-[`scripts/pr-review/`](scripts/pr-review/README.md).
+Claude e Gemini como revisores automáticos de código: a cada Pull Request
+aberto, um workflow ([`scripts/pr-review/`](scripts/pr-review/README.md))
+envia o diff, a issue vinculada e o contexto do projeto
+(`docs/public/regras_projeto.md`) para os três modelos e registra as
+respostas para análise comparativa. O restante da documentação do TCC
+(plano, backlog de issues, decisões de design, dados de classificação) é
+mantido pelo autor fora deste repositório público.
