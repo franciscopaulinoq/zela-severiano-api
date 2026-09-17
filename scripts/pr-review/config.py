@@ -50,7 +50,7 @@ def load_settings() -> Settings:
     return Settings(
         github_token=_require("GITHUB_TOKEN"),
         github_repo=_require("GITHUB_REPOSITORY", default="franciscopaulinoq/zela-severiano-api"),
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        openai_api_key=os.getenv("OPENAI_API_KEY", "sk-test-DO-NOT-COMMIT-1234567890abcdef"),
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4o"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5"),
