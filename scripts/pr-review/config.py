@@ -8,10 +8,21 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# build_project_context.py escreve em <raiz-do-repo>/context/project_context.md
+# usando um caminho absoluto (Path(__file__).resolve().parents[2]), independente
+# do diretorio de trabalho. O default aqui precisa apontar pro mesmo lugar de
+# forma absoluta - um default relativo ("context/project_context.md") so
+# funciona por acaso quando o cwd é a raiz do repo, e quebra silenciosamente
+# quando o script roda com working-directory: scripts/pr-review (como no
+# workflow do GitHub Actions), retornando a mensagem de fallback "nao
+# encontrado" em vez do contexto de fato.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True)
@@ -55,7 +66,9 @@ def load_settings() -> Settings:
         request_timeout_seconds=float(os.getenv("PR_REVIEW_TIMEOUT_SECONDS", "60")),
         max_retries=int(os.getenv("PR_REVIEW_MAX_RETRIES", "4")),
         results_csv_path=os.getenv("PR_REVIEW_RESULTS_CSV", "results/pr_reviews.csv"),
-        project_context_path=os.getenv("PR_REVIEW_PROJECT_CONTEXT", "context/project_context.md"),
+        project_context_path=os.getenv(
+            "PR_REVIEW_PROJECT_CONTEXT", str(_REPO_ROOT / "context" / "project_context.md")
+        ),
     )
 
 
