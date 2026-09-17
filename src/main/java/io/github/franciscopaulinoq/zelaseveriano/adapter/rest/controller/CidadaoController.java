@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/cidadaos/res")
+@RequestMapping("/api/v1/cidadaos")
 @RequiredArgsConstructor
 public class CidadaoController {
 
