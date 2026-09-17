@@ -44,7 +44,14 @@ def load_settings() -> Settings:
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5"),
         gemini_api_key=os.getenv("GEMINI_API_KEY"),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-1.5-pro"),
+        # TEMPORARIO (calibracao, issue #21): gemini-2.5-pro foi aposentado
+        # para contas novas e o tier "Pro" atual (gemini-3.1-pro-preview) tem
+        # cota zero sem faturamento habilitado. Usando um modelo "flash" so
+        # para validar o encanamento do pipeline - trocar para
+        # gemini-3.1-pro-preview (ou o tier Pro vigente) assim que o
+        # faturamento estiver configurado, antes de abrir as PRs das 20
+        # issues reais avaliadas no TCC.
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         request_timeout_seconds=float(os.getenv("PR_REVIEW_TIMEOUT_SECONDS", "60")),
         max_retries=int(os.getenv("PR_REVIEW_MAX_RETRIES", "4")),
         results_csv_path=os.getenv("PR_REVIEW_RESULTS_CSV", "results/pr_reviews.csv"),

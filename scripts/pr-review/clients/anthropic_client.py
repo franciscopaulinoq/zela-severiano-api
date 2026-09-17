@@ -12,11 +12,14 @@ class AnthropicClient(ModelClient):
         self.nome = model
 
     async def gerar(self, prompt: str, timeout_seconds: float) -> str:
+        # SDKs >=1.x removeram `temperature` como kwarg tipado de
+        # messages.create (a API continua aceitando o campo normalmente),
+        # por isso vai via extra_body em vez de parametro nomeado.
         resposta = await self._client.messages.create(
             model=self._model,
             max_tokens=4096,
-            temperature=0.2,
             messages=[{"role": "user", "content": prompt}],
             timeout=timeout_seconds,
+            extra_body={"temperature": 0.2},
         )
         return "".join(bloco.text for bloco in resposta.content if bloco.type == "text")

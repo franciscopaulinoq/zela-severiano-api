@@ -73,6 +73,13 @@ arquitetura, mesmo que compile.
   — nunca `ORDINAL` (adicionar um valor no meio quebraria dados existentes).
 - Endpoints REST: prefixo `/api/v1/`, recursos no plural (`/relatos`,
   `/categorias`), sub-recursos de gestão sob `/api/v1/gestao/...`.
+- Branches: `<tipo>/<numero-da-issue>-<slug-breve>`, com `tipo` em
+  `feat|fix|chore|refactor|test` (ex.: `feat/1-paginacao-listagem-relatos`,
+  `chore/21-calibrar-pipeline-revisao-ia`). O número é o da issue do
+  GitHub que a branch resolve; o slug é só pra legibilidade, não precisa
+  repetir o título inteiro da issue. O PR referencia a mesma issue
+  (`Closes #N`) para o pipeline de revisão conseguir recuperar o contexto
+  automaticamente.
 
 ## Regras de negócio vigentes
 
