@@ -1,8 +1,7 @@
 """Cliente fino sobre a API REST do GitHub.
 
 Usamos `requests` puro (em vez de PyGithub) de propósito: o pipeline só
-precisa de meia dúzia de chamadas (PR, diff, arquivos, conteúdo, issue,
-comentário) e uma dependência a menos é mais fácil de auditar/justificar
+precisa de meia dúzia de chamadas (PR, diff, arquivos, conteúdo, issue) e uma dependência a menos é mais fácil de auditar/justificar
 numa monografia.
 """
 from __future__ import annotations
@@ -80,12 +79,6 @@ class GitHubClient:
         resp = self._session.get(self._repo_url(f"issues/{numero_issue}"))
         resp.raise_for_status()
         return resp.json()
-
-    def post_comment(self, numero_pr: int, corpo: str) -> None:
-        resp = self._session.post(
-            self._repo_url(f"issues/{numero_pr}/comments"), json={"body": corpo}
-        )
-        resp.raise_for_status()
 
     @staticmethod
     def extrair_numero_issue(corpo_pr: str | None) -> int | None:

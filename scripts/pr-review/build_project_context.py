@@ -7,25 +7,25 @@ de Spring). Este script roda avulso (não a cada PR — só quando a estrutura
 do projeto muda de verdade) e produz um arquivo único que é anexado a todo
 prompt.
 
-Uso: `python build_project_context.py` a partir da raiz do repositório.
+Uso: `python build_project_context.py [--raiz <checkout do projeto>]`. Sem
+`--raiz`, usa este próprio repositório. O workflow de coleta passa o checkout
+do commit do PR, para o contexto refletir o projeto como ele estava naquele PR.
 """
 from __future__ import annotations
 
+import argparse
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SRC_ROOT = REPO_ROOT / "src" / "main" / "java"
-README_PATH = REPO_ROOT / "README.md"
-PROJECT_RULES_PATH = REPO_ROOT / "docs" / "public" / "regras_projeto.md"
-OUTPUT_PATH = REPO_ROOT / "context" / "project_context.md"
 
 CAMADAS = ["domain", "application", "adapter", "infrastructure"]
 
 
-def montar_arvore_pacotes() -> str:
+def montar_arvore_pacotes(src_root: Path) -> str:
     linhas: list[str] = []
     for camada in CAMADAS:
-        raiz_camada = next(SRC_ROOT.rglob(camada), None)
+        raiz_camada = next(src_root.rglob(camada), None)
         if raiz_camada is None or not raiz_camada.is_dir():
             continue
         linhas.append(f"### `{camada}/`")
@@ -43,21 +43,57 @@ def ler_ou_vazio(caminho: Path) -> str:
     return caminho.read_text(encoding="utf-8") if caminho.exists() else ""
 
 
+_SECAO_H2 = re.compile(r"^## .*$", re.MULTILINE)
+
+
+def sem_mencoes_ao_estudo(markdown: str) -> str:
+    """Remove do texto o que diria ao modelo que ele está sendo avaliado:
+    seções `## ` cujo título cita o TCC e o bloco de citação (`> ...`) logo
+    no início do arquivo, que explica o uso do arquivo pelo pipeline. O
+    contexto do projeto deve descrever o projeto, não o experimento."""
+    linhas = markdown.splitlines()
+    # bloco de citação logo depois do título principal
+    i = 1 if linhas and linhas[0].startswith("# ") else 0
+    while i < len(linhas) and not linhas[i].strip():
+        i += 1
+    j = i
+    while j < len(linhas) and linhas[j].startswith(">"):
+        j += 1
+    if j > i:
+        linhas = linhas[:i] + linhas[j:]
+    texto = "\n".join(linhas)
+
+    partes = []
+    posicoes = [m.start() for m in _SECAO_H2.finditer(texto)] + [len(texto)]
+    partes.append(texto[: posicoes[0]])
+    for inicio, fim in zip(posicoes, posicoes[1:]):
+        secao = texto[inicio:fim]
+        titulo = secao.splitlines()[0]
+        if "tcc" not in titulo.lower():
+            partes.append(secao)
+    return "".join(partes).strip() + "\n"
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--raiz", type=Path, default=REPO_ROOT, help="Raiz do checkout do projeto")
+    raiz = parser.parse_args().raiz.resolve()
+    saida = raiz / "context" / "project_context.md"
+
     partes = [
         "# Contexto do Projeto — Zela Severiano API\n",
         "> Gerado automaticamente por `build_project_context.py`. Não editar à mão.\n",
         "## README (visão geral e arquitetura)\n",
-        ler_ou_vazio(README_PATH),
+        sem_mencoes_ao_estudo(ler_ou_vazio(raiz / "README.md")),
         "\n## Regras de projeto e convenções\n",
-        ler_ou_vazio(PROJECT_RULES_PATH),
+        sem_mencoes_ao_estudo(ler_ou_vazio(raiz / "docs" / "public" / "regras_projeto.md")),
         "\n## Estrutura de pacotes (Clean Architecture)\n",
-        montar_arvore_pacotes(),
+        montar_arvore_pacotes(raiz / "src" / "main" / "java"),
     ]
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text("\n".join(partes), encoding="utf-8")
-    print(f"Contexto do projeto gerado em {OUTPUT_PATH}")
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text("\n".join(partes), encoding="utf-8")
+    print(f"Contexto do projeto gerado em {saida}")
 
 
 if __name__ == "__main__":
