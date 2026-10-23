@@ -1,0 +1,14 @@
+# Valores fictícios só para o contexto subir nos testes: nenhum teste deve
+# chamar o storage real. O banco vem do Testcontainers (@ServiceConnection).
+cloudflare:
+  r2:
+    endpoint: http://localhost:9000
+    access-key: test
+    secret-key: test
+    bucket-name: test
+    public-url: http://localhost:9000/test
+
+api:
+  security:
+    token:
+      secret: segredo-somente-para-testes
