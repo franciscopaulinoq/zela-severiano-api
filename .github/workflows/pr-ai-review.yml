@@ -32,6 +32,7 @@ jobs:
           echo "prs=$json" >> "$GITHUB_OUTPUT"
 
   ai-review:
+    timeout-minutes: 40
     needs: preparar
     runs-on: ubuntu-latest
     strategy:

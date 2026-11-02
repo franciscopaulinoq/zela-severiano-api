@@ -17,19 +17,17 @@ class GeminiClient(ModelClient):
         self.nome = model
 
     async def gerar(self, prompt: str, timeout_seconds: float) -> RespostaBruta:
-        # Chamada síncrona numa thread para aplicar o mesmo timeout dos outros clientes.
-        return await asyncio.wait_for(
-            asyncio.to_thread(self._gerar_sincrono, prompt), timeout=timeout_seconds
-        )
+        return await asyncio.wait_for(self._gerar(prompt), timeout=timeout_seconds)
 
-    def _gerar_sincrono(self, prompt: str) -> RespostaBruta:
+    async def _gerar(self, prompt: str) -> RespostaBruta:
         # Sem `temperature`: o Gemini 3 recomenda manter o padrão (1.0).
-        resposta = self._client.models.generate_content(
+        resposta = await self._client.aio.models.generate_content(
             model=self._model,
             contents=prompt,
             config=types.GenerateContentConfig(
                 max_output_tokens=self._max_output_tokens,
                 thinking_config=types.ThinkingConfig(thinking_level=self._thinking_level),
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             ),
         )
         uso = resposta.usage_metadata
