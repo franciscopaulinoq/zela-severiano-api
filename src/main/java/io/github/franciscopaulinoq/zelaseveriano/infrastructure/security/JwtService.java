@@ -8,14 +8,13 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService implements TokenService {

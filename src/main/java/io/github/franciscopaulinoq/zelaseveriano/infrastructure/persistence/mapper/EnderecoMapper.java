@@ -4,7 +4,9 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.EnderecoEntity;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = { PerfilMapper.class })
+@Mapper(
+        componentModel = "spring",
+        uses = {PerfilMapper.class})
 public interface EnderecoMapper {
     EnderecoEntity map(Endereco endereco);
 

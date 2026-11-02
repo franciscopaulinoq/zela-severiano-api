@@ -12,12 +12,11 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepo
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +28,14 @@ public class RelatoService {
     private final FileStorage fileStorage;
 
     @Transactional
-    public Relato registrar(UUID usuarioId, RelatoRegistroDTO dto, byte[] fileBytes, String originalFilename, String contentType) {
-        Perfil perfil = perfilRepository.findByUsuarioId(usuarioId)
+    public Relato registrar(
+            UUID usuarioId, RelatoRegistroDTO dto, byte[] fileBytes, String originalFilename, String contentType) {
+        Perfil perfil = perfilRepository
+                .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+        Categoria categoria = categoriaRepository
+                .findById(dto.getCategoriaId())
                 .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada."));
 
         String urlFoto = null;
@@ -57,7 +59,8 @@ public class RelatoService {
 
     @Transactional(readOnly = true)
     public List<RelatoListagemDTO> visualizarMeus(UUID usuarioId) {
-        Perfil perfil = perfilRepository.findByUsuarioId(usuarioId)
+        Perfil perfil = perfilRepository
+                .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
         return relatoRepository.findAllByPerfilId(perfil.getId()).stream()
@@ -67,25 +70,27 @@ public class RelatoService {
 
     @Transactional(readOnly = true)
     public RelatoDetalheDTO obterDetalhe(UUID usuarioId, Long relatoId) {
-        Perfil perfil = perfilRepository.findByUsuarioId(usuarioId)
+        Perfil perfil = perfilRepository
+                .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
-        Relato relato = relatoRepository.findByPerfilIdAndId(perfil.getId(), relatoId)
-                .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
+        Relato relato = relatoRepository
+                .findByPerfilIdAndId(perfil.getId(), relatoId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
 
         return toDetalheDTO(relato);
     }
 
     @Transactional(readOnly = true)
     public List<RelatoGestaoDTO> listarTodos() {
-        return relatoRepository.findAll().stream()
-                .map(this::toGestaoDTO)
-                .toList();
+        return relatoRepository.findAll().stream().map(this::toGestaoDTO).toList();
     }
 
     @Transactional
     public Relato atualizarStatus(Long relatoId, StatusRelato novoStatus, String observacao) {
-        Relato relato = relatoRepository.findById(relatoId)
+        Relato relato = relatoRepository
+                .findById(relatoId)
                 .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
 
         relato.atualizarStatus(novoStatus, observacao);

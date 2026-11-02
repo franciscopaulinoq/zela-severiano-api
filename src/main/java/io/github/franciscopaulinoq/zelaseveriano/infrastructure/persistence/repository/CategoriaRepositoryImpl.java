@@ -3,13 +3,12 @@ package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.rep
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.CategoriaMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,15 +18,12 @@ public class CategoriaRepositoryImpl implements CategoriaRepository {
 
     @Override
     public Optional<Categoria> findById(Integer categoriaId) {
-        return jpaRepository.findById(categoriaId)
-                .map(mapper::map);
+        return jpaRepository.findById(categoriaId).map(mapper::map);
     }
 
     @Override
     public List<Categoria> findAll() {
-        return jpaRepository.findAll(Sort.by("id")).stream()
-                .map(mapper::map)
-                .collect(Collectors.toList());
+        return jpaRepository.findAll(Sort.by("id")).stream().map(mapper::map).collect(Collectors.toList());
     }
 
     @Override

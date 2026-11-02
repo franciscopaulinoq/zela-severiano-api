@@ -2,13 +2,12 @@ package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
@@ -30,8 +29,7 @@ public class Relato {
             StatusRelato.PENDENTE, Set.of(StatusRelato.EM_ANALISE, StatusRelato.REJEITADO),
             StatusRelato.EM_ANALISE, Set.of(StatusRelato.CONCLUIDO, StatusRelato.REJEITADO),
             StatusRelato.CONCLUIDO, Set.of(),
-            StatusRelato.REJEITADO, Set.of()
-    );
+            StatusRelato.REJEITADO, Set.of());
 
     public void atualizarStatus(StatusRelato novoStatus, String observacao) {
         Set<StatusRelato> permitidas = TRANSICOES_PERMITIDAS.getOrDefault(this.status, Set.of());

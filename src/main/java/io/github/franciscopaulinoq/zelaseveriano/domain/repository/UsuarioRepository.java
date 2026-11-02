@@ -1,7 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.repository;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
-
 import java.util.Optional;
 import java.util.UUID;
 

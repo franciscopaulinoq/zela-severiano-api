@@ -4,7 +4,9 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.PerfilEntity;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = { UsuarioMapper.class })
+@Mapper(
+        componentModel = "spring",
+        uses = {UsuarioMapper.class})
 public interface PerfilMapper {
     PerfilEntity map(Perfil perfil);
 

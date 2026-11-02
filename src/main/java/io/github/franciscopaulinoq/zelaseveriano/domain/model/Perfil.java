@@ -1,11 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor

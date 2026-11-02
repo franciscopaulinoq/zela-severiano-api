@@ -1,11 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 public class Usuario {

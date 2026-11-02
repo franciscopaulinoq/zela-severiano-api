@@ -1,11 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Getter
 @NoArgsConstructor

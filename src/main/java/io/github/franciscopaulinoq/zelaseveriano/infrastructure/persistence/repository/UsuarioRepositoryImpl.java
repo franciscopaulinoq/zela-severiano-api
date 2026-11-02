@@ -4,11 +4,10 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.UsuarioEntity;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.UsuarioMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,14 +24,12 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
     @Override
     public Optional<Usuario> findById(UUID usuarioId) {
-        return jpaRepository.findById(usuarioId)
-                .map(mapper::map);
+        return jpaRepository.findById(usuarioId).map(mapper::map);
     }
 
     @Override
     public Optional<Usuario> findByCpf(String cpf) {
-        return jpaRepository.findByCpf(cpf)
-                .map(mapper::map);
+        return jpaRepository.findByCpf(cpf).map(mapper::map);
     }
 
     @Override
