@@ -2,8 +2,8 @@
 
 > Este arquivo alimenta diretamente o contexto enviado aos modelos de IA no
 > pipeline de revisão (`scripts/pr-review/build_project_context.py`) e serve
-> como checklist de referência para revisão humana. Qualquer PR (das 20
-> issues ou futuro) deve ser avaliado contra estas regras.
+> como checklist de referência para revisão humana. Qualquer PR deve ser
+> avaliado contra estas regras.
 
 ## Arquitetura (Camadas Pragmáticas)
 
@@ -75,11 +75,10 @@ arquitetura, mesmo que compile.
   `/categorias`), sub-recursos de gestão sob `/api/v1/gestao/...`.
 - Branches: `<tipo>/<numero-da-issue>-<slug-breve>`, com `tipo` em
   `feat|fix|chore|refactor|test` (ex.: `feat/1-paginacao-listagem-relatos`,
-  `chore/21-calibrar-pipeline-revisao-ia`). O número é o da issue do
-  GitHub que a branch resolve; o slug é só pra legibilidade, não precisa
-  repetir o título inteiro da issue. O PR referencia a mesma issue
-  (`Closes #N`) para o pipeline de revisão conseguir recuperar o contexto
-  automaticamente.
+  `fix/14-expiracao-token-jwt`). O número é o da issue do GitHub que a
+  branch resolve; o slug é só pra legibilidade, não precisa repetir o
+  título inteiro da issue. O PR referencia a mesma issue (`Closes #N`), o
+  que a vincula ao PR e a fecha no merge.
 
 ## Regras de negócio vigentes
 

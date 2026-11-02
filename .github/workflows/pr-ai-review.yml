@@ -1,22 +1,64 @@
-name: Revisão automática de PR por IA
+name: Revisão automática de PR por IA (coleta em lote)
 
-# Dispara só na abertura do PR (não a cada push) de propósito: o objetivo do
-# estudo é comparar uma revisão "de primeira leitura" dos três modelos sobre
-# o diff completo da issue, não reagir a cada commit incremental.
+# Disparo só manual (Actions → este workflow → "Run workflow"), de propósito:
+# a coleta roda em lote, numa janela curta e com a configuração já
+# congelada, em vez de a cada PR aberto. Assim todos os PRs são revisados
+# pela mesma versão de cada modelo, e abrir um PR nunca dispara uma revisão
+# com configuração antiga. Nenhum comentário é publicado nos PRs: os
+# resultados ficam só nos artifacts.
 on:
-  pull_request:
-    types: [opened]
+  workflow_dispatch:
+    inputs:
+      prs:
+        description: "Números dos PRs, separados por vírgula (ex.: 30,31,32)"
+        required: true
+      experimento:
+        description: "E1 = P1,P2,P3 com issue completa · E2 = P2 com issue I1,I2 · PILOTO = igual ao E1, fora da amostra"
+        required: true
+        type: choice
+        options: [PILOTO, E1, E2]
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 jobs:
-  ai-review:
+  preparar:
     runs-on: ubuntu-latest
+    outputs:
+      prs: ${{ steps.lista.outputs.prs }}
     steps:
-      - name: Checkout
+      - id: lista
+        env:
+          PRS: ${{ inputs.prs }}
+        run: |
+          json=$(python3 -c 'import json,os; print(json.dumps([int(p) for p in os.environ["PRS"].replace(" ", "").split(",") if p]))')
+          echo "prs=$json" >> "$GITHUB_OUTPUT"
+
+  ai-review:
+    needs: preparar
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2  # alivia limites de requisição das APIs
+      matrix:
+        pr: ${{ fromJSON(needs.preparar.outputs.prs) }}
+    steps:
+      # Checkout do commit do próprio PR (e não do main atual): o contexto do
+      # projeto enviado aos modelos é o que existia quando o PR foi aberto.
+      - name: Checkout do PR
         uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ matrix.pr }}/head
+
+      # Os scripts do pipeline vêm sempre do main (a versão congelada), não
+      # da branch do PR, que pode ser anterior a eles.
+      - name: Checkout do pipeline (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: _pipeline
+          sparse-checkout: scripts/pr-review
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -24,30 +66,35 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependências do pipeline
-        working-directory: scripts/pr-review
+        working-directory: _pipeline/scripts/pr-review
         run: pip install -r requirements.txt
 
-      - name: Gerar contexto do projeto
-        working-directory: scripts/pr-review
-        run: python build_project_context.py
+      - name: Gerar contexto do projeto (a partir do commit do PR)
+        run: python _pipeline/scripts/pr-review/build_project_context.py --raiz .
 
-      - name: Executar revisão automática nos 3 modelos
-        working-directory: scripts/pr-review
+      - name: Executar revisão
+        working-directory: _pipeline/scripts/pr-review
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python review_pr.py --pr ${{ github.event.pull_request.number }} --post-comments
+          PR_REVIEW_PROJECT_CONTEXT: ${{ github.workspace }}/context/project_context.md
+          EXPERIMENTO: ${{ inputs.experimento }}
+        run: |
+          if [ "$EXPERIMENTO" = "E2" ]; then
+            niveis="--niveis-prompt P2 --niveis-issue I1,I2"
+          else
+            niveis="--niveis-prompt P1,P2,P3 --niveis-issue I3"
+          fi
+          python review_pr.py --pr ${{ matrix.pr }} --experimento "$EXPERIMENTO" $niveis \
+            --run-id "${{ github.run_id }}-${{ github.run_attempt }}"
 
-      # Os resultados sobem como artifact (não são commitados de volta no
-      # repo) para não poluir o histórico de git com dados que ainda serão
-      # classificados manualmente.
       - name: Publicar resultados como artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr-review-results-${{ github.event.pull_request.number }}
-          path: scripts/pr-review/results/pr_reviews.csv
+          name: pr-review-${{ inputs.experimento }}-pr${{ matrix.pr }}-run${{ github.run_id }}
+          path: _pipeline/scripts/pr-review/results/
           retention-days: 90
