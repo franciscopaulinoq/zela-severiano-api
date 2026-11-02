@@ -23,8 +23,7 @@ public class CidadaoController {
     private final RegistrarCidadaoMapper mapper;
 
     @PostMapping
-    public ResponseEntity<RegistrarCidadaoResponse> registrar(
-            @Valid @RequestBody RegistrarCidadaoRequest request) {
+    public ResponseEntity<RegistrarCidadaoResponse> registrar(@Valid @RequestBody RegistrarCidadaoRequest request) {
 
         RegistrarCidadaoDTO dto = mapper.map(request);
 
@@ -32,8 +31,6 @@ public class CidadaoController {
 
         RegistrarCidadaoResponse response = mapper.map(resultado);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -47,7 +47,7 @@ _SECAO_H2 = re.compile(r"^## .*$", re.MULTILINE)
 MARCADOR_OMITIR = "<!-- omitir-do-contexto-de-revisao -->"
 
 
-def sem_mencoes_ao_estudo(markdown: str) -> str:
+def sem_descricao_do_pipeline(markdown: str) -> str:
     """Remove do texto o que descreve o próprio pipeline de revisão, e não o
     projeto: seções `## ` precedidas do marcador `MARCADOR_OMITIR` e o bloco
     de citação (`> ...`) logo no início do arquivo, que explica o uso do
@@ -84,9 +84,9 @@ def main() -> None:
         "# Contexto do Projeto — Zela Severiano API\n",
         "> Gerado automaticamente por `build_project_context.py`. Não editar à mão.\n",
         "## README (visão geral e arquitetura)\n",
-        sem_mencoes_ao_estudo(ler_ou_vazio(raiz / "README.md")),
+        sem_descricao_do_pipeline(ler_ou_vazio(raiz / "README.md")),
         "\n## Regras de projeto e convenções\n",
-        sem_mencoes_ao_estudo(ler_ou_vazio(raiz / "docs" / "public" / "regras_projeto.md")),
+        sem_descricao_do_pipeline(ler_ou_vazio(raiz / "docs" / "public" / "regras_projeto.md")),
         "\n## Estrutura de pacotes (Clean Architecture)\n",
         montar_arvore_pacotes(raiz / "src" / "main" / "java"),
     ]

@@ -114,6 +114,11 @@ arquitetura, mesmo que compile.
   — não copiadas.
 - Logging de erro/depuração sempre via SLF4J (`@Slf4j`); nunca
   `System.out`/`System.err`/`printStackTrace`.
+- Formatação no padrão palantir-java-format, verificada pelo Spotless, e
+  regras básicas do PMD (`config/pmd/ruleset.xml`): sem imports, variáveis,
+  campos ou métodos privados sem uso, sem blocos vazios e sempre com chaves
+  em `if`/`for`/`while`. O CI roda `./mvnw verify`, que inclui as duas
+  verificações e os testes.
 
 ## Tecnologias
 

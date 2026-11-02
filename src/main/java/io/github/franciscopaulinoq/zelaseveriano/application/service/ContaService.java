@@ -10,11 +10,10 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilReposit
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,8 @@ public class ContaService {
 
     @Transactional(readOnly = true)
     public String autenticar(String cpf, String senha) {
-        Usuario usuario = usuarioRepository.findByCpf(cpf)
+        Usuario usuario = usuarioRepository
+                .findByCpf(cpf)
                 .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
 
         if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {

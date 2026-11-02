@@ -23,5 +23,5 @@ jobs:
 
       # Os testes de integração sobem um PostgreSQL via Testcontainers; o
       # runner ubuntu-latest já tem Docker disponível.
-      - name: Testes
-        run: ./mvnw -B test
+      - name: Testes, formatação e PMD
+        run: ./mvnw -B verify

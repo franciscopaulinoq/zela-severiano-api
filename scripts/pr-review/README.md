@@ -40,7 +40,7 @@ envia `temperature`), raciocínio no mesmo nível nominal nos três
 ## Estrutura
 
 - `github_client.py` — chamadas à API REST do GitHub (PR, diff, arquivos, conteúdo, issue).
-- `build_project_context.py` / `context_builder.py` — montam o contexto estendido (não só o diff), sem as partes da documentação que falam do estudo.
+- `build_project_context.py` / `context_builder.py` — montam o contexto estendido (não só o diff), sem as partes da documentação que descrevem o próprio pipeline.
 - `prompt_builder.py` + `prompts/` — instruções por nível + formato de saída + dados (ver `prompts/README.md`); degradação da issue por regra fixa.
 - `clients/` — um adaptador fino por modelo, todos implementando `ModelClient.gerar(prompt, timeout)`.
 - `parser_resposta.py` — extrai a lista de comentários do JSON devolvido (resposta fora do formato = `json_valido = N`).

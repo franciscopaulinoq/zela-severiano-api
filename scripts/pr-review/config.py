@@ -14,14 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# build_project_context.py escreve em <raiz-do-repo>/context/project_context.md
-# usando um caminho absoluto (Path(__file__).resolve().parents[2]), independente
-# do diretorio de trabalho. O default aqui precisa apontar pro mesmo lugar de
-# forma absoluta - um default relativo ("context/project_context.md") so
-# funciona por acaso quando o cwd é a raiz do repo, e quebra silenciosamente
-# quando o script roda com working-directory: scripts/pr-review (como no
-# workflow do GitHub Actions), retornando a mensagem de fallback "nao
-# encontrado" em vez do contexto de fato.
+# Caminho absoluto: o workflow roda com working-directory scripts/pr-review.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -55,9 +48,7 @@ def load_settings() -> Settings:
         github_token=_require("GITHUB_TOKEN"),
         github_repo=_require("GITHUB_REPOSITORY", default="franciscopaulinoq/zela-severiano-api"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
-        # IDs fixos (nunca alias -latest/-preview), escolhidos antes da coleta.
-        # Os defaults ficam no código, não em secrets, para a configuração
-        # usada ser auditável no próprio repositório.
+        # IDs fixos (nunca alias -latest/-preview), versionados no código.
         openai_model=os.getenv("OPENAI_MODEL", "gpt-6.1-sol"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5"),

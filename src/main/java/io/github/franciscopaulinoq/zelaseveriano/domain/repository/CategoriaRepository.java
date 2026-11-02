@@ -1,7 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.repository;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
-
 import java.util.List;
 import java.util.Optional;
 

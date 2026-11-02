@@ -1,11 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 public class Usuario {
@@ -35,7 +34,6 @@ public class Usuario {
     }
 
     private boolean validateCpfDigits(String cpf) {
-        // Primeiro dígito
         int sum = 0;
         for (int i = 0; i < 9; i++) {
             int num = Character.getNumericValue(cpf.charAt(i));
@@ -49,7 +47,6 @@ public class Usuario {
             return false;
         }
 
-        // Segundo dígito
         sum = 0;
         for (int i = 0; i < 10; i++) {
             int num = Character.getNumericValue(cpf.charAt(i));
