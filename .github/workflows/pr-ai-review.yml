@@ -9,7 +9,7 @@ on:
         description: "Números dos PRs, separados por vírgula (ex.: 30,31,32)"
         required: true
       experimento:
-        description: "E1 = P1,P2,P3 com issue completa · E2 = P2 com issue I1,I2 · PILOTO = igual ao E1, fora da amostra"
+        description: "E1 = P1,P2,P3 com issue completa · E2 = P2 com issue I1,I2 · PILOTO = igual ao E1, para validar a configuração"
         required: true
         type: choice
         options: [PILOTO, E1, E2]
