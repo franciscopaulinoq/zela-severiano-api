@@ -2,8 +2,8 @@
 
 > Este arquivo alimenta diretamente o contexto enviado aos modelos de IA no
 > pipeline de revisão (`scripts/pr-review/build_project_context.py`) e serve
-> como checklist de referência para revisão humana. Qualquer PR (das 20
-> issues ou futuro) deve ser avaliado contra estas regras.
+> como checklist de referência para revisão humana. Qualquer PR deve ser
+> avaliado contra estas regras.
 
 ## Arquitetura (Camadas Pragmáticas)
 

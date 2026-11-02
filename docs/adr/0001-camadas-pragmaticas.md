@@ -29,11 +29,9 @@ observado não era a existência de DTOs, e sim dois outros pontos:
    endpoints faziam — uma inconsistência de camada, não uma consequência
    de ter DTOs.
 
-Esse custo estava prestes a ficar mais visível: as próximas 20 issues do
-TCC (abertas no rastreador de Issues do GitHub) são a base do estudo de
-revisão de código por IA — cada uma vira um PR pequeno (`< 400` linhas), e
-cada nova
-operação de negócio nascendo como uma classe `UseCase` própria (em vez de
+Esse custo estava prestes a ficar mais visível: as próximas issues do
+backlog (abertas no rastreador de Issues do GitHub) viram, cada uma, um PR
+pequeno (`< 400` linhas), e cada nova operação de negócio nascendo como uma classe `UseCase` própria (em vez de
 um método num `Service` já existente) tornaria PRs simples mais espalhados
 entre arquivos do que precisam ser.
 
@@ -107,27 +105,17 @@ operação, e o `Service` já existe para receber o método novo.
 alterada; os DTOs de `application` continuam com os mesmos campos de
 antes.
 
-**O que não foi "corrigido" de propósito**: esta refatoração é
-estritamente estrutural. Comportamentos e defeitos hoje reservados para
-issues específicas do backlog do TCC foram preservados byte a byte nos
-arquivos tocados, para que o diff dessas issues, quando codificadas,
-continue existindo e sendo avaliável pelo pipeline de revisão por IA. Ao
-contrário desta decisão arquitetural — que é pública por natureza — o
-mapeamento exato de onde esses pontos ficam equivaleria a um gabarito de
-defeitos ainda não corrigidos, então fica fora do repositório, em nota
-local não versionada. Pelo mesmo motivo, a documentação de processo do
-TCC (plano, backlog, gabarito de falhas, decisões de design do pipeline)
-é mantida localmente pelo autor, não neste repositório público — só
-`docs/public/regras_projeto.md` precisa estar aqui, por ser lido em tempo
-real pelo workflow de revisão automática.
+**O que ficou fora desta refatoração**: ela é estritamente estrutural.
+Comportamentos que já têm issue própria no backlog não foram alterados
+aqui; cada um será tratado no PR da sua issue.
 
-## Impacto na documentação e no pipeline do TCC
+## Impacto na documentação e no pipeline de revisão
 
 - `docs/public/regras_projeto.md` foi atualizado para descrever o novo
   agrupamento por `Service` e a regra de "todo endpoint devolve um
-  `Response` próprio" — esse arquivo alimenta o prompt enviado aos modelos
-  de IA (`scripts/pr-review/build_project_context.py`) a cada PR aberto,
-  então precisa continuar público e commitado.
+  `Response` próprio". Esse arquivo também compõe o contexto do pipeline
+  de revisão automática (`scripts/pr-review/build_project_context.py`),
+  então precisa continuar commitado.
 - `context/project_context.md` foi regenerado rodando
   `python build_project_context.py` (arquivo gerado, não editado à mão,
   não commitado — está em `.gitignore`).

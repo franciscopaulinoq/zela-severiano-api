@@ -1,8 +1,7 @@
 """Cliente fino sobre a API REST do GitHub.
 
 Usamos `requests` puro (em vez de PyGithub) de propósito: o pipeline só
-precisa de meia dúzia de chamadas (PR, diff, arquivos, conteúdo, issue) e uma dependência a menos é mais fácil de auditar/justificar
-numa monografia.
+precisa de meia dúzia de chamadas (PR, diff, arquivos, conteúdo, issue) e uma dependência a menos é mais fácil de auditar.
 """
 from __future__ import annotations
 

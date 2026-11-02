@@ -44,13 +44,14 @@ def ler_ou_vazio(caminho: Path) -> str:
 
 
 _SECAO_H2 = re.compile(r"^## .*$", re.MULTILINE)
+MARCADOR_OMITIR = "<!-- omitir-do-contexto-de-revisao -->"
 
 
 def sem_mencoes_ao_estudo(markdown: str) -> str:
-    """Remove do texto o que diria ao modelo que ele está sendo avaliado:
-    seções `## ` cujo título cita o TCC e o bloco de citação (`> ...`) logo
-    no início do arquivo, que explica o uso do arquivo pelo pipeline. O
-    contexto do projeto deve descrever o projeto, não o experimento."""
+    """Remove do texto o que descreve o próprio pipeline de revisão, e não o
+    projeto: seções `## ` precedidas do marcador `MARCADOR_OMITIR` e o bloco
+    de citação (`> ...`) logo no início do arquivo, que explica o uso do
+    arquivo pelo pipeline."""
     linhas = markdown.splitlines()
     # bloco de citação logo depois do título principal
     i = 1 if linhas and linhas[0].startswith("# ") else 0
@@ -68,10 +69,9 @@ def sem_mencoes_ao_estudo(markdown: str) -> str:
     partes.append(texto[: posicoes[0]])
     for inicio, fim in zip(posicoes, posicoes[1:]):
         secao = texto[inicio:fim]
-        titulo = secao.splitlines()[0]
-        if "tcc" not in titulo.lower():
+        if not texto[:inicio].rstrip().endswith(MARCADOR_OMITIR):
             partes.append(secao)
-    return "".join(partes).strip() + "\n"
+    return "".join(partes).replace(MARCADOR_OMITIR, "").strip() + "\n"
 
 
 def main() -> None:

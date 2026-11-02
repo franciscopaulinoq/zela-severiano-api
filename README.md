@@ -30,12 +30,8 @@ de uso por agregado em vez de uma classe por operação de negócio.
 
 Detalhes e convenções completas em [`docs/public/regras_projeto.md`](docs/public/regras_projeto.md).
 
-## 🎓 TCC — Revisão de código por IA
-Este repositório também é o objeto de estudo de um TCC comparando modelos da
-OpenAI, da Anthropic e do Google como revisores automáticos de código. Um
-workflow de disparo manual ([`scripts/pr-review/`](scripts/pr-review/README.md))
-envia o diff, a issue vinculada e o contexto do projeto para os três modelos
-e registra as respostas para análise comparativa, sem publicar nada nos PRs.
-O restante da documentação do TCC (plano, backlog de issues, decisões de
-design, dados de classificação) é mantido pelo autor fora deste repositório
-público.
+<!-- omitir-do-contexto-de-revisao -->
+## 🤖 Revisão automática de PR
+Um workflow de disparo manual ([`scripts/pr-review/`](scripts/pr-review/README.md))
+pede a revisão de PRs a modelos de IA e registra as respostas em CSV, sem
+publicar nada nos PRs.

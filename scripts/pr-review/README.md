@@ -1,16 +1,12 @@
 # Pipeline de revisão automática de PR por IA
 
-Script de suporte ao TCC "Análise Comparativa de Modelos de IA Generativa na
-Revisão de Código". Para cada PR, captura o diff, a issue vinculada e o
+Para cada PR, captura o diff, a issue vinculada e o
 contexto do projeto e pede a revisão a três modelos (OpenAI, Anthropic e
 Google) em cada nível de instrução pedido (P1 básico, P2 intermediário, P3
 avançado) e de completude da issue (I1 só título, I2 contexto + requisito,
 I3 completa). Cada resposta é registrada em `results/pr_reviews.csv` e cada
 comentário extraído dela em `results/comentarios.csv`. Nada é publicado no
 PR.
-
-As decisões de design ficam registradas separadamente pelo autor como parte
-da documentação do TCC.
 
 ## Uso local
 
