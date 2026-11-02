@@ -18,6 +18,9 @@ API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
 3. Suba o banco de dados: `docker-compose up -d`
 4. Execute a aplicação: `./mvnw spring-boot:run`
 
+Testes e verificações de qualidade (formatação e PMD): `./mvnw verify`.
+Para formatar o código automaticamente: `./mvnw spotless:apply`.
+
 ## 🏗 Arquitetura
 O projeto usa uma variação pragmática da Clean Architecture (ver
 [ADR 0001](docs/adr/0001-camadas-pragmaticas.md)): 4 camadas, com DTOs
