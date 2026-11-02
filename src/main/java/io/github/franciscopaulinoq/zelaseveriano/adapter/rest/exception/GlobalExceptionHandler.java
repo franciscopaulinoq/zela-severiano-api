@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(OffsetDateTime.now())
-                .status(HttpStatus.CONFLICT.value()) // 409 Conflict
+                .status(HttpStatus.CONFLICT.value())
                 .error("Conflito de regra de negócio")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(OffsetDateTime.now())
-                .status(HttpStatus.CONFLICT.value()) // 409 Conflict
+                .status(HttpStatus.CONFLICT.value())
                 .error("Transição de status inválida")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(OffsetDateTime.now())
-                .status(HttpStatus.UNPROCESSABLE_CONTENT.value()) // 422 Unprocessable Entity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                 .error("Entidade não processável")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(OffsetDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value()) // 500
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error("Erro interno do servidor")
                 .message("Ocorreu um erro inesperado no sistema. Por favor, tente novamente mais tarde.")
                 .path(request.getRequestURI())

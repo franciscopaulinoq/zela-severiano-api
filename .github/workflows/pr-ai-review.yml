@@ -1,11 +1,7 @@
 name: Revisão automática de PR por IA (coleta em lote)
 
-# Disparo só manual (Actions → este workflow → "Run workflow"), de propósito:
-# a coleta roda em lote, numa janela curta e com a configuração já
-# congelada, em vez de a cada PR aberto. Assim todos os PRs são revisados
-# pela mesma versão de cada modelo, e abrir um PR nunca dispara uma revisão
-# com configuração antiga. Nenhum comentário é publicado nos PRs: os
-# resultados ficam só nos artifacts.
+# Disparo manual e em lote: todos os PRs são revisados com a mesma
+# configuração, e os resultados ficam só nos artifacts (nada é publicado nos PRs).
 on:
   workflow_dispatch:
     inputs:
@@ -44,15 +40,13 @@ jobs:
       matrix:
         pr: ${{ fromJSON(needs.preparar.outputs.prs) }}
     steps:
-      # Checkout do commit do próprio PR (e não do main atual): o contexto do
-      # projeto enviado aos modelos é o que existia quando o PR foi aberto.
+      # Commit do próprio PR: o contexto do projeto é o do momento do PR.
       - name: Checkout do PR
         uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ matrix.pr }}/head
 
-      # Os scripts do pipeline vêm sempre do main (a versão congelada), não
-      # da branch do PR, que pode ser anterior a eles.
+      # Scripts sempre do main, não da branch do PR.
       - name: Checkout do pipeline (main)
         uses: actions/checkout@v4
         with:

@@ -17,10 +17,7 @@ class GeminiClient(ModelClient):
         self.nome = model
 
     async def gerar(self, prompt: str, timeout_seconds: float) -> RespostaBruta:
-        # O SDK google-genai ainda não tem um cliente assíncrono estável para
-        # todos os métodos; rodamos a chamada síncrona numa thread para não
-        # bloquear o loop de eventos e conseguirmos aplicar o mesmo timeout
-        # usado nos outros dois modelos.
+        # Chamada síncrona numa thread para aplicar o mesmo timeout dos outros clientes.
         return await asyncio.wait_for(
             asyncio.to_thread(self._gerar_sincrono, prompt), timeout=timeout_seconds
         )
