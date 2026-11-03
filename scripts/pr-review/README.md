@@ -3,8 +3,7 @@
 Para cada PR, captura o diff, a issue vinculada e o
 contexto do projeto e pede a revisão a três modelos (OpenAI, Anthropic e
 Google) em cada nível de instrução pedido (P1 básico, P2 intermediário, P3
-avançado) e de completude da issue (I1 só título, I2 contexto + requisito,
-I3 completa). Cada resposta é registrada em `results/pr_reviews.csv` e cada
+avançado). Cada resposta é registrada em `results/pr_reviews.csv` e cada
 comentário extraído dela em `results/comentarios.csv`. Nada é publicado no
 PR.
 
@@ -17,15 +16,15 @@ pip install -r requirements.txt
 cp .env.example .env  # preencher GITHUB_TOKEN e as API keys
 
 python build_project_context.py   # gera context/project_context.md
-python review_pr.py --pr 30 --experimento E1 --niveis-prompt P1,P2,P3 --niveis-issue I3
-python review_pr.py --pr 30 --experimento E2 --niveis-prompt P2 --niveis-issue I1,I2
+python review_pr.py --pr 30 --experimento E1 --niveis-prompt P1,P2,P3
 ```
 
 ## Automação
 
 `.github/workflows/pr-ai-review.yml` roda só por disparo manual
 (Actions → "Revisão automática de PR por IA" → *Run workflow*), informando a
-lista de PRs e o experimento (`PILOTO`, `E1` ou `E2`). Cada PR vira um job:
+lista de PRs, o experimento (`PILOTO` ou `E1`) e os modelos (por padrão,
+os três). Cada PR vira um job:
 o checkout é feito no commit do próprio PR (para o contexto do projeto ser o
 daquele momento), os scripts vêm do `main` e os CSVs sobem como *artifact*.
 
