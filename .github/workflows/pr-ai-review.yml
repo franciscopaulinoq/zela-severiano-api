@@ -9,10 +9,14 @@ on:
         description: "Números dos PRs, separados por vírgula (ex.: 30,31,32)"
         required: true
       experimento:
-        description: "E1 = P1,P2,P3 com issue completa · E2 = P2 com issue I1,I2 · PILOTO = igual ao E1, para validar a configuração"
+        description: "E1 = coleta (P1, P2, P3) · PILOTO = mesma configuração, para validar o pipeline"
         required: true
         type: choice
-        options: [PILOTO, E1, E2]
+        options: [PILOTO, E1]
+      modelos:
+        description: "Provedores a executar, separados por vírgula"
+        required: true
+        default: "openai,anthropic,gemini"
 
 permissions:
   contents: read
@@ -72,18 +76,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ contains(inputs.modelos, 'openai') && secrets.OPENAI_API_KEY || '' }}
+          ANTHROPIC_API_KEY: ${{ contains(inputs.modelos, 'anthropic') && secrets.ANTHROPIC_API_KEY || '' }}
+          GEMINI_API_KEY: ${{ contains(inputs.modelos, 'gemini') && secrets.GEMINI_API_KEY || '' }}
           PR_REVIEW_PROJECT_CONTEXT: ${{ github.workspace }}/context/project_context.md
           EXPERIMENTO: ${{ inputs.experimento }}
         run: |
-          if [ "$EXPERIMENTO" = "E2" ]; then
-            niveis="--niveis-prompt P2 --niveis-issue I1,I2"
-          else
-            niveis="--niveis-prompt P1,P2,P3 --niveis-issue I3"
-          fi
-          python review_pr.py --pr ${{ matrix.pr }} --experimento "$EXPERIMENTO" $niveis \
+          python review_pr.py --pr ${{ matrix.pr }} --experimento "$EXPERIMENTO" --niveis-prompt P1,P2,P3 \
             --run-id "${{ github.run_id }}-${{ github.run_attempt }}"
 
       - name: Publicar resultados como artifact

@@ -1,9 +1,8 @@
-"""CLI que executa a revisão automática de um PR pelos três modelos, em
-todos os níveis de instrução e de completude da issue pedidos.
+"""CLI que executa a revisão automática de um PR pelos modelos configurados,
+em todos os níveis de instrução pedidos.
 
 Uso:
-    python review_pr.py --pr 30 --experimento E1 --niveis-prompt P1,P2,P3 --niveis-issue I3
-    python review_pr.py --pr 30 --experimento E2 --niveis-prompt P2 --niveis-issue I1,I2
+    python review_pr.py --pr 30 --experimento E1 --niveis-prompt P1,P2,P3
 
 Todas as revisões do PR (modelos × níveis) rodam de forma assíncrona e
 simultânea (asyncio.gather). Erros técnicos (timeout, limite de
@@ -32,7 +31,7 @@ from context_builder import montar_contexto
 from github_client import GitHubClient
 from models import ModelResponse, PRContext
 from parser_resposta import extrair_comentarios
-from prompt_builder import NIVEIS_ISSUE, NIVEIS_PROMPT, montar_prompt, sha256
+from prompt_builder import NIVEIS_PROMPT, montar_prompt, sha256
 from storage import salvar_resultado
 
 
@@ -60,14 +59,12 @@ async def revisar_com_um_modelo(
     run_id: str,
     experimento: str,
     nivel_prompt: str,
-    nivel_issue: str,
 ) -> ModelResponse:
     resposta = ModelResponse(
         run_id=run_id,
         experimento=experimento,
         modelo=cliente.nome,
         nivel_prompt=nivel_prompt,
-        nivel_issue=nivel_issue,
         prompt_sha256=sha256(prompt),
         pr_numero=contexto.numero_pr,
         issue_numero=contexto.numero_issue,
@@ -123,7 +120,7 @@ def _classificar_erro(exc: BaseException) -> str:
 
 
 async def revisar_pr(
-    numero_pr: int, experimento: str, niveis_prompt: list[str], niveis_issue: list[str], run_id: str
+    numero_pr: int, experimento: str, niveis_prompt: list[str], run_id: str
 ) -> list[ModelResponse]:
     settings = load_settings()
     github = GitHubClient(settings)
@@ -132,14 +129,11 @@ async def revisar_pr(
 
     tarefas = []
     for nivel_prompt in niveis_prompt:
-        for nivel_issue in niveis_issue:
-            prompt = montar_prompt(contexto, nivel_prompt, nivel_issue)
-            for cliente in clientes:
-                tarefas.append(
-                    revisar_com_um_modelo(
-                        cliente, prompt, contexto, settings, run_id, experimento, nivel_prompt, nivel_issue
-                    )
-                )
+        prompt = montar_prompt(contexto, nivel_prompt)
+        for cliente in clientes:
+            tarefas.append(
+                revisar_com_um_modelo(cliente, prompt, contexto, settings, run_id, experimento, nivel_prompt)
+            )
     resultados = await asyncio.gather(*tarefas)
 
     for resultado in resultados:
@@ -158,12 +152,9 @@ def _lista_de_niveis(valor: str, permitidos: tuple[str, ...]) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Revisão automática de PR por 3 modelos de IA.")
     parser.add_argument("--pr", type=int, required=True, help="Número do Pull Request")
-    parser.add_argument("--experimento", choices=["E1", "E2", "PILOTO"], required=True)
+    parser.add_argument("--experimento", choices=["E1", "PILOTO"], required=True)
     parser.add_argument(
         "--niveis-prompt", type=lambda v: _lista_de_niveis(v, NIVEIS_PROMPT), default=["P2"]
-    )
-    parser.add_argument(
-        "--niveis-issue", type=lambda v: _lista_de_niveis(v, NIVEIS_ISSUE), default=["I3"]
     )
     parser.add_argument(
         "--run-id",
@@ -173,13 +164,13 @@ def main() -> None:
     args = parser.parse_args()
 
     resultados = asyncio.run(
-        revisar_pr(args.pr, args.experimento, args.niveis_prompt, args.niveis_issue, args.run_id)
+        revisar_pr(args.pr, args.experimento, args.niveis_prompt, args.run_id)
     )
 
     for r in resultados:
         formato = {True: "json ok", False: "json inválido", None: "-"}[r.json_valido]
         print(
-            f"[{r.status}] {r.modelo} {r.nivel_prompt}/{r.nivel_issue} — {r.latencia_ms}ms, "
+            f"[{r.status}] {r.modelo} {r.nivel_prompt} — {r.latencia_ms}ms, "
             f"{formato}, {len(r.comentarios)} comentário(s)"
         )
 

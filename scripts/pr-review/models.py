@@ -44,7 +44,6 @@ class ModelResponse:
     experimento: str
     modelo: str  # ID solicitado
     nivel_prompt: str  # P1 | P2 | P3
-    nivel_issue: str  # I1 | I2 | I3
     prompt_sha256: str
     pr_numero: int
     issue_numero: int | None
