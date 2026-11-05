@@ -22,4 +22,8 @@ public class Usuario {
         this.role = role != null ? role : Role.CIDADAO;
         this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
     }
+
+    public void alterarSenha(String novoSenhaHash) {
+        this.senhaHash = novoSenhaHash;
+    }
 }

@@ -39,6 +39,20 @@ public class ContaService {
     }
 
     @Transactional
+    public void trocarSenha(UUID usuarioId, String senhaAtual, String novaSenha) {
+        Usuario usuario = usuarioRepository
+                .findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (senhaAtual != null && !passwordHasher.matches(senhaAtual, usuario.getSenhaHash())) {
+            throw new IllegalArgumentException("Senha atual incorreta.");
+        }
+
+        usuario.alterarSenha(passwordHasher.hash(novaSenha));
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
     public RegistrarCidadaoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
         if (usuarioRepository.existsByCpf(dto.getCpf())) {
             throw new CidadaoJaRegistradoException("CPF já registrado no sistema");
