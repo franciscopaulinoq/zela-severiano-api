@@ -28,5 +28,9 @@ public class CidadaosDeTeste {
         return new Cidadao(registrado.getUsuarioId(), registrado.getPerfilId(), cpf);
     }
 
+    public String token(Cidadao cidadao) {
+        return contaService.autenticar(cidadao.cpf(), SENHA);
+    }
+
     public record Cidadao(UUID usuarioId, UUID perfilId, String cpf) {}
 }

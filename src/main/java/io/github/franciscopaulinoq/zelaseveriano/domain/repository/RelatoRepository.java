@@ -4,6 +4,8 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RelatoRepository {
     Relato save(Relato relato);
@@ -12,7 +14,7 @@ public interface RelatoRepository {
 
     Optional<Relato> findById(Long relatoId);
 
-    List<Relato> findAllByPerfilId(UUID perfilId);
+    Page<Relato> findAllByPerfilId(UUID perfilId, Pageable pageable);
 
     List<Relato> findAll();
 }

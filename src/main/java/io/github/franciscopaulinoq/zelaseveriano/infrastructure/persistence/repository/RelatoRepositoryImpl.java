@@ -9,12 +9,18 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class RelatoRepositoryImpl implements RelatoRepository {
     private final JpaRelatoRepository jpaRepository;
+    private static final Sort MAIS_RECENTES_PRIMEIRO = Sort.by(Sort.Direction.DESC, "criadoEm");
+
     private final RelatoMapper mapper;
 
     @Override
@@ -35,10 +41,10 @@ public class RelatoRepositoryImpl implements RelatoRepository {
     }
 
     @Override
-    public List<Relato> findAllByPerfilId(UUID perfilId) {
-        return jpaRepository.findAllByPerfilIdOrderByCriadoEmDesc(perfilId).stream()
-                .map(mapper::map)
-                .collect(Collectors.toList());
+    public Page<Relato> findAllByPerfilId(UUID perfilId, Pageable pageable) {
+        PageRequest pageRequest =
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
+        return jpaRepository.findAllByPerfilId(perfilId, pageRequest).map(mapper::map);
     }
 
     @Override
