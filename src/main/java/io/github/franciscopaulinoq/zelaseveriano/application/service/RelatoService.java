@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
@@ -8,11 +9,13 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroD
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.LimitesDoMunicipio;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
@@ -38,6 +41,7 @@ public class RelatoService {
     private final PerfilRepository perfilRepository;
     private final CategoriaRepository categoriaRepository;
     private final FileStorage fileStorage;
+    private final HistoricoStatusRelatoRepository historicoRepository;
 
     @Transactional
     public Relato registrar(
@@ -129,8 +133,32 @@ public class RelatoService {
                 .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
 
         relato.atualizarStatus(novoStatus, observacao);
+        StatusRelato statusAnterior = relato.getStatus();
 
-        return relatoRepository.save(relato);
+        Relato salvo = relatoRepository.save(relato);
+        registrarHistorico(salvo, statusAnterior, observacao);
+        return salvo;
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistoricoStatusDTO> obterHistorico(UUID usuarioId, Long relatoId) {
+        Perfil perfil = perfilRepository
+                .findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+
+        relatoRepository
+                .findByPerfilIdAndId(perfil.getId(), relatoId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
+
+        return listarHistorico(relatoId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistoricoStatusDTO> obterHistoricoGestao(Long relatoId) {
+        relatoRepository.findById(relatoId).orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+
+        return listarHistorico(relatoId);
     }
 
     @Transactional
@@ -144,8 +172,31 @@ public class RelatoService {
                 .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
 
         relato.cancelar();
+        StatusRelato statusAnterior = relato.getStatus();
 
-        relatoRepository.save(relato);
+        Relato salvo = relatoRepository.save(relato);
+        registrarHistorico(salvo, statusAnterior, null);
+    }
+
+    private void registrarHistorico(Relato relato, StatusRelato statusAnterior, String observacao) {
+        historicoRepository.save(HistoricoStatusRelato.builder()
+                .relatoId(relato.getId())
+                .statusAnterior(statusAnterior)
+                .statusNovo(relato.getStatus())
+                .observacao(observacao)
+                .alteradoEm(relato.getAtualizadoEm())
+                .build());
+    }
+
+    private List<HistoricoStatusDTO> listarHistorico(Long relatoId) {
+        return historicoRepository.findAllByRelatoId(relatoId).stream()
+                .map(entrada -> HistoricoStatusDTO.builder()
+                        .statusAnterior(entrada.getStatusAnterior())
+                        .statusNovo(entrada.getStatusNovo())
+                        .observacao(entrada.getObservacao())
+                        .alteradoEm(entrada.getAlteradoEm())
+                        .build())
+                .toList();
     }
 
     private void validarTipoDaFoto(String contentType) {

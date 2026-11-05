@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -15,12 +16,14 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDT
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
@@ -59,6 +62,9 @@ class RelatoServiceTest {
 
     @Mock
     private FileStorage fileStorage;
+
+    @Mock
+    private HistoricoStatusRelatoRepository historicoRepository;
 
     @InjectMocks
     private RelatoService relatoService;
@@ -252,6 +258,39 @@ class RelatoServiceTest {
             assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
         });
         verify(relatoRepository, never()).findAll(any());
+    }
+
+    @Test
+    void cadaMudancaDeStatusBemSucedidaGeraUmaEntradaDeHistorico() {
+        Relato relato = Relato.builder()
+                .id(42L)
+                .perfil(PERFIL)
+                .categoria(CATEGORIA)
+                .status(StatusRelato.PENDENTE)
+                .build();
+        when(relatoRepository.findById(42L)).thenReturn(Optional.of(relato));
+        when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+
+        relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null);
+        relatoService.atualizarStatus(42L, StatusRelato.CONCLUIDO, "Lâmpada trocada");
+
+        verify(historicoRepository, times(2)).save(any());
+    }
+
+    @Test
+    void mudancaDeStatusRecusadaNaoGeraHistorico() {
+        Relato concluido = Relato.builder()
+                .id(42L)
+                .perfil(PERFIL)
+                .categoria(CATEGORIA)
+                .status(StatusRelato.CONCLUIDO)
+                .build();
+        when(relatoRepository.findById(42L)).thenReturn(Optional.of(concluido));
+
+        assertThatThrownBy(() -> relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null))
+                .isInstanceOf(TransicaoStatusInvalidaException.class);
+
+        verifyNoInteractions(historicoRepository);
     }
 
     private void prepararPerfilECategoria() {
