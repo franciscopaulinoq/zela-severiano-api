@@ -1,12 +1,14 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RelatoRegistroRequest;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.EstatisticasRelatosResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoCriadoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDetalheResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoPublicoResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
@@ -41,4 +43,6 @@ public interface RelatoRestMapper {
     HistoricoStatusResponse mapHistorico(HistoricoStatusDTO dto);
 
     List<HistoricoStatusResponse> mapHistorico(List<HistoricoStatusDTO> dtos);
+
+    EstatisticasRelatosResponse mapEstatisticas(EstatisticasRelatosDTO dto);
 }
