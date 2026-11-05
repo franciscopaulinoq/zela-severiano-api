@@ -1,7 +1,9 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.LoginRequest;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RenovarSessaoRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.LoginResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.SessaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        String token = contaService.autenticar(request.getCpf(), request.getSenha());
-        return ResponseEntity.ok(new LoginResponse(token));
+        SessaoDTO sessao = contaService.autenticar(request.getCpf(), request.getSenha());
+        return ResponseEntity.ok(new LoginResponse(sessao.tokenAcesso(), sessao.tokenRenovacao()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> renovarSessao(@Valid @RequestBody RenovarSessaoRequest request) {
+        String token = contaService.renovarSessao(request.getRefreshToken());
+        return ResponseEntity.ok(new LoginResponse(token, null));
     }
 }

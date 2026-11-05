@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
@@ -85,6 +86,20 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(TokenInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleTokenInvalido(TokenInvalidoException ex, HttpServletRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(OffsetDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Não autorizado")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(TransicaoStatusInvalidaException.class)
