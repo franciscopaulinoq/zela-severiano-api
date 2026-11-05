@@ -15,4 +15,13 @@ public class Perfil {
     private String nomeCompleto;
     private String email;
     private OffsetDateTime criadoEm;
+
+    public void atualizarDados(String novoNomeCompleto, String novoEmail) {
+        if (novoNomeCompleto != null) {
+            this.nomeCompleto = novoNomeCompleto;
+        }
+        if (novoEmail != null) {
+            this.email = novoEmail;
+        }
+    }
 }
