@@ -18,6 +18,18 @@ API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
 3. Suba o banco de dados: `docker-compose up -d`
 4. Execute a aplicação: `./mvnw spring-boot:run`
 
+### Acesso como gestor (desenvolvimento local)
+O banco de desenvolvimento já vem com um usuário gestor, criado pelas
+migrações, para testar as rotas de `/api/v1/gestao/**` sem alterar o banco
+à mão:
+
+- CPF: `11144477735`
+- Senha: `gestor123`
+
+Faça login em `POST /api/v1/auth/login` com esses dados e use o token
+devolvido no cabeçalho `Authorization: Bearer <token>`. Essas credenciais
+são só para uso local.
+
 Testes e verificações de qualidade (formatação e PMD): `./mvnw verify`.
 Para formatar o código automaticamente: `./mvnw spotless:apply`.
 
