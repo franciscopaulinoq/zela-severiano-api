@@ -7,6 +7,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroD
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.LimitesDoMunicipio;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
@@ -40,6 +41,10 @@ public class RelatoService {
     @Transactional
     public Relato registrar(
             UUID usuarioId, RelatoRegistroDTO dto, byte[] fileBytes, String originalFilename, String contentType) {
+        if (!LimitesDoMunicipio.contem(dto.getLatitude(), dto.getLongitude())) {
+            throw new IllegalArgumentException("A localização informada fica fora do município de Doutor Severiano.");
+        }
+
         boolean temFoto = fileBytes != null && fileBytes.length > 0;
         if (temFoto) {
             validarTipoDaFoto(contentType);
