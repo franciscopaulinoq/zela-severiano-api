@@ -40,8 +40,6 @@ public class RelatoController {
             @RequestPart(value = "foto", required = false) MultipartFile foto)
             throws IOException {
 
-        System.out.println("A FOTO CHEGOU NO CONTROLLER? -> " + (foto != null));
-
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
         RelatoRegistroDTO dto = mapper.map(request);
 
