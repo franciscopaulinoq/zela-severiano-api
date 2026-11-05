@@ -13,6 +13,8 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilReposit
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RelatoService {
 
+    private static final Set<String> TIPOS_DE_FOTO_PERMITIDOS = Set.of("image/jpeg", "image/png", "image/webp");
+
     private final RelatoRepository relatoRepository;
     private final PerfilRepository perfilRepository;
     private final CategoriaRepository categoriaRepository;
@@ -30,6 +34,11 @@ public class RelatoService {
     @Transactional
     public Relato registrar(
             UUID usuarioId, RelatoRegistroDTO dto, byte[] fileBytes, String originalFilename, String contentType) {
+        boolean temFoto = fileBytes != null && fileBytes.length > 0;
+        if (temFoto) {
+            validarTipoDaFoto(contentType);
+        }
+
         Perfil perfil = perfilRepository
                 .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
@@ -39,7 +48,7 @@ public class RelatoService {
                 .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada."));
 
         String urlFoto = null;
-        if (fileBytes != null && fileBytes.length > 0) {
+        if (temFoto) {
             String fileName = UUID.randomUUID() + "_" + originalFilename;
             urlFoto = fileStorage.upload(fileBytes, fileName, contentType);
         }
@@ -96,6 +105,13 @@ public class RelatoService {
         relato.atualizarStatus(novoStatus, observacao);
 
         return relatoRepository.save(relato);
+    }
+
+    private void validarTipoDaFoto(String contentType) {
+        if (contentType == null || !TIPOS_DE_FOTO_PERMITIDOS.contains(contentType.toLowerCase(Locale.ROOT))) {
+            throw new IllegalArgumentException(
+                    "Tipo de arquivo não permitido para a foto. Envie uma imagem JPEG, PNG ou WebP.");
+        }
     }
 
     private RelatoListagemDTO toListagemDTO(Relato relato) {
