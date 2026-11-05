@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.repository;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,7 @@ public interface RelatoRepository {
 
     Optional<Relato> findById(Long relatoId);
 
-    Page<Relato> findAllByPerfilId(UUID perfilId, Pageable pageable);
+    Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable);
 
-    List<Relato> findAll();
+    List<Relato> findAll(FiltroRelatos filtro);
 }

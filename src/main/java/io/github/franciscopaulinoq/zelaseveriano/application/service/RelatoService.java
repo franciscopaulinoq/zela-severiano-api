@@ -5,6 +5,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
@@ -69,12 +70,14 @@ public class RelatoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<RelatoListagemDTO> visualizarMeus(UUID usuarioId, Pageable pageable) {
+    public Page<RelatoListagemDTO> visualizarMeus(UUID usuarioId, FiltroRelatos filtro, Pageable pageable) {
         Perfil perfil = perfilRepository
                 .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
-        return relatoRepository.findAllByPerfilId(perfil.getId(), pageable).map(this::toListagemDTO);
+        return relatoRepository
+                .findAllByPerfilId(perfil.getId(), filtro, pageable)
+                .map(this::toListagemDTO);
     }
 
     @Transactional(readOnly = true)
@@ -92,8 +95,8 @@ public class RelatoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RelatoGestaoDTO> listarTodos() {
-        return relatoRepository.findAll().stream().map(this::toGestaoDTO).toList();
+    public List<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro) {
+        return relatoRepository.findAll(filtro).stream().map(this::toGestaoDTO).toList();
     }
 
     @Transactional
