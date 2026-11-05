@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.domain.repository;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,4 +19,6 @@ public interface RelatoRepository {
     Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable);
 
     List<Relato> findAll(FiltroRelatos filtro);
+
+    long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 }

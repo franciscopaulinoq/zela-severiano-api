@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
@@ -121,6 +122,33 @@ class RelatoServiceTest {
         assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "foto", null))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        verifyNoInteractions(fileStorage);
+    }
+
+    @Test
+    void permiteNovoRelatoQuandoOCidadaoTemQuatroPendentes() {
+        prepararPerfilECategoria();
+        when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
+                .thenReturn(4L);
+        when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+
+        Relato relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
+
+        assertThat(relato.getStatus()).isEqualTo(StatusRelato.PENDENTE);
+    }
+
+    @Test
+    void recusaNovoRelatoQuandoOLimiteDePendentesFoiUltrapassado() {
+        when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
+        when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
+                .thenReturn(6L);
+
+        assertThatThrownBy(() ->
+                        relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "poste.jpg", "image/jpeg"))
+                .isInstanceOf(LimiteRelatosPendentesException.class)
+                .hasMessageContaining("aguardando avaliação");
+
+        verify(relatoRepository, never()).save(any());
         verifyNoInteractions(fileStorage);
     }
 

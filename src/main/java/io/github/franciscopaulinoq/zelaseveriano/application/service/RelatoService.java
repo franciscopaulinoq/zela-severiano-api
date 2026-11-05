@@ -4,6 +4,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDT
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
@@ -27,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RelatoService {
 
+    public static final int LIMITE_RELATOS_PENDENTES = 5;
+
     private static final Set<String> TIPOS_DE_FOTO_PERMITIDOS = Set.of("image/jpeg", "image/png", "image/webp");
 
     private final RelatoRepository relatoRepository;
@@ -45,6 +48,13 @@ public class RelatoService {
         Perfil perfil = perfilRepository
                 .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+
+        long pendentes = relatoRepository.countByPerfilIdAndStatus(perfil.getId(), StatusRelato.PENDENTE);
+        if (pendentes > LIMITE_RELATOS_PENDENTES) {
+            throw new LimiteRelatosPendentesException(
+                    "Você já tem %d relatos aguardando avaliação. Aguarde a avaliação de algum deles para registrar um novo."
+                            .formatted(LIMITE_RELATOS_PENDENTES));
+        }
 
         Categoria categoria = categoriaRepository
                 .findById(dto.getCategoriaId())

@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.repository;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface JpaRelatoRepository extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
     Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
+
+    long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
     @Override
     @EntityGraph(attributePaths = "categoria")
