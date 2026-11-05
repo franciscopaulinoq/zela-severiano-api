@@ -8,18 +8,24 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService implements TokenService {
 
     private static final String CLAIM_ROLE = "role";
+    private static final long HORAS_VALIDADE_TOKEN = 24;
+
+    private final Clock clock;
 
     @Value("${api.security.token.secret}")
     private String secret;
@@ -57,6 +63,6 @@ public class JwtService implements TokenService {
     }
 
     private Instant genExpirationDate() {
-        return LocalDateTime.now().plusHours(24).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now(clock).plusHours(HORAS_VALIDADE_TOKEN).toInstant(ZoneOffset.UTC);
     }
 }
