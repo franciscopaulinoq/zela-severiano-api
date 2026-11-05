@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
@@ -114,6 +115,13 @@ public class RelatoService {
         return relatoRepository.findAll(filtro).stream().map(this::toGestaoDTO).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<RelatoPublicoDTO> listarPublicos(Integer categoriaId) {
+        return relatoRepository.findAll(new FiltroRelatos(null, categoriaId)).stream()
+                .map(this::toPublicoDTO)
+                .toList();
+    }
+
     @Transactional
     public Relato atualizarStatus(Long relatoId, StatusRelato novoStatus, String observacao) {
         Relato relato = relatoRepository
@@ -167,6 +175,17 @@ public class RelatoService {
                 .latitude(relato.getLatitude())
                 .longitude(relato.getLongitude())
                 .descricao(relato.getDescricao())
+                .build();
+    }
+
+    private RelatoPublicoDTO toPublicoDTO(Relato relato) {
+        return RelatoPublicoDTO.builder()
+                .categoriaNome(relato.getCategoria().getNome())
+                .categoriaIconeNome(relato.getCategoria().getIconeNome())
+                .status(relato.getStatus())
+                .criadoEm(relato.getCriadoEm())
+                .latitude(relato.getLatitude())
+                .longitude(relato.getLongitude())
                 .build();
     }
 
