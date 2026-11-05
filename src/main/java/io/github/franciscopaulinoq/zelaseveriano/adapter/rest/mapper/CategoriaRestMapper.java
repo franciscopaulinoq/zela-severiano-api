@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper;
 
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.CategoriaRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.CategoriaResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import java.util.List;
@@ -10,4 +11,6 @@ public interface CategoriaRestMapper {
     CategoriaResponse map(CategoriaDTO dto);
 
     List<CategoriaResponse> map(List<CategoriaDTO> dtos);
+
+    CategoriaDTO map(CategoriaRequest request);
 }

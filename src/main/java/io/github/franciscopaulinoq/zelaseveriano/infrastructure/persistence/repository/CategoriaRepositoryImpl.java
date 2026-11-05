@@ -30,4 +30,14 @@ public class CategoriaRepositoryImpl implements CategoriaRepository {
     public boolean existsById(Integer categoriaId) {
         return jpaRepository.existsById(categoriaId);
     }
+
+    @Override
+    public Categoria save(Categoria categoria) {
+        return mapper.map(jpaRepository.save(mapper.map(categoria)));
+    }
+
+    @Override
+    public void deleteById(Integer categoriaId) {
+        jpaRepository.deleteById(categoriaId);
+    }
 }

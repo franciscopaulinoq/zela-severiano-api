@@ -13,4 +13,9 @@ public class Categoria {
     private String nome;
     private String iconeNome;
     private OffsetDateTime criadoEm;
+
+    public void atualizar(String novoNome, String novoIconeNome) {
+        this.nome = novoNome;
+        this.iconeNome = novoIconeNome;
+    }
 }

@@ -10,4 +10,8 @@ public interface CategoriaRepository {
     List<Categoria> findAll();
 
     boolean existsById(Integer categoriaId);
+
+    Categoria save(Categoria categoria);
+
+    void deleteById(Integer categoriaId);
 }
