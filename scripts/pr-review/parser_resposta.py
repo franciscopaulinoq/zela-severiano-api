@@ -1,11 +1,9 @@
-"""Extrai a lista de comentários do texto devolvido pelo modelo.
+"""Extrai a lista de comentários da resposta do modelo.
 
-Tolerante só ao que não muda o conteúdo: cercas ```json e texto em volta do
-array. Qualquer outra coisa (JSON quebrado, objeto em vez de lista, item sem
-os campos esperados) é falha de formato: `json_valido = False`, sem nova
-tentativa, e a revisão conta como "nenhum comentário" (protocolo, doc 11
-seção 10.1.f).
+Aceita cercas ```json e texto em volta do array. Qualquer outro desvio do formato
+(JSON inválido, objeto em vez de lista, item sem `comentario`) é falha de formato.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,33 +19,32 @@ def extrair_comentarios(texto: str) -> tuple[bool, list[Comentario]]:
     cerca = _CERCA.search(candidato)
     if cerca:
         candidato = cerca.group(1).strip()
+
     inicio, fim = candidato.find("["), candidato.rfind("]")
     if inicio == -1 or fim < inicio:
         return False, []
     try:
-        dados = json.loads(candidato[inicio : fim + 1])
+        itens = json.loads(candidato[inicio : fim + 1])
     except json.JSONDecodeError:
         return False, []
-    if not isinstance(dados, list) or not all(isinstance(item, dict) for item in dados):
+    if not isinstance(itens, list) or not all(isinstance(item, dict) for item in itens):
+        return False, []
+    if any(not str(item.get("comentario", "")).strip() for item in itens):
         return False, []
 
-    comentarios = []
-    for item in dados:
-        if not str(item.get("comentario", "")).strip():
-            return False, []
-        comentarios.append(
-            Comentario(
-                arquivo=str(item.get("arquivo", "")),
-                linha=_inteiro_ou_none(item.get("linha")),
-                categoria=str(item.get("categoria", "")),
-                severidade=str(item.get("severidade", "")),
-                comentario=str(item["comentario"]),
-            )
+    return True, [
+        Comentario(
+            arquivo=str(item.get("arquivo", "")),
+            linha=_inteiro(item.get("linha")),
+            categoria=str(item.get("categoria", "")),
+            severidade=str(item.get("severidade", "")),
+            comentario=str(item["comentario"]),
         )
-    return True, comentarios
+        for item in itens
+    ]
 
 
-def _inteiro_ou_none(valor: object) -> int | None:
+def _inteiro(valor: object) -> int | None:
     try:
         return int(valor)  # type: ignore[arg-type]
     except (TypeError, ValueError):

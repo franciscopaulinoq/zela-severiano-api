@@ -1,23 +1,13 @@
-"""Persiste os resultados em formato tabular (CSV).
+"""Grava as revisões (uma linha por revisão) e os comentários (uma linha por comentário) em CSV."""
 
-Dois arquivos:
-- `pr_reviews.csv`: uma linha por revisão (PR × modelo × nível de prompt ×
-  nível de issue), com o texto bruto da resposta e os metadados de
-  auditoria (modelo devolvido pela API, tokens, hash do prompt);
-- `comentarios.csv`: uma linha por comentário extraído da resposta, ligada
-  à revisão por `revisao_id`. É a entrada da planilha cega de classificação.
-
-CSV (em vez de banco de dados) de propósito: o volume é pequeno, abre direto
-em qualquer planilha e não exige infraestrutura extra no GitHub Actions.
-"""
 from __future__ import annotations
 
 import csv
 from pathlib import Path
 
-from models import ModelResponse
+from models import Revisao
 
-_CAMPOS_REVISAO = [
+_COLUNAS_REVISAO = [
     "timestamp",
     "run_id",
     "revisao_id",
@@ -41,7 +31,7 @@ _CAMPOS_REVISAO = [
     "erro_detalhe",
 ]
 
-_CAMPOS_COMENTARIO = [
+_COLUNAS_COMENTARIO = [
     "run_id",
     "revisao_id",
     "experimento",
@@ -58,70 +48,69 @@ _CAMPOS_COMENTARIO = [
 ]
 
 
-def salvar_resultado(caminho_revisoes: str, caminho_comentarios: str, resposta: ModelResponse) -> None:
+def salvar_revisao(csv_revisoes: str, csv_comentarios: str, revisao: Revisao) -> None:
+    _anexar(csv_revisoes, _COLUNAS_REVISAO, [_linha_revisao(revisao)])
     _anexar(
-        caminho_revisoes,
-        _CAMPOS_REVISAO,
+        csv_comentarios,
+        _COLUNAS_COMENTARIO,
         [
             {
-                "timestamp": resposta.timestamp,
-                "run_id": resposta.run_id,
-                "revisao_id": resposta.revisao_id,
-                "experimento": resposta.experimento,
-                "pr_numero": resposta.pr_numero,
-                "issue_numero": resposta.issue_numero,
-                "modelo": resposta.modelo,
-                "modelo_retornado": resposta.modelo_retornado or "",
-                "nivel_prompt": resposta.nivel_prompt,
-                "effort": resposta.effort,
-                "prompt_sha256": resposta.prompt_sha256,
-                "status": resposta.status,
-                "motivo_parada": resposta.motivo_parada or "",
-                "latencia_ms": resposta.latencia_ms,
-                "tokens_entrada": _vazio_se_none(resposta.tokens_entrada),
-                "tokens_saida": _vazio_se_none(resposta.tokens_saida),
-                "tokens_raciocinio": _vazio_se_none(resposta.tokens_raciocinio),
-                "json_valido": "" if resposta.json_valido is None else ("S" if resposta.json_valido else "N"),
-                "n_comentarios": len(resposta.comentarios),
-                "comentario_gerado": resposta.comentario_gerado,
-                "erro_detalhe": resposta.erro_detalhe or "",
-            }
-        ],
-    )
-    _anexar(
-        caminho_comentarios,
-        _CAMPOS_COMENTARIO,
-        [
-            {
-                "run_id": resposta.run_id,
-                "revisao_id": resposta.revisao_id,
-                "experimento": resposta.experimento,
-                "pr_numero": resposta.pr_numero,
-                "issue_numero": resposta.issue_numero,
-                "modelo": resposta.modelo,
-                "nivel_prompt": resposta.nivel_prompt,
+                "run_id": revisao.run_id,
+                "revisao_id": revisao.revisao_id,
+                "experimento": revisao.experimento,
+                "pr_numero": revisao.pr_numero,
+                "issue_numero": revisao.issue_numero,
+                "modelo": revisao.modelo,
+                "nivel_prompt": revisao.nivel_prompt,
                 "indice": indice,
                 "arquivo": comentario.arquivo,
-                "linha": _vazio_se_none(comentario.linha),
+                "linha": _vazio_se_nulo(comentario.linha),
                 "categoria": comentario.categoria,
                 "severidade": comentario.severidade,
                 "comentario": comentario.comentario,
             }
-            for indice, comentario in enumerate(resposta.comentarios)
+            for indice, comentario in enumerate(revisao.comentarios)
         ],
     )
 
 
-def _anexar(caminho_csv: str, campos: list[str], linhas: list[dict]) -> None:
+def _linha_revisao(revisao: Revisao) -> dict:
+    json_valido = "" if revisao.json_valido is None else ("S" if revisao.json_valido else "N")
+    return {
+        "timestamp": revisao.timestamp,
+        "run_id": revisao.run_id,
+        "revisao_id": revisao.revisao_id,
+        "experimento": revisao.experimento,
+        "pr_numero": revisao.pr_numero,
+        "issue_numero": revisao.issue_numero,
+        "modelo": revisao.modelo,
+        "modelo_retornado": revisao.modelo_retornado or "",
+        "nivel_prompt": revisao.nivel_prompt,
+        "effort": revisao.effort,
+        "prompt_sha256": revisao.prompt_sha256,
+        "status": revisao.status,
+        "motivo_parada": revisao.motivo_parada or "",
+        "latencia_ms": revisao.latencia_ms,
+        "tokens_entrada": _vazio_se_nulo(revisao.tokens_entrada),
+        "tokens_saida": _vazio_se_nulo(revisao.tokens_saida),
+        "tokens_raciocinio": _vazio_se_nulo(revisao.tokens_raciocinio),
+        "json_valido": json_valido,
+        "n_comentarios": len(revisao.comentarios),
+        "comentario_gerado": revisao.comentario_gerado,
+        "erro_detalhe": revisao.erro_detalhe or "",
+    }
+
+
+def _anexar(caminho_csv: str, colunas: list[str], linhas: list[dict]) -> None:
     caminho = Path(caminho_csv)
     caminho.parent.mkdir(parents=True, exist_ok=True)
-    arquivo_existe = caminho.exists()
-    with caminho.open("a", newline="", encoding="utf-8") as f:
-        escritor = csv.DictWriter(f, fieldnames=campos)
-        if not arquivo_existe:
+    novo = not caminho.exists()
+    with caminho.open("a", newline="", encoding="utf-8") as arquivo:
+        escritor = csv.DictWriter(arquivo, fieldnames=colunas)
+        if novo:
             escritor.writeheader()
         escritor.writerows(linhas)
 
 
-def _vazio_se_none(valor: object) -> object:
+def _vazio_se_nulo(valor: object) -> object:
     return "" if valor is None else valor

@@ -1,47 +1,39 @@
-"""Monta o prompt de uma revisão a partir do PRContext e do nível de
-instrução (P1/P2/P3).
+"""Monta o prompt de uma revisão: instruções do nível + formato de saída + dados do PR.
 
-Só o bloco de instruções muda entre P1, P2 e P3. O formato de saída e os
-dados (issue, contexto do projeto, arquivos completos, diff) são idênticos
-em todos os níveis e para os três modelos: qualquer diferença nas respostas
-vem do modelo ou do nível manipulado, não de outra parte do prompt.
+Só as instruções mudam entre P1, P2 e P3; o restante é idêntico para os três modelos.
 """
+
 from __future__ import annotations
 
 import hashlib
 from pathlib import Path
 
-from models import PRContext
+from models import ArquivoAlterado, ContextoPR
 
-_PROMPTS_DIR = Path(__file__).parent / "prompts"
 NIVEIS_PROMPT = ("P1", "P2", "P3")
+_PASTA_PROMPTS = Path(__file__).parent / "prompts"
 
 
-def montar_prompt(contexto: PRContext, nivel_prompt: str = "P2") -> str:
-    if nivel_prompt not in NIVEIS_PROMPT:
-        raise ValueError(f"Nível de prompt inválido: {nivel_prompt}")
+def montar_prompt(contexto: ContextoPR, nivel: str = "P2") -> str:
+    if nivel not in NIVEIS_PROMPT:
+        raise ValueError(f"Nível de prompt inválido: {nivel}")
 
-    instrucoes = _ler(f"instrucoes_{nivel_prompt.lower()}.md")
+    instrucoes = _ler(f"instrucoes_{nivel.lower()}.md")
     formato = _ler("formato_saida.md")
     dados = _ler("dados.md")
 
-    arquivos_formatados = "\n\n".join(
-        _formatar_arquivo(arquivo.caminho, arquivo.patch, arquivo.conteudo_completo)
-        for arquivo in contexto.arquivos_alterados
-    )
-
-    substituicoes = {
-        "{{DIFF}}": contexto.diff_completo,
-        "{{ARQUIVOS_ALTERADOS_COMPLETOS}}": arquivos_formatados,
+    valores = {
+        "{{DIFF}}": contexto.diff,
+        "{{ARQUIVOS_ALTERADOS_COMPLETOS}}": "\n\n".join(_formatar(arquivo) for arquivo in contexto.arquivos),
         "{{ISSUE_NUMBER}}": str(contexto.numero_issue or "N/A"),
         "{{ISSUE_TITLE}}": contexto.titulo_issue or "(nenhuma issue vinculada encontrada no corpo do PR)",
         "{{ISSUE_BODY}}": contexto.corpo_issue or "",
-        "{{PROJECT_CONTEXT}}": contexto.project_context,
+        "{{PROJECT_CONTEXT}}": contexto.contexto_projeto,
         "{{PR_NUMBER}}": str(contexto.numero_pr),
         "{{PR_TITLE}}": contexto.titulo_pr,
     }
-    for chave, valor in substituicoes.items():
-        dados = dados.replace(chave, valor)
+    for marcador, valor in valores.items():
+        dados = dados.replace(marcador, valor)
 
     return f"{instrucoes.strip()}\n\n{formato.strip()}\n\n---\n\n{dados}"
 
@@ -51,10 +43,10 @@ def sha256(texto: str) -> str:
 
 
 def _ler(nome: str) -> str:
-    return (_PROMPTS_DIR / nome).read_text(encoding="utf-8")
+    return (_PASTA_PROMPTS / nome).read_text(encoding="utf-8")
 
 
-def _formatar_arquivo(caminho: str, patch: str, conteudo_completo: str | None) -> str:
-    if conteudo_completo is None:
-        return f"### `{caminho}`\n(conteúdo completo indisponível — apenas o patch abaixo)\n```diff\n{patch}\n```"
-    return f"### `{caminho}`\n```java\n{conteudo_completo}\n```"
+def _formatar(arquivo: ArquivoAlterado) -> str:
+    if arquivo.conteudo is None:
+        return f"### `{arquivo.caminho}`\n(conteúdo completo indisponível — apenas o patch abaixo)\n```diff\n{arquivo.patch}\n```"
+    return f"### `{arquivo.caminho}`\n```java\n{arquivo.conteudo}\n```"

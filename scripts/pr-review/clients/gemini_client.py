@@ -5,41 +5,39 @@ import asyncio
 from google import genai
 from google.genai import types
 
-from clients.base import ModelClient, RespostaBruta
+from clients.base import ClienteModelo, RespostaModelo
 
 
-class GeminiClient(ModelClient):
-    def __init__(self, api_key: str, model: str, effort: str, max_output_tokens: int):
-        self._client = genai.Client(api_key=api_key)
-        self._model = model
-        self._thinking_level = types.ThinkingLevel(effort.upper())
-        self._max_output_tokens = max_output_tokens
-        self.nome = model
+class ClienteGemini(ClienteModelo):
+    def __init__(self, chave: str, modelo: str, esforco: str, max_tokens_saida: int):
+        super().__init__(modelo, esforco, max_tokens_saida)
+        self._api = genai.Client(api_key=chave)
+        self._nivel_raciocinio = types.ThinkingLevel(esforco.upper())
 
-    async def gerar(self, prompt: str, timeout_seconds: float) -> RespostaBruta:
-        return await asyncio.wait_for(self._gerar(prompt), timeout=timeout_seconds)
+    async def gerar(self, prompt: str, timeout_segundos: float) -> RespostaModelo:
+        return await asyncio.wait_for(self._gerar(prompt), timeout=timeout_segundos)
 
-    async def _gerar(self, prompt: str) -> RespostaBruta:
-        # Sem `temperature`: o Gemini 3 recomenda manter o padrão (1.0).
-        resposta = await self._client.aio.models.generate_content(
-            model=self._model,
+    async def _gerar(self, prompt: str) -> RespostaModelo:
+        resposta = await self._api.aio.models.generate_content(
+            model=self.modelo,
             contents=prompt,
             config=types.GenerateContentConfig(
-                max_output_tokens=self._max_output_tokens,
-                thinking_config=types.ThinkingConfig(thinking_level=self._thinking_level),
+                max_output_tokens=self._max_tokens_saida,
+                thinking_config=types.ThinkingConfig(thinking_level=self._nivel_raciocinio),
                 automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             ),
         )
         uso = resposta.usage_metadata
         candidato = resposta.candidates[0] if resposta.candidates else None
-        saida = None
+        # a API separa resposta e raciocínio; somados, ficam comparáveis aos outros provedores
+        tokens_saida = None
         if uso and uso.candidates_token_count is not None:
-            saida = uso.candidates_token_count + (uso.thoughts_token_count or 0)
-        return RespostaBruta(
+            tokens_saida = uso.candidates_token_count + (uso.thoughts_token_count or 0)
+        return RespostaModelo(
             texto=resposta.text or "",
             modelo_retornado=resposta.model_version,
             motivo_parada=str(candidato.finish_reason) if candidato and candidato.finish_reason else None,
             tokens_entrada=uso.prompt_token_count if uso else None,
-            tokens_saida=saida,
+            tokens_saida=tokens_saida,
             tokens_raciocinio=uso.thoughts_token_count if uso else None,
         )

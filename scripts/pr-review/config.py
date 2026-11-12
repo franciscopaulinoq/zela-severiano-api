@@ -1,9 +1,5 @@
-"""Configuração central do pipeline de revisão automática por IA.
+"""Configuração do pipeline, lida de variáveis de ambiente (ou de um `.env` local)."""
 
-Todas as chaves de API e o token do GitHub vêm de variáveis de ambiente
-(nunca hardcoded), para poderem ser injetadas como Secrets no GitHub Actions
-sem tocar em código versionado.
-"""
 from __future__ import annotations
 
 import os
@@ -14,62 +10,55 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Caminho absoluto: o workflow roda com working-directory scripts/pr-review.
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+RAIZ_REPOSITORIO = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True)
-class Settings:
-    github_token: str
-    github_repo: str
+class Configuracao:
+    token_github: str
+    repositorio: str
 
-    openai_api_key: str | None
-    openai_model: str
+    chave_openai: str | None
+    modelo_openai: str
+    chave_anthropic: str | None
+    modelo_anthropic: str
+    chave_gemini: str | None
+    modelo_gemini: str
 
-    anthropic_api_key: str | None
-    anthropic_model: str
+    esforco_raciocinio: str
+    max_tokens_saida: int
+    timeout_segundos: float
+    max_tentativas: int
 
-    gemini_api_key: str | None
-    gemini_model: str
-
-    reasoning_effort: str
-    max_output_tokens: int
-
-    request_timeout_seconds: float
-    max_retries: int
-
-    results_csv_path: str
-    comments_csv_path: str
-    project_context_path: str
+    csv_revisoes: str
+    csv_comentarios: str
+    caminho_contexto: str
 
 
-def load_settings() -> Settings:
-    return Settings(
-        github_token=_require("GITHUB_TOKEN"),
-        github_repo=_require("GITHUB_REPOSITORY", default="franciscopaulinoq/zela-severiano-api"),
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        # IDs fixos (nunca alias -latest/-preview), versionados no código.
-        openai_model=os.getenv("OPENAI_MODEL", "gpt-6.1-sol"),
-        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-        anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
-        gemini_api_key=os.getenv("GEMINI_API_KEY"),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
-        # Mesmo nível nominal de raciocínio nos três (nenhum permite
-        # desligá-lo) e mesmo teto de saída, que inclui os tokens de raciocínio.
-        reasoning_effort=os.getenv("PR_REVIEW_REASONING_EFFORT", "medium"),
-        max_output_tokens=int(os.getenv("PR_REVIEW_MAX_OUTPUT_TOKENS", "16000")),
-        request_timeout_seconds=float(os.getenv("PR_REVIEW_TIMEOUT_SECONDS", "300")),
-        max_retries=int(os.getenv("PR_REVIEW_MAX_RETRIES", "4")),
-        results_csv_path=os.getenv("PR_REVIEW_RESULTS_CSV", "results/pr_reviews.csv"),
-        comments_csv_path=os.getenv("PR_REVIEW_COMMENTS_CSV", "results/comentarios.csv"),
-        project_context_path=os.getenv(
-            "PR_REVIEW_PROJECT_CONTEXT", str(_REPO_ROOT / "context" / "project_context.md")
+def carregar_configuracao() -> Configuracao:
+    return Configuracao(
+        token_github=_obrigatoria("GITHUB_TOKEN"),
+        repositorio=_obrigatoria("GITHUB_REPOSITORY", "franciscopaulinoq/zela-severiano-api"),
+        chave_openai=os.getenv("OPENAI_API_KEY"),
+        modelo_openai=os.getenv("OPENAI_MODEL", "gpt-6.1-sol"),
+        chave_anthropic=os.getenv("ANTHROPIC_API_KEY"),
+        modelo_anthropic=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
+        chave_gemini=os.getenv("GEMINI_API_KEY"),
+        modelo_gemini=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
+        esforco_raciocinio=os.getenv("PR_REVIEW_REASONING_EFFORT", "medium"),
+        max_tokens_saida=int(os.getenv("PR_REVIEW_MAX_OUTPUT_TOKENS", "16000")),
+        timeout_segundos=float(os.getenv("PR_REVIEW_TIMEOUT_SECONDS", "300")),
+        max_tentativas=int(os.getenv("PR_REVIEW_MAX_RETRIES", "4")),
+        csv_revisoes=os.getenv("PR_REVIEW_RESULTS_CSV", "results/pr_reviews.csv"),
+        csv_comentarios=os.getenv("PR_REVIEW_COMMENTS_CSV", "results/comentarios.csv"),
+        caminho_contexto=os.getenv(
+            "PR_REVIEW_PROJECT_CONTEXT", str(RAIZ_REPOSITORIO / "context" / "project_context.md")
         ),
     )
 
 
-def _require(name: str, default: str | None = None) -> str:
-    value = os.getenv(name, default)
-    if not value:
-        raise RuntimeError(f"Variável de ambiente obrigatória ausente: {name}")
-    return value
+def _obrigatoria(nome: str, padrao: str | None = None) -> str:
+    valor = os.getenv(nome, padrao)
+    if not valor:
+        raise RuntimeError(f"Variável de ambiente obrigatória ausente: {nome}")
+    return valor

@@ -2,32 +2,27 @@ from __future__ import annotations
 
 from anthropic import AsyncAnthropic
 
-from clients.base import ModelClient, RespostaBruta
+from clients.base import ClienteModelo, RespostaModelo
 
 
-class AnthropicClient(ModelClient):
-    def __init__(self, api_key: str, model: str, effort: str, max_output_tokens: int):
-        self._client = AsyncAnthropic(api_key=api_key)
-        self._model = model
-        self._effort = effort
-        self._max_output_tokens = max_output_tokens
-        self.nome = model
+class ClienteAnthropic(ClienteModelo):
+    def __init__(self, chave: str, modelo: str, esforco: str, max_tokens_saida: int):
+        super().__init__(modelo, esforco, max_tokens_saida)
+        self._api = AsyncAnthropic(api_key=chave)
 
-    async def gerar(self, prompt: str, timeout_seconds: float) -> RespostaBruta:
-        # Claude 4.7+ recusa (400) temperature/top_p/top_k fora do padrão, e o
-        # raciocínio não pode ser desligado: fica adaptativo, e a profundidade
-        # é controlada só pelo `effort`.
-        resposta = await self._client.messages.create(
-            model=self._model,
-            max_tokens=self._max_output_tokens,
+    async def gerar(self, prompt: str, timeout_segundos: float) -> RespostaModelo:
+        # o raciocínio não pode ser desligado neste modelo; o esforço controla a profundidade
+        resposta = await self._api.messages.create(
+            model=self.modelo,
+            max_tokens=self._max_tokens_saida,
             messages=[{"role": "user", "content": prompt}],
             thinking={"type": "adaptive"},
-            output_config={"effort": self._effort},
-            timeout=timeout_seconds,
+            output_config={"effort": self._esforco},
+            timeout=timeout_segundos,
         )
         uso = resposta.usage
         detalhes = uso.output_tokens_details
-        return RespostaBruta(
+        return RespostaModelo(
             texto="".join(bloco.text for bloco in resposta.content if bloco.type == "text"),
             modelo_retornado=resposta.model,
             motivo_parada=resposta.stop_reason,
