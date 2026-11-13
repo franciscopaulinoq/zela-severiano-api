@@ -5,9 +5,11 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoCri
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDetalheResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoPublicoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import java.util.List;
@@ -29,4 +31,8 @@ public interface RelatoRestMapper {
     RelatoGestaoResponse mapGestao(RelatoGestaoDTO dto);
 
     List<RelatoGestaoResponse> mapGestao(List<RelatoGestaoDTO> dtos);
+
+    RelatoPublicoResponse mapPublico(RelatoPublicoDTO dto);
+
+    List<RelatoPublicoResponse> mapPublico(List<RelatoPublicoDTO> dtos);
 }
