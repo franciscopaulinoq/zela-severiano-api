@@ -5,10 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+@ExtendWith(OutputCaptureExtension.class)
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
@@ -41,5 +45,18 @@ class GlobalExceptionHandlerTest {
         assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         assertThat(resposta.getBody().getStatus()).isEqualTo(422);
         assertThat(resposta.getBody().getMessage()).isEqualTo("Categoria não encontrada.");
+    }
+
+    @Test
+    void erroInesperadoViraErroInternoERegistraODetalheNoLog(CapturedOutput saida) {
+        ResponseEntity<ErrorResponse> resposta =
+                handler.handleGenericException(new IllegalStateException("conexão recusada"), request);
+
+        assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(resposta.getBody().getMessage()).doesNotContain("conexão recusada");
+        assertThat(saida.getOut())
+                .contains("ERROR")
+                .contains("POST /api/v1/cidadaos")
+                .contains("java.lang.IllegalStateException: conexão recusada");
     }
 }
