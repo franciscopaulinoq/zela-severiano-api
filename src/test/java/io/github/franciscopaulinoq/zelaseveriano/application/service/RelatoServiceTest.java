@@ -88,6 +88,38 @@ class RelatoServiceTest {
     }
 
     @Test
+    void aceitaFotoPngEWebp() {
+        prepararPerfilECategoria();
+        when(fileStorage.upload(any(), anyString(), anyString())).thenReturn("https://arquivos.example.com/foto");
+        when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+
+        relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.png", "image/png");
+        relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.webp", "IMAGE/WEBP");
+
+        verify(fileStorage).upload(any(), endsWith("_buraco.png"), eq("image/png"));
+        verify(fileStorage).upload(any(), endsWith("_buraco.webp"), eq("IMAGE/WEBP"));
+    }
+
+    @Test
+    void recusaArquivoQueNaoEhImagemSemArmazenarNada() {
+        assertThatThrownBy(() -> relatoService.registrar(
+                        USUARIO_ID, novoRelato(), new byte[] {1}, "documento.pdf", "application/pdf"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Tipo de arquivo não permitido");
+
+        verifyNoInteractions(fileStorage);
+        verify(relatoRepository, never()).save(any());
+    }
+
+    @Test
+    void recusaFotoSemTipoDeclarado() {
+        assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "foto", null))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verifyNoInteractions(fileStorage);
+    }
+
+    @Test
     void recusaRelatoDeUsuarioSemPerfil() {
         when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.empty());
 
