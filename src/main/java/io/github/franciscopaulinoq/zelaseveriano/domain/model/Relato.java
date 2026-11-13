@@ -26,12 +26,24 @@ public class Relato {
     private OffsetDateTime atualizadoEm;
 
     private static final Map<StatusRelato, Set<StatusRelato>> TRANSICOES_PERMITIDAS = Map.of(
-            StatusRelato.PENDENTE, Set.of(StatusRelato.EM_ANALISE, StatusRelato.REJEITADO),
+            StatusRelato.PENDENTE, Set.of(StatusRelato.EM_ANALISE, StatusRelato.REJEITADO, StatusRelato.CANCELADO),
             StatusRelato.EM_ANALISE, Set.of(StatusRelato.CONCLUIDO, StatusRelato.REJEITADO),
             StatusRelato.CONCLUIDO, Set.of(),
-            StatusRelato.REJEITADO, Set.of());
+            StatusRelato.REJEITADO, Set.of(),
+            StatusRelato.CANCELADO, Set.of());
 
     public void atualizarStatus(StatusRelato novoStatus, String observacao) {
+        if (novoStatus == StatusRelato.CANCELADO) {
+            throw new TransicaoStatusInvalidaException("Apenas o autor do relato pode cancelá-lo.");
+        }
+        aplicarTransicao(novoStatus, observacao);
+    }
+
+    public void cancelar() {
+        aplicarTransicao(StatusRelato.CANCELADO, null);
+    }
+
+    private void aplicarTransicao(StatusRelato novoStatus, String observacao) {
         Set<StatusRelato> permitidas = TRANSICOES_PERMITIDAS.getOrDefault(this.status, Set.of());
         if (!permitidas.contains(novoStatus)) {
             throw new TransicaoStatusInvalidaException(

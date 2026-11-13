@@ -110,6 +110,21 @@ public class RelatoService {
         return relatoRepository.save(relato);
     }
 
+    @Transactional
+    public void cancelar(UUID usuarioId, Long relatoId) {
+        perfilRepository
+                .findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+
+        Relato relato = relatoRepository
+                .findById(relatoId)
+                .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+
+        relato.cancelar();
+
+        relatoRepository.save(relato);
+    }
+
     private void validarTipoDaFoto(String contentType) {
         if (contentType == null || !TIPOS_DE_FOTO_PERMITIDOS.contains(contentType.toLowerCase(Locale.ROOT))) {
             throw new IllegalArgumentException(

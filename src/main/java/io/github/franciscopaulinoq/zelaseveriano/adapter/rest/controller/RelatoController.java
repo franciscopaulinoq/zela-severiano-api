@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +72,14 @@ public class RelatoController {
         FiltroRelatos filtro = new FiltroRelatos(status, categoriaId);
         return ResponseEntity.ok(
                 relatoService.visualizarMeus(usuarioId, filtro, pageable).map(mapper::mapListagem));
+    }
+
+    @PatchMapping("/{id}/cancelamento")
+    public ResponseEntity<Void> cancelar(
+            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+        UUID usuarioId = UUID.fromString(userDetails.getUsername());
+        relatoService.cancelar(usuarioId, relatoId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

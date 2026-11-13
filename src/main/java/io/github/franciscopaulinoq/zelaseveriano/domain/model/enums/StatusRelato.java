@@ -4,5 +4,6 @@ public enum StatusRelato {
     PENDENTE,
     EM_ANALISE,
     CONCLUIDO,
-    REJEITADO
+    REJEITADO,
+    CANCELADO
 }
