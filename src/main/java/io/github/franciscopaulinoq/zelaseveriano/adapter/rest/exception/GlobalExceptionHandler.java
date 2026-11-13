@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
@@ -64,6 +65,21 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflito de regra de negócio")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(LimiteRelatosPendentesException.class)
+    public ResponseEntity<ErrorResponse> handleLimiteRelatosPendentes(
+            LimiteRelatosPendentesException ex, HttpServletRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(OffsetDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Limite de relatos pendentes atingido")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();

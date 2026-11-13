@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.rep
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.RelatoMapper;
@@ -49,6 +50,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
                         RelatoSpecifications.doPerfil(perfilId).and(RelatoSpecifications.comFiltro(filtro)),
                         pageRequest)
                 .map(mapper::map);
+    }
+
+    @Override
+    public long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status) {
+        return jpaRepository.countByPerfilIdAndStatus(perfilId, status);
     }
 
     @Override

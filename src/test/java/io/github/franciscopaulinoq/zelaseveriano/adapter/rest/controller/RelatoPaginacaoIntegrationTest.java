@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste.Cidadao;
 import io.github.franciscopaulinoq.zelaseveriano.support.IntegrationTest;
@@ -49,6 +50,7 @@ class RelatoPaginacaoIntegrationTest {
                             null,
                             null)
                     .getId();
+            relatoService.atualizarStatus(id, StatusRelato.EM_ANALISE, null);
             idsDoMaisNovoParaOMaisAntigo.addFirst(id);
         }
     }
