@@ -13,6 +13,14 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+  data:
+    web:
+      pageable:
+        page-parameter: pagina
+        size-parameter: tamanho
+        default-page-size: 10
+        max-page-size: 50
+        serialization-mode: via-dto
   servlet:
     multipart:
       max-file-size: 10MB

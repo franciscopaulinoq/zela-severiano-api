@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 
 @IntegrationTest
 @Import(CidadaosDeTeste.class)
@@ -32,7 +33,9 @@ class RelatoLeituraIntegrationTest {
         Relato criado = relatoService.registrar(
                 cidadao.usuarioId(), new RelatoRegistroDTO(1, "Lâmpada queimada", -6.08, -38.38), null, null, null);
 
-        List<RelatoListagemDTO> meus = relatoService.visualizarMeus(cidadao.usuarioId());
+        List<RelatoListagemDTO> meus = relatoService
+                .visualizarMeus(cidadao.usuarioId(), PageRequest.of(0, 10))
+                .getContent();
         RelatoDetalheDTO detalhe = relatoService.obterDetalhe(cidadao.usuarioId(), criado.getId());
         List<RelatoGestaoDTO> todos = relatoService.listarTodos();
         Relato atualizado = relatoService.atualizarStatus(criado.getId(), StatusRelato.EM_ANALISE, null);

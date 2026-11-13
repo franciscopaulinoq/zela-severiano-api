@@ -7,11 +7,14 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDet
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,10 +55,13 @@ public class RelatoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RelatoListagemResponse>> listarMeusRelatos(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    @Parameter(name = "pagina", in = ParameterIn.QUERY, description = "Número da página, começando em 0")
+    @Parameter(name = "tamanho", in = ParameterIn.QUERY, description = "Itens por página (padrão 10, máximo 50)")
+    public ResponseEntity<Page<RelatoListagemResponse>> listarMeusRelatos(
+            @AuthenticationPrincipal UserDetails userDetails, @Parameter(hidden = true) Pageable pageable) {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        return ResponseEntity.ok(mapper.mapListagem(relatoService.visualizarMeus(usuarioId)));
+        return ResponseEntity.ok(
+                relatoService.visualizarMeus(usuarioId, pageable).map(mapper::mapListagem));
     }
 
     @GetMapping("/{id}")

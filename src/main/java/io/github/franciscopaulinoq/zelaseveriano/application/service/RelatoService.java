@@ -17,6 +17,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,14 +69,12 @@ public class RelatoService {
     }
 
     @Transactional(readOnly = true)
-    public List<RelatoListagemDTO> visualizarMeus(UUID usuarioId) {
+    public Page<RelatoListagemDTO> visualizarMeus(UUID usuarioId, Pageable pageable) {
         Perfil perfil = perfilRepository
                 .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
-        return relatoRepository.findAllByPerfilId(perfil.getId()).stream()
-                .map(this::toListagemDTO)
-                .toList();
+        return relatoRepository.findAllByPerfilId(perfil.getId(), pageable).map(this::toListagemDTO);
     }
 
     @Transactional(readOnly = true)

@@ -30,6 +30,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class RelatoServiceTest {
@@ -170,11 +174,14 @@ class RelatoServiceTest {
     @Test
     void listagemDoCidadaoUsaApenasOsRelatosDoSeuPerfil() {
         when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
-        when(relatoRepository.findAllByPerfilId(PERFIL.getId())).thenReturn(List.of(relatoExistente()));
+        Pageable pagina = PageRequest.of(0, 10);
+        when(relatoRepository.findAllByPerfilId(PERFIL.getId(), pagina))
+                .thenReturn(new PageImpl<>(List.of(relatoExistente()), pagina, 1));
 
-        List<RelatoListagemDTO> relatos = relatoService.visualizarMeus(USUARIO_ID);
+        Page<RelatoListagemDTO> relatos = relatoService.visualizarMeus(USUARIO_ID, pagina);
 
-        assertThat(relatos).singleElement().satisfies(relato -> {
+        assertThat(relatos.getTotalElements()).isEqualTo(1);
+        assertThat(relatos.getContent()).singleElement().satisfies(relato -> {
             assertThat(relato.getId()).isEqualTo(42L);
             assertThat(relato.getCategoriaNome()).isEqualTo("Iluminação");
             assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
