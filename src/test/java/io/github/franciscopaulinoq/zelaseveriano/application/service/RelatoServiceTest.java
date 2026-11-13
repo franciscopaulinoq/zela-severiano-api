@@ -153,6 +153,42 @@ class RelatoServiceTest {
     }
 
     @Test
+    void aceitaCoordenadasDentroDoMunicipio() {
+        prepararPerfilECategoria();
+        when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+        RelatoRegistroDTO naZonaRural = novoRelato();
+        naZonaRural.setLatitude(-6.15);
+        naZonaRural.setLongitude(-38.45);
+
+        Relato relato = relatoService.registrar(USUARIO_ID, naZonaRural, null, null, null);
+
+        assertThat(relato.getLatitude()).isEqualTo(-6.15);
+    }
+
+    @Test
+    void recusaCoordenadasForaDoMunicipioSemEnviarFoto() {
+        RelatoRegistroDTO emNatal = novoRelato();
+        emNatal.setLatitude(-5.79);
+        emNatal.setLongitude(-35.21);
+
+        assertThatThrownBy(
+                        () -> relatoService.registrar(USUARIO_ID, emNatal, new byte[] {1}, "poste.jpg", "image/jpeg"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("fora do município");
+
+        verifyNoInteractions(fileStorage, relatoRepository, perfilRepository);
+    }
+
+    @Test
+    void recusaCoordenadasAusentes() {
+        RelatoRegistroDTO semLatitude = novoRelato();
+        semLatitude.setLatitude(null);
+
+        assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, semLatitude, null, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void recusaRelatoDeUsuarioSemPerfil() {
         when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.empty());
 
