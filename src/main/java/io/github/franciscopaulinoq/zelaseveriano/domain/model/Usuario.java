@@ -16,47 +16,10 @@ public class Usuario {
 
     @Builder
     public Usuario(UUID id, String cpf, String senhaHash, Role role, OffsetDateTime criadoEm) {
-        validateCpf(cpf);
         this.id = id != null ? id : UUID.randomUUID();
-        this.cpf = cpf;
+        this.cpf = Cpf.of(cpf).valor();
         this.senhaHash = senhaHash;
         this.role = role != null ? role : Role.CIDADAO;
         this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
-    }
-
-    private void validateCpf(String cpf) {
-        if (cpf == null || cpf.length() != 11 || cpf.matches("^(.)\\1*$")) {
-            throw new IllegalArgumentException("CPF inválido.");
-        }
-        if (!validateCpfDigits(cpf)) {
-            throw new IllegalArgumentException("CPF inválido.");
-        }
-    }
-
-    private boolean validateCpfDigits(String cpf) {
-        int sum = 0;
-        for (int i = 0; i < 9; i++) {
-            int num = Character.getNumericValue(cpf.charAt(i));
-            sum += num * (10 - i);
-        }
-        int firstDigit = (sum * 10) % 11;
-        if (firstDigit == 10) {
-            firstDigit = 0;
-        }
-        if (firstDigit != Character.getNumericValue(cpf.charAt(9))) {
-            return false;
-        }
-
-        sum = 0;
-        for (int i = 0; i < 10; i++) {
-            int num = Character.getNumericValue(cpf.charAt(i));
-            sum += num * (11 - i);
-        }
-        int secondDigit = (sum * 10) % 11;
-        if (secondDigit == 10) {
-            secondDigit = 0;
-        }
-
-        return secondDigit == Character.getNumericValue(cpf.charAt(10));
     }
 }
