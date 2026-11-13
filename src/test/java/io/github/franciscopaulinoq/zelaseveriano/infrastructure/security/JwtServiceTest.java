@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -49,5 +50,36 @@ class JwtServiceTest {
             assertThat(dados.usuarioId()).isEqualTo(USUARIO.getId());
             assertThat(dados.role()).isEqualTo(Role.CIDADAO);
         });
+    }
+
+    @Test
+    void tokenDeRenovacaoValidoDevolveOUsuario() {
+        JwtService servico = comRelogio(Clock.systemUTC());
+
+        Optional<UUID> usuarioId = servico.validarTokenDeRenovacao(servico.gerarTokenDeRenovacao(USUARIO));
+
+        assertThat(usuarioId).contains(USUARIO.getId());
+    }
+
+    @Test
+    void tokenDeRenovacaoExpiradoEhRecusado() {
+        JwtService geradoHaOitoDias = comRelogio(Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC));
+
+        String token = geradoHaOitoDias.gerarTokenDeRenovacao(USUARIO);
+
+        assertThat(comRelogio(Clock.systemUTC()).validarTokenDeRenovacao(token)).isEmpty();
+    }
+
+    @Test
+    void tokenDeRenovacaoNaoServeComoTokenDeAcesso() {
+        JwtService servico = comRelogio(Clock.systemUTC());
+
+        assertThat(servico.validarToken(servico.gerarTokenDeRenovacao(USUARIO))).isEmpty();
+    }
+
+    private static JwtService comRelogio(Clock clock) {
+        JwtService servico = new JwtService(clock);
+        ReflectionTestUtils.setField(servico, "secret", "segredo-de-teste");
+        return servico;
     }
 }

@@ -1,7 +1,9 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.SessaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
@@ -26,7 +28,7 @@ public class ContaService {
     private final TokenService tokenService;
 
     @Transactional(readOnly = true)
-    public String autenticar(String cpf, String senha) {
+    public SessaoDTO autenticar(String cpf, String senha) {
         Usuario usuario = usuarioRepository
                 .findByCpf(cpf)
                 .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
@@ -34,6 +36,16 @@ public class ContaService {
         if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {
             throw new IllegalArgumentException("CPF ou senha inválidos");
         }
+
+        return new SessaoDTO(tokenService.gerarToken(usuario), tokenService.gerarTokenDeRenovacao(usuario));
+    }
+
+    @Transactional(readOnly = true)
+    public String renovarSessao(String tokenRenovacao) {
+        Usuario usuario = tokenService
+                .validarTokenDeRenovacao(tokenRenovacao)
+                .flatMap(usuarioRepository::findById)
+                .orElseThrow(() -> new TokenInvalidoException("Token de renovação inválido ou expirado."));
 
         return tokenService.gerarToken(usuario);
     }

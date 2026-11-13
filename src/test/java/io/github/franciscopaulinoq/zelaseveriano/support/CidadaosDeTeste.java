@@ -41,11 +41,11 @@ public class CidadaosDeTeste {
                 .senhaHash(passwordHasher.hash(SENHA))
                 .role(Role.GESTOR)
                 .build());
-        return contaService.autenticar(cpf, SENHA);
+        return contaService.autenticar(cpf, SENHA).tokenAcesso();
     }
 
     public String token(Cidadao cidadao) {
-        return contaService.autenticar(cidadao.cpf(), SENHA);
+        return contaService.autenticar(cidadao.cpf(), SENHA).tokenAcesso();
     }
 
     public record Cidadao(UUID usuarioId, UUID perfilId, String cpf) {}
