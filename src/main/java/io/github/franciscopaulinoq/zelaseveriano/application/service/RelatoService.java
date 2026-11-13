@@ -1,5 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
@@ -19,10 +21,13 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -152,6 +157,26 @@ public class RelatoService {
                         () -> new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
 
         return listarHistorico(relatoId);
+    }
+
+    @Transactional(readOnly = true)
+    public EstatisticasRelatosDTO obterEstatisticas() {
+        List<Relato> relatos = relatoRepository.findAll(FiltroRelatos.semFiltro());
+
+        Map<StatusRelato, Long> porStatus = new EnumMap<>(StatusRelato.class);
+        for (StatusRelato status : StatusRelato.values()) {
+            porStatus.put(status, 0L);
+        }
+        relatos.forEach(relato -> porStatus.merge(relato.getStatus(), 1L, Long::sum));
+
+        Map<Integer, Long> totaisPorCategoria = relatos.stream()
+                .collect(Collectors.groupingBy(relato -> relato.getCategoria().getId(), Collectors.counting()));
+        List<TotalPorCategoria> porCategoria = categoriaRepository.findAll().stream()
+                .map(categoria -> new TotalPorCategoria(
+                        categoria.getId(), categoria.getNome(), totaisPorCategoria.getOrDefault(categoria.getId(), 0L)))
+                .toList();
+
+        return new EstatisticasRelatosDTO(relatos.size(), porStatus, porCategoria);
     }
 
     @Transactional(readOnly = true)

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
@@ -27,6 +28,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -291,6 +293,55 @@ class RelatoServiceTest {
                 .isInstanceOf(TransicaoStatusInvalidaException.class);
 
         verifyNoInteractions(historicoRepository);
+    }
+
+    @Test
+    void estatisticasAgrupamPorStatusEPorCategoria() {
+        Categoria limpeza = Categoria.builder().id(3).nome("Limpeza").build();
+        List<Relato> relatos = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            relatos.add(relatoDaCategoria(StatusRelato.PENDENTE));
+        }
+        relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
+        relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
+        when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(relatos);
+        when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA, limpeza));
+
+        EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
+
+        assertThat(estatisticas.total()).isEqualTo(6);
+        assertThat(estatisticas.porStatus())
+                .containsEntry(StatusRelato.PENDENTE, 4L)
+                .containsEntry(StatusRelato.CONCLUIDO, 2L)
+                .containsEntry(StatusRelato.EM_ANALISE, 0L);
+        assertThat(estatisticas.porCategoria())
+                .containsExactly(
+                        new EstatisticasRelatosDTO.TotalPorCategoria(1, "Iluminação", 6),
+                        new EstatisticasRelatosDTO.TotalPorCategoria(3, "Limpeza", 0));
+    }
+
+    @Test
+    void semRelatosAsContagensVemZeradas() {
+        when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(List.of());
+        when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA));
+
+        EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
+
+        assertThat(estatisticas.total()).isZero();
+        assertThat(estatisticas.porStatus())
+                .hasSize(StatusRelato.values().length)
+                .allSatisfy((status, total) -> assertThat(total).isZero());
+        assertThat(estatisticas.porCategoria())
+                .singleElement()
+                .satisfies(item -> assertThat(item.total()).isZero());
+    }
+
+    private static Relato relatoDaCategoria(StatusRelato status) {
+        return Relato.builder()
+                .perfil(PERFIL)
+                .categoria(CATEGORIA)
+                .status(status)
+                .build();
     }
 
     private void prepararPerfilECategoria() {

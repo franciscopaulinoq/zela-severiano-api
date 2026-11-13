@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarStatusRelatoRequest;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.EstatisticasRelatosResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
@@ -35,6 +36,11 @@ public class GestaoRelatoController {
             @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
                     Integer categoriaId) {
         return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
+    }
+
+    @GetMapping("/estatisticas")
+    public ResponseEntity<EstatisticasRelatosResponse> obterEstatisticas() {
+        return ResponseEntity.ok(mapper.mapEstatisticas(relatoService.obterEstatisticas()));
     }
 
     @GetMapping("/{id}/historico")
