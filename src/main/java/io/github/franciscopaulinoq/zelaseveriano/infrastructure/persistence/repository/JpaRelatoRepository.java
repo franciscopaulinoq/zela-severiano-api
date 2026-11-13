@@ -18,6 +18,8 @@ public interface JpaRelatoRepository extends JpaRepository<RelatoEntity, Long>, 
 
     long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
+    boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
+
     @Override
     @EntityGraph(attributePaths = "categoria")
     Page<RelatoEntity> findAll(Specification<RelatoEntity> spec, Pageable pageable);

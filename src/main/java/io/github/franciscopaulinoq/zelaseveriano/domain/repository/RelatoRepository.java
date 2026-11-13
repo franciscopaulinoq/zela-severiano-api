@@ -21,4 +21,6 @@ public interface RelatoRepository {
     List<Relato> findAll(FiltroRelatos filtro);
 
     long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
+
+    boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
 }

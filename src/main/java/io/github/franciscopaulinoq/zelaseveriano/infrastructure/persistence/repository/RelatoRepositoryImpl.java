@@ -58,6 +58,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
     }
 
     @Override
+    public boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status) {
+        return jpaRepository.existsByCategoriaIdAndStatus(categoriaId, status);
+    }
+
+    @Override
     public List<Relato> findAll(FiltroRelatos filtro) {
         return jpaRepository.findAll(RelatoSpecifications.comFiltro(filtro), MAIS_RECENTES_PRIMEIRO).stream()
                 .map(mapper::map)

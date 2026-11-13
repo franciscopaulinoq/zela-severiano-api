@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
@@ -66,6 +67,20 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflito de regra de negócio")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(CategoriaEmUsoException.class)
+    public ResponseEntity<ErrorResponse> handleCategoriaEmUso(CategoriaEmUsoException ex, HttpServletRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(OffsetDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Categoria em uso")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
