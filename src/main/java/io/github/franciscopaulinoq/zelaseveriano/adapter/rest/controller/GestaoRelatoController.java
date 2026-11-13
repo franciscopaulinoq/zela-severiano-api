@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarStatusRelatoRequest;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
@@ -34,6 +35,11 @@ public class GestaoRelatoController {
             @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
                     Integer categoriaId) {
         return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(@PathVariable("id") Long relatoId) {
+        return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistoricoGestao(relatoId)));
     }
 
     @PatchMapping("/{id}/status")

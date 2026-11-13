@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RelatoRegistroRequest;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoCriadoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDetalheResponse;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -80,6 +82,13 @@ public class RelatoController {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
         relatoService.cancelar(usuarioId, relatoId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
+            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+        UUID usuarioId = UUID.fromString(userDetails.getUsername());
+        return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistorico(usuarioId, relatoId)));
     }
 
     @GetMapping("/{id}")
