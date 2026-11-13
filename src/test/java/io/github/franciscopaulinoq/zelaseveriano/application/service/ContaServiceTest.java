@@ -19,6 +19,8 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilReposit
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -105,5 +107,41 @@ class ContaServiceTest {
                 .numero("10")
                 .bairro("Centro")
                 .build();
+    }
+
+    @Test
+    void trocaASenhaQuandoASenhaAtualConfere() {
+        Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
+        when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+        when(passwordHasher.matches("senha-antiga", "hash-antigo")).thenReturn(true);
+        when(passwordHasher.hash("senha-nova")).thenReturn("hash-novo");
+
+        contaService.trocarSenha(usuario.getId(), "senha-antiga", "senha-nova");
+
+        assertThat(usuario.getSenhaHash()).isEqualTo("hash-novo");
+        verify(usuarioRepository).save(usuario);
+    }
+
+    @Test
+    void recusaTrocaDeSenhaQuandoASenhaAtualEstaIncorreta() {
+        Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
+        when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+        when(passwordHasher.matches("errada", "hash-antigo")).thenReturn(false);
+
+        assertThatThrownBy(() -> contaService.trocarSenha(usuario.getId(), "errada", "senha-nova"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Senha atual incorreta.");
+
+        assertThat(usuario.getSenhaHash()).isEqualTo("hash-antigo");
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void recusaTrocaDeSenhaDeUsuarioInexistente() {
+        UUID usuarioId = UUID.randomUUID();
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> contaService.trocarSenha(usuarioId, "qualquer", "senha-nova"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
