@@ -20,8 +20,10 @@ sendo o que desacopla o formato de resposta HTTP do modelo de domínio (um
 
 - **`domain`**: entidades de negócio puras (`model`), portas/interfaces de
   repositório e serviços (`repository`, `security`, `storage`) e exceções de
-  domínio (`exception`). **Não pode depender de Spring, JPA, nem de nenhuma
-  outra camada.** Inalterado pela refatoração.
+  domínio (`exception`). **Não pode depender de JPA nem de nenhuma outra
+  camada.** De Spring, admite apenas tipos utilitários consolidados que não
+  amarram o domínio a uma tecnologia de persistência, como `Page`,
+  `Pageable` e `Sort` do Spring Data (ver abaixo).
 - **`application`**: casos de uso agrupados por agregado/recurso REST em
   classes `<Agregado>Service` (`service`), não mais uma classe por operação
   (ex. `RelatoService` reúne registrar, listar, obter detalhe e atualizar
@@ -45,6 +47,15 @@ sendo o que desacopla o formato de resposta HTTP do modelo de domínio (um
 Uma dependência de uma camada mais interna (`domain`) apontando para uma
 mais externa (`adapter`/`infrastructure`) é sempre uma violação de
 arquitetura, mesmo que compile.
+
+As camadas são um meio, não um fim: a regra de dependência é aplicada de
+forma pragmática. Quando o ecossistema Java/Spring já oferece uma solução
+consolidada (paginação com `Pageable`/`Page`, ordenação com `Sort`,
+validação com Bean Validation), ela é usada diretamente, inclusive nas
+portas do `domain` e nos `Service`s, em vez de criar um equivalente próprio
+só para manter a camada "pura". Um tipo próprio só se justifica quando
+desacopla algo que de fato pode mudar. Anotações e entidades JPA continuam
+restritas a `infrastructure`.
 
 ### O que a refatoração corrigiu (e o que preservou)
 

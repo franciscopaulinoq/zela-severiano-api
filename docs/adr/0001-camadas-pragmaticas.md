@@ -1,6 +1,6 @@
 # ADR 0001 — Camadas pragmáticas em vez de Clean Architecture estrita
 
-**Status**: Aceito (revisado em 2026-09-16 — ver "Revisão" no fim)
+**Status**: Aceito (revisado em 2026-09-16 e em 2026-11-12 — ver as seções de revisão)
 **Data**: 2026-09-16
 
 ## Contexto
@@ -84,6 +84,21 @@ fronteira entre `application` e `adapter` é o desenho correto; o defeito
 real estava só nos dois pontos listados em "Contexto", não na existência
 da camada de DTO em si.
 
+## Revisão (2026-11-12): dependências consolidadas no `domain`
+
+A regra "`domain` não depende de Spring" levava a recriar no domínio tipos
+que o Spring Data já oferece, como uma página de resultados com seus
+metadados, só para manter a camada sem imports de framework. O custo era
+mais arquivos e conversões entre tipos equivalentes, sem desacoplamento real:
+a paginação do Spring Data não depende da tecnologia de persistência.
+
+A regra passa a ser pragmática: `Page`, `Pageable` e `Sort` (e soluções
+igualmente consolidadas do ecossistema) podem ser usados nas portas do
+`domain` e nos `Service`s. Continuam fora do `domain` as anotações e
+entidades JPA e qualquer detalhe de infraestrutura. O critério é
+simplificar a manutenção: um tipo próprio só se justifica quando desacopla
+algo que de fato pode mudar.
+
 ## Consequências
 
 **Antes** (exemplo: adicionar um campo em `Relato` exposto na listagem do
@@ -100,7 +115,7 @@ muda tanto quanto na versão revertida, mas **o número de classes
 "artificiais" cai**: não se cria mais uma classe `UseCase` nova por
 operação, e o `Service` já existe para receber o método novo.
 
-**O que não muda**: `domain` continua sem depender de Spring/JPA;
+**O que não muda**: `domain` continua sem depender de JPA (Spring só nos tipos consolidados da revisão de 2026-11-12);
 `infrastructure.persistence` não foi tocada; nenhuma regra de negócio foi
 alterada; os DTOs de `application` continuam com os mesmos campos de
 antes.
