@@ -6,6 +6,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDT
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
@@ -34,10 +35,10 @@ class RelatoLeituraIntegrationTest {
                 cidadao.usuarioId(), new RelatoRegistroDTO(1, "Lâmpada queimada", -6.08, -38.38), null, null, null);
 
         List<RelatoListagemDTO> meus = relatoService
-                .visualizarMeus(cidadao.usuarioId(), PageRequest.of(0, 10))
+                .visualizarMeus(cidadao.usuarioId(), FiltroRelatos.semFiltro(), PageRequest.of(0, 10))
                 .getContent();
         RelatoDetalheDTO detalhe = relatoService.obterDetalhe(cidadao.usuarioId(), criado.getId());
-        List<RelatoGestaoDTO> todos = relatoService.listarTodos();
+        List<RelatoGestaoDTO> todos = relatoService.listarTodos(FiltroRelatos.semFiltro());
         Relato atualizado = relatoService.atualizarStatus(criado.getId(), StatusRelato.EM_ANALISE, null);
 
         assertThat(meus).singleElement().satisfies(item -> {

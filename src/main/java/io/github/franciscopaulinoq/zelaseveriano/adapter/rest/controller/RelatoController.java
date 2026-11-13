@@ -7,6 +7,8 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDet
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,10 +61,16 @@ public class RelatoController {
     @Parameter(name = "pagina", in = ParameterIn.QUERY, description = "Número da página, começando em 0")
     @Parameter(name = "tamanho", in = ParameterIn.QUERY, description = "Itens por página (padrão 10, máximo 50)")
     public ResponseEntity<Page<RelatoListagemResponse>> listarMeusRelatos(
-            @AuthenticationPrincipal UserDetails userDetails, @Parameter(hidden = true) Pageable pageable) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Parameter(hidden = true) Pageable pageable,
+            @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
+                    StatusRelato status,
+            @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+                    Integer categoriaId) {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
+        FiltroRelatos filtro = new FiltroRelatos(status, categoriaId);
         return ResponseEntity.ok(
-                relatoService.visualizarMeus(usuarioId, pageable).map(mapper::mapListagem));
+                relatoService.visualizarMeus(usuarioId, filtro, pageable).map(mapper::mapListagem));
     }
 
     @GetMapping("/{id}")

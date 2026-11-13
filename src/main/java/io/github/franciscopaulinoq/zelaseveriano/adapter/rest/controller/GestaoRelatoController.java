@@ -4,6 +4,9 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestM
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarStatusRelatoRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,8 +28,12 @@ public class GestaoRelatoController {
     private final RelatoRestMapper mapper;
 
     @GetMapping
-    public ResponseEntity<List<RelatoGestaoResponse>> listarTodos() {
-        return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos()));
+    public ResponseEntity<List<RelatoGestaoResponse>> listarTodos(
+            @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
+                    StatusRelato status,
+            @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+                    Integer categoriaId) {
+        return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
     }
 
     @PatchMapping("/{id}/status")

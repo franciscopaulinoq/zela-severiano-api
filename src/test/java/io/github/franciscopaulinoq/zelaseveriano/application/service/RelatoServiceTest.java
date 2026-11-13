@@ -15,6 +15,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDT
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
@@ -175,10 +176,10 @@ class RelatoServiceTest {
     void listagemDoCidadaoUsaApenasOsRelatosDoSeuPerfil() {
         when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
         Pageable pagina = PageRequest.of(0, 10);
-        when(relatoRepository.findAllByPerfilId(PERFIL.getId(), pagina))
+        when(relatoRepository.findAllByPerfilId(PERFIL.getId(), FiltroRelatos.semFiltro(), pagina))
                 .thenReturn(new PageImpl<>(List.of(relatoExistente()), pagina, 1));
 
-        Page<RelatoListagemDTO> relatos = relatoService.visualizarMeus(USUARIO_ID, pagina);
+        Page<RelatoListagemDTO> relatos = relatoService.visualizarMeus(USUARIO_ID, FiltroRelatos.semFiltro(), pagina);
 
         assertThat(relatos.getTotalElements()).isEqualTo(1);
         assertThat(relatos.getContent()).singleElement().satisfies(relato -> {
@@ -186,7 +187,7 @@ class RelatoServiceTest {
             assertThat(relato.getCategoriaNome()).isEqualTo("Iluminação");
             assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
         });
-        verify(relatoRepository, never()).findAll();
+        verify(relatoRepository, never()).findAll(any());
     }
 
     private void prepararPerfilECategoria() {
