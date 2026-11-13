@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarPerfilDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
@@ -16,10 +17,25 @@ public class PerfilService {
 
     @Transactional(readOnly = true)
     public PerfilMeDTO obterMeuPerfil(UUID usuarioId) {
-        Perfil perfil = perfilRepository
+        return toPerfilMeDTO(buscarPerfil(usuarioId));
+    }
+
+    @Transactional
+    public PerfilMeDTO atualizarMeuPerfil(UUID usuarioId, AtualizarPerfilDTO dados) {
+        Perfil perfil = buscarPerfil(usuarioId);
+
+        perfil.atualizarDados(dados.getNomeCompleto(), dados.getEmail());
+
+        return toPerfilMeDTO(perfilRepository.save(perfil));
+    }
+
+    private Perfil buscarPerfil(UUID usuarioId) {
+        return perfilRepository
                 .findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado para o usuário logado."));
+    }
 
+    private PerfilMeDTO toPerfilMeDTO(Perfil perfil) {
         return PerfilMeDTO.builder()
                 .id(perfil.getId())
                 .nomeCompleto(perfil.getNomeCompleto())

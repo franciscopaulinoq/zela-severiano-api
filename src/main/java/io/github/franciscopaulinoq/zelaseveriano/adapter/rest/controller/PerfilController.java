@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.PerfilRestMapper;
+import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarPerfilRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.TrocarSenhaRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.PerfilMeResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
@@ -30,6 +31,14 @@ public class PerfilController {
     public ResponseEntity<PerfilMeResponse> obterMeuPerfil(@AuthenticationPrincipal UserDetails userDetails) {
         UUID usuarioId = UUID.fromString(userDetails.getUsername());
         var perfil = perfilService.obterMeuPerfil(usuarioId);
+        return ResponseEntity.ok(mapper.map(perfil));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<PerfilMeResponse> atualizarMeuPerfil(
+            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody AtualizarPerfilRequest request) {
+        UUID usuarioId = UUID.fromString(userDetails.getUsername());
+        var perfil = perfilService.atualizarMeuPerfil(usuarioId, mapper.map(request));
         return ResponseEntity.ok(mapper.map(perfil));
     }
 
