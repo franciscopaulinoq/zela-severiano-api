@@ -6,12 +6,14 @@ Só as instruções mudam entre P1, P2 e P3; o restante é idêntico para os tr�
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 
 from models import ArquivoAlterado, ContextoPR
 
 NIVEIS_PROMPT = ("P1", "P2", "P3")
 _PASTA_PROMPTS = Path(__file__).parent / "prompts"
+_TITULO = re.compile(r"^(#{1,6})(?=\s)")
 
 
 def montar_prompt(contexto: ContextoPR, nivel: str = "P2") -> str:
@@ -27,8 +29,8 @@ def montar_prompt(contexto: ContextoPR, nivel: str = "P2") -> str:
         "{{ARQUIVOS_ALTERADOS_COMPLETOS}}": "\n\n".join(_formatar(arquivo) for arquivo in contexto.arquivos),
         "{{ISSUE_NUMBER}}": str(contexto.numero_issue or "N/A"),
         "{{ISSUE_TITLE}}": contexto.titulo_issue or "(nenhuma issue vinculada encontrada no corpo do PR)",
-        "{{ISSUE_BODY}}": contexto.corpo_issue or "",
-        "{{PROJECT_CONTEXT}}": contexto.contexto_projeto,
+        "{{ISSUE_BODY}}": rebaixar_titulos(contexto.corpo_issue or "", 3),
+        "{{PROJECT_CONTEXT}}": rebaixar_titulos(contexto.contexto_projeto, 3),
         "{{PR_NUMBER}}": str(contexto.numero_pr),
         "{{PR_TITLE}}": contexto.titulo_pr,
     }
@@ -36,6 +38,24 @@ def montar_prompt(contexto: ContextoPR, nivel: str = "P2") -> str:
         dados = dados.replace(marcador, valor)
 
     return f"{instrucoes.strip()}\n\n{formato.strip()}\n\n---\n\n{dados}"
+
+
+def rebaixar_titulos(markdown: str, nivel_minimo: int) -> str:
+    linhas = markdown.splitlines()
+    em_codigo = False
+    titulos: list[int] = []
+    for indice, linha in enumerate(linhas):
+        if linha.lstrip().startswith("```"):
+            em_codigo = not em_codigo
+        elif not em_codigo and _TITULO.match(linha):
+            titulos.append(indice)
+    if not titulos:
+        return markdown
+    deslocamento = nivel_minimo - min(len(_TITULO.match(linhas[i]).group(1)) for i in titulos)
+    for indice in titulos:
+        nivel = len(_TITULO.match(linhas[indice]).group(1))
+        linhas[indice] = "#" * min(6, max(1, nivel + deslocamento)) + linhas[indice][nivel:]
+    return "\n".join(linhas) + ("\n" if markdown.endswith("\n") else "")
 
 
 def sha256(texto: str) -> str:
@@ -49,4 +69,5 @@ def _ler(nome: str) -> str:
 def _formatar(arquivo: ArquivoAlterado) -> str:
     if arquivo.conteudo is None:
         return f"### `{arquivo.caminho}`\n(conteúdo completo indisponível — apenas o patch abaixo)\n```diff\n{arquivo.patch}\n```"
-    return f"### `{arquivo.caminho}`\n```java\n{arquivo.conteudo}\n```"
+    linguagem = Path(arquivo.caminho).suffix.lstrip(".")
+    return f"### `{arquivo.caminho}`\n```{linguagem}\n{arquivo.conteudo}\n```"

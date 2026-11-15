@@ -9,10 +9,10 @@ on:
         description: "Números dos PRs, separados por vírgula (ex.: 30,31,32)"
         required: true
       experimento:
-        description: "E1 = coleta (P1, P2, P3) · PILOTO = mesma configuração, para validar o pipeline"
+        description: "E1 ou E2 = coleta (P1, P2, P3) · PILOTO = mesma configuração, para validar o pipeline"
         required: true
         type: choice
-        options: [PILOTO, E1]
+        options: [PILOTO, E1, E2]
       modelos:
         description: "Provedores a executar, separados por vírgula"
         required: true

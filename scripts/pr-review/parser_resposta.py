@@ -36,8 +36,6 @@ def extrair_comentarios(texto: str) -> tuple[bool, list[Comentario]]:
         Comentario(
             arquivo=str(item.get("arquivo", "")),
             linha=_inteiro(item.get("linha")),
-            categoria=str(item.get("categoria", "")),
-            severidade=str(item.get("severidade", "")),
             comentario=str(item["comentario"]),
         )
         for item in itens

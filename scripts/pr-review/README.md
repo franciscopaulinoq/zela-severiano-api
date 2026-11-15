@@ -21,7 +21,7 @@ python review_pr.py --pr 30 --experimento E1 --niveis-prompt P1,P2,P3
 ## No GitHub Actions
 
 `.github/workflows/pr-ai-review.yml` roda só por disparo manual (Actions → *Run
-workflow*), com a lista de PRs, o experimento (`PILOTO` ou `E1`) e os provedores. Cada
+workflow*), com a lista de PRs, o experimento (`PILOTO`, `E1` ou `E2`) e os provedores. Cada
 PR vira um job: o código é o do commit do PR, os scripts vêm do `main` e os CSVs sobem
 como artifact.
 
@@ -38,7 +38,7 @@ temperatura padrão de cada provedor, o mesmo nível de raciocínio nos três
 - `config.py`: configuração lida do ambiente.
 - `github_client.py`: chamadas à API do GitHub.
 - `context_builder.py`: contexto do PR.
-- `build_project_context.py`: contexto do projeto (README, regras e pacotes), sem as seções sobre este pipeline.
+- `build_project_context.py`: contexto do projeto (README, regras e árvore do código-fonte; caminhos configuráveis por `--regras` e `--fontes`), sem as seções sobre este pipeline.
 - `prompt_builder.py` e `prompts/`: montagem do prompt (ver `prompts/README.md`).
 - `clients/`: um cliente por provedor, com a interface `ClienteModelo.gerar(prompt, timeout)`.
 - `parser_resposta.py`: extrai os comentários do JSON devolvido.

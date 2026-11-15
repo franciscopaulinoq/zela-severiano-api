@@ -134,7 +134,7 @@ def _niveis(valor: str) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Revisão de PR por modelos de IA.")
     parser.add_argument("--pr", type=int, required=True, help="número do pull request")
-    parser.add_argument("--experimento", choices=["E1", "PILOTO"], required=True)
+    parser.add_argument("--experimento", choices=["E1", "E2", "PILOTO"], required=True)
     parser.add_argument("--niveis-prompt", type=_niveis, default=["P2"])
     parser.add_argument(
         "--run-id",

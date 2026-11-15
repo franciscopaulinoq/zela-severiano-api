@@ -30,8 +30,6 @@ class ContextoPR:
 class Comentario:
     arquivo: str
     linha: int | None
-    categoria: str
-    severidade: str
     comentario: str
 
 

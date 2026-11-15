@@ -42,8 +42,6 @@ _COLUNAS_COMENTARIO = [
     "indice",
     "arquivo",
     "linha",
-    "categoria",
-    "severidade",
     "comentario",
 ]
 
@@ -65,8 +63,6 @@ def salvar_revisao(csv_revisoes: str, csv_comentarios: str, revisao: Revisao) ->
                 "indice": indice,
                 "arquivo": comentario.arquivo,
                 "linha": _vazio_se_nulo(comentario.linha),
-                "categoria": comentario.categoria,
-                "severidade": comentario.severidade,
                 "comentario": comentario.comentario,
             }
             for indice, comentario in enumerate(revisao.comentarios)
