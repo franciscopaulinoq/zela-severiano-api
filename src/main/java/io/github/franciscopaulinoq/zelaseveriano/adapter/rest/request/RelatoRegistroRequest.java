@@ -11,14 +11,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RelatoRegistroRequest {
-    @NotNull(message = "Categoria ID é obrigatória")
-    private Integer categoriaId;
+  @NotNull(message = "Categoria ID é obrigatória")
+  private Integer categoriaId;
 
-    private String descricao;
+  private String descricao;
 
-    @NotNull(message = "Latitude é obrigatória")
-    private Double latitude;
+  @NotNull(message = "Latitude é obrigatória")
+  private Double latitude;
 
-    @NotNull(message = "Longitude é obrigatória")
-    private Double longitude;
+  @NotNull(message = "Longitude é obrigatória")
+  private Double longitude;
 }

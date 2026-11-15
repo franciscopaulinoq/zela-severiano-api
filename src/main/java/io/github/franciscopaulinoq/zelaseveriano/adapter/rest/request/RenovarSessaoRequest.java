@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RenovarSessaoRequest {
-    @NotBlank(message = "Token de renovação é obrigatório")
-    private String refreshToken;
+  @NotBlank(message = "Token de renovação é obrigatório")
+  private String refreshToken;
 }

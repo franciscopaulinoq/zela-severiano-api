@@ -12,10 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AtualizarPerfilRequest {
-    @Size(min = 3, max = 150, message = "Nome deve ter entre 3 e 150 caracteres")
-    private String nomeCompleto;
+  @Size(min = 3, max = 150, message = "Nome deve ter entre 3 e 150 caracteres")
+  private String nomeCompleto;
 
-    @Email(message = "Email deve ser válido")
-    @Size(max = 255, message = "Email deve ter no máximo 255 caracteres")
-    private String email;
+  @Email(message = "Email deve ser válido")
+  @Size(max = 255, message = "Email deve ter no máximo 255 caracteres")
+  private String email;
 }

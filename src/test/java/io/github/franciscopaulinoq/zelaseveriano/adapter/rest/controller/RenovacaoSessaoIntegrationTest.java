@@ -28,66 +28,74 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import(CidadaosDeTeste.class)
 class RenovacaoSessaoIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private CidadaosDeTeste cidadaos;
+  @Autowired private CidadaosDeTeste cidadaos;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+  @Autowired private UsuarioRepository usuarioRepository;
 
-    @Value("${api.security.token.secret}")
-    private String secret;
+  @Value("${api.security.token.secret}")
+  private String secret;
 
-    @Test
-    void tokenDeRenovacaoDoLoginEmiteNovoTokenDeAcessoValido() throws Exception {
-        Cidadao cidadao = cidadaos.cadastrar("Tiago Nunes");
-        String corpoLogin = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"cpf": "%s", "senha": "%s"}
-                                """.formatted(cidadao.cpf(), CidadaosDeTeste.SENHA)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.refreshToken").exists())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-        String refreshToken = JsonPath.read(corpoLogin, "$.refreshToken");
+  @Test
+  void tokenDeRenovacaoDoLoginEmiteNovoTokenDeAcessoValido() throws Exception {
+    Cidadao cidadao = cidadaos.cadastrar("Tiago Nunes");
+    String corpoLogin =
+        mockMvc
+            .perform(
+                post("/api/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"cpf": "%s", "senha": "%s"}
+                        """
+                            .formatted(cidadao.cpf(), CidadaosDeTeste.SENHA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.refreshToken").exists())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String refreshToken = JsonPath.read(corpoLogin, "$.refreshToken");
 
-        String corpoRenovacao = renovar(refreshToken)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.refreshToken").doesNotExist())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-        String novoToken = JsonPath.read(corpoRenovacao, "$.token");
+    String corpoRenovacao =
+        renovar(refreshToken)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").exists())
+            .andExpect(jsonPath("$.refreshToken").doesNotExist())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String novoToken = JsonPath.read(corpoRenovacao, "$.token");
 
-        mockMvc.perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + novoToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeCompleto").value("Tiago Nunes"));
-    }
+    mockMvc
+        .perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + novoToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nomeCompleto").value("Tiago Nunes"));
+  }
 
-    @Test
-    void tokenDeRenovacaoExpiradoEhRecusadoSemEmitirToken() throws Exception {
-        Cidadao cidadao = cidadaos.cadastrar("Vera Lúcia");
-        JwtService geradoHaOitoDias =
-                new JwtService(Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC));
-        ReflectionTestUtils.setField(geradoHaOitoDias, "secret", secret);
-        String expirado = geradoHaOitoDias.gerarTokenDeRenovacao(
-                usuarioRepository.findById(cidadao.usuarioId()).orElseThrow());
+  @Test
+  void tokenDeRenovacaoExpiradoEhRecusadoSemEmitirToken() throws Exception {
+    Cidadao cidadao = cidadaos.cadastrar("Vera Lúcia");
+    JwtService geradoHaOitoDias =
+        new JwtService(Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC));
+    ReflectionTestUtils.setField(geradoHaOitoDias, "secret", secret);
+    String expirado =
+        geradoHaOitoDias.gerarTokenDeRenovacao(
+            usuarioRepository.findById(cidadao.usuarioId()).orElseThrow());
 
-        renovar(expirado)
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.token").doesNotExist());
-    }
+    renovar(expirado)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.token").doesNotExist());
+  }
 
-    private ResultActions renovar(String refreshToken) throws Exception {
-        return mockMvc.perform(post("/api/v1/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"refreshToken": "%s"}
-                        """.formatted(refreshToken)));
-    }
+  private ResultActions renovar(String refreshToken) throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/auth/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"refreshToken": "%s"}
+                """
+                    .formatted(refreshToken)));
+  }
 }

@@ -16,9 +16,9 @@ import lombok.Setter;
 @Builder
 public class AtualizarStatusRelatoRequest {
 
-    @NotNull(message = "Status é obrigatório")
-    private StatusRelato status;
+  @NotNull(message = "Status é obrigatório")
+  private StatusRelato status;
 
-    @Size(max = 500, message = "Observação deve ter no máximo 500 caracteres")
-    private String observacao;
+  @Size(max = 500, message = "Observação deve ter no máximo 500 caracteres")
+  private String observacao;
 }

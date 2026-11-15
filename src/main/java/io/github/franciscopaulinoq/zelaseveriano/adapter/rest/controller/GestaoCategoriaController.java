@@ -21,25 +21,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class GestaoCategoriaController {
 
-    private final CategoriaService categoriaService;
-    private final CategoriaRestMapper mapper;
+  private final CategoriaService categoriaService;
+  private final CategoriaRestMapper mapper;
 
-    @PostMapping
-    public ResponseEntity<CategoriaResponse> criar(@Valid @RequestBody CategoriaRequest request) {
-        var criada = categoriaService.criar(mapper.map(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(criada));
-    }
+  @PostMapping
+  public ResponseEntity<CategoriaResponse> criar(@Valid @RequestBody CategoriaRequest request) {
+    var criada = categoriaService.criar(mapper.map(request));
+    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(criada));
+  }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CategoriaResponse> atualizar(
-            @PathVariable("id") Integer categoriaId, @Valid @RequestBody CategoriaRequest request) {
-        var atualizada = categoriaService.atualizar(categoriaId, mapper.map(request));
-        return ResponseEntity.ok(mapper.map(atualizada));
-    }
+  @PutMapping("/{id}")
+  public ResponseEntity<CategoriaResponse> atualizar(
+      @PathVariable("id") Integer categoriaId, @Valid @RequestBody CategoriaRequest request) {
+    var atualizada = categoriaService.atualizar(categoriaId, mapper.map(request));
+    return ResponseEntity.ok(mapper.map(atualizada));
+  }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable("id") Integer categoriaId) {
-        categoriaService.remover(categoriaId);
-        return ResponseEntity.noContent().build();
-    }
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> remover(@PathVariable("id") Integer categoriaId) {
+    categoriaService.remover(categoriaId);
+    return ResponseEntity.noContent().build();
+  }
 }

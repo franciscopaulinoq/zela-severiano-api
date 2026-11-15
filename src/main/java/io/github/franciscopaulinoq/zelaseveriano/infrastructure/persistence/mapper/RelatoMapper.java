@@ -5,10 +5,10 @@ import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.enti
 import org.mapstruct.Mapper;
 
 @Mapper(
-        componentModel = "spring",
-        uses = {CategoriaMapper.class, PerfilMapper.class})
+    componentModel = "spring",
+    uses = {CategoriaMapper.class, PerfilMapper.class})
 public interface RelatoMapper {
-    RelatoEntity map(Relato relato);
+  RelatoEntity map(Relato relato);
 
-    Relato map(RelatoEntity relatoEntity);
+  Relato map(RelatoEntity relatoEntity);
 }

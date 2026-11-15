@@ -18,17 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final ContaService contaService;
+  private final ContaService contaService;
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        SessaoDTO sessao = contaService.autenticar(request.getCpf(), request.getSenha());
-        return ResponseEntity.ok(new LoginResponse(sessao.tokenAcesso(), sessao.tokenRenovacao()));
-    }
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    SessaoDTO sessao = contaService.autenticar(request.getCpf(), request.getSenha());
+    return ResponseEntity.ok(new LoginResponse(sessao.tokenAcesso(), sessao.tokenRenovacao()));
+  }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> renovarSessao(@Valid @RequestBody RenovarSessaoRequest request) {
-        String token = contaService.renovarSessao(request.getRefreshToken());
-        return ResponseEntity.ok(new LoginResponse(token, null));
-    }
+  @PostMapping("/refresh")
+  public ResponseEntity<LoginResponse> renovarSessao(
+      @Valid @RequestBody RenovarSessaoRequest request) {
+    String token = contaService.renovarSessao(request.getRefreshToken());
+    return ResponseEntity.ok(new LoginResponse(token, null));
+  }
 }

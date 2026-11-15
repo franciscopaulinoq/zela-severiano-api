@@ -14,12 +14,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RelatoDetalheDTO {
-    private Long id;
-    private String urlFoto;
-    private StatusRelato status;
-    private OffsetDateTime criadoEm;
-    private String categoriaNome;
-    private Double latitude;
-    private Double longitude;
-    private String descricao;
+  private Long id;
+  private String urlFoto;
+  private StatusRelato status;
+  private OffsetDateTime criadoEm;
+  private String categoriaNome;
+  private Double latitude;
+  private Double longitude;
+  private String descricao;
 }

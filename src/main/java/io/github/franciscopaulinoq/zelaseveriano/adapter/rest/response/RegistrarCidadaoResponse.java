@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RegistrarCidadaoResponse {
-    private UUID usuarioId;
-    private UUID perfilId;
-    private UUID enderecoId;
-    private String cpf;
-    private String nomeCompleto;
-    private String email;
-    private String mensagem;
+  private UUID usuarioId;
+  private UUID perfilId;
+  private UUID enderecoId;
+  private String cpf;
+  private String nomeCompleto;
+  private String email;
+  private String mensagem;
 }

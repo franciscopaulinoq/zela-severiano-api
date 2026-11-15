@@ -13,18 +13,19 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface JpaRelatoRepository extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
-    Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
+public interface JpaRelatoRepository
+    extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
+  Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
-    long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
+  long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
-    boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
+  boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
 
-    @Override
-    @EntityGraph(attributePaths = "categoria")
-    Page<RelatoEntity> findAll(Specification<RelatoEntity> spec, Pageable pageable);
+  @Override
+  @EntityGraph(attributePaths = "categoria")
+  Page<RelatoEntity> findAll(Specification<RelatoEntity> spec, Pageable pageable);
 
-    @Override
-    @EntityGraph(attributePaths = {"perfil", "categoria"})
-    List<RelatoEntity> findAll(Specification<RelatoEntity> spec, Sort sort);
+  @Override
+  @EntityGraph(attributePaths = {"perfil", "categoria"})
+  List<RelatoEntity> findAll(Specification<RelatoEntity> spec, Sort sort);
 }

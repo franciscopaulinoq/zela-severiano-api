@@ -21,91 +21,95 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ContaService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PerfilRepository perfilRepository;
-    private final EnderecoRepository enderecoRepository;
-    private final PasswordHasher passwordHasher;
-    private final TokenService tokenService;
+  private final UsuarioRepository usuarioRepository;
+  private final PerfilRepository perfilRepository;
+  private final EnderecoRepository enderecoRepository;
+  private final PasswordHasher passwordHasher;
+  private final TokenService tokenService;
 
-    @Transactional(readOnly = true)
-    public SessaoDTO autenticar(String cpf, String senha) {
-        Usuario usuario = usuarioRepository
-                .findByCpf(cpf)
-                .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
+  @Transactional(readOnly = true)
+  public SessaoDTO autenticar(String cpf, String senha) {
+    Usuario usuario =
+        usuarioRepository
+            .findByCpf(cpf)
+            .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
 
-        if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {
-            throw new IllegalArgumentException("CPF ou senha inválidos");
-        }
-
-        return new SessaoDTO(tokenService.gerarToken(usuario), tokenService.gerarTokenDeRenovacao(usuario));
+    if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {
+      throw new IllegalArgumentException("CPF ou senha inválidos");
     }
 
-    @Transactional(readOnly = true)
-    public String renovarSessao(String tokenRenovacao) {
-        Usuario usuario = tokenService
-                .validarTokenDeRenovacao(tokenRenovacao)
-                .flatMap(usuarioRepository::findById)
-                .orElseThrow(() -> new TokenInvalidoException("Token de renovação inválido ou expirado."));
+    return new SessaoDTO(
+        tokenService.gerarToken(usuario), tokenService.gerarTokenDeRenovacao(usuario));
+  }
 
-        return tokenService.gerarToken(usuario);
+  @Transactional(readOnly = true)
+  public String renovarSessao(String tokenRenovacao) {
+    Usuario usuario =
+        tokenService
+            .validarTokenDeRenovacao(tokenRenovacao)
+            .flatMap(usuarioRepository::findById)
+            .orElseThrow(
+                () -> new TokenInvalidoException("Token de renovação inválido ou expirado."));
+
+    return tokenService.gerarToken(usuario);
+  }
+
+  @Transactional
+  public void trocarSenha(UUID usuarioId, String senhaAtual, String novaSenha) {
+    Usuario usuario =
+        usuarioRepository
+            .findById(usuarioId)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+    if (senhaAtual != null && !passwordHasher.matches(senhaAtual, usuario.getSenhaHash())) {
+      throw new IllegalArgumentException("Senha atual incorreta.");
     }
 
-    @Transactional
-    public void trocarSenha(UUID usuarioId, String senhaAtual, String novaSenha) {
-        Usuario usuario = usuarioRepository
-                .findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+    usuario.alterarSenha(passwordHasher.hash(novaSenha));
+    usuarioRepository.save(usuario);
+  }
 
-        if (senhaAtual != null && !passwordHasher.matches(senhaAtual, usuario.getSenhaHash())) {
-            throw new IllegalArgumentException("Senha atual incorreta.");
-        }
-
-        usuario.alterarSenha(passwordHasher.hash(novaSenha));
-        usuarioRepository.save(usuario);
+  @Transactional
+  public RegistrarCidadaoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
+    if (usuarioRepository.existsByCpf(dto.getCpf())) {
+      throw new CidadaoJaRegistradoException("CPF já registrado no sistema");
     }
 
-    @Transactional
-    public RegistrarCidadaoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
-        if (usuarioRepository.existsByCpf(dto.getCpf())) {
-            throw new CidadaoJaRegistradoException("CPF já registrado no sistema");
-        }
+    String senhaHash = passwordHasher.hash(senhaPura);
 
-        String senhaHash = passwordHasher.hash(senhaPura);
+    Usuario usuario =
+        Usuario.builder().id(UUID.randomUUID()).cpf(dto.getCpf()).senhaHash(senhaHash).build();
 
-        Usuario usuario = Usuario.builder()
-                .id(UUID.randomUUID())
-                .cpf(dto.getCpf())
-                .senhaHash(senhaHash)
-                .build();
+    Usuario usuarioSalvo = usuarioRepository.save(usuario);
+    dto.setUsuarioId(usuarioSalvo.getId());
 
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-        dto.setUsuarioId(usuarioSalvo.getId());
+    Perfil perfil =
+        Perfil.builder()
+            .id(UUID.randomUUID())
+            .usuario(usuarioSalvo)
+            .nomeCompleto(dto.getNomeCompleto())
+            .email(dto.getEmail())
+            .build();
 
-        Perfil perfil = Perfil.builder()
-                .id(UUID.randomUUID())
-                .usuario(usuarioSalvo)
-                .nomeCompleto(dto.getNomeCompleto())
-                .email(dto.getEmail())
-                .build();
+    Perfil perfilSalvo = perfilRepository.save(perfil);
+    dto.setPerfilId(perfilSalvo.getId());
 
-        Perfil perfilSalvo = perfilRepository.save(perfil);
-        dto.setPerfilId(perfilSalvo.getId());
+    Endereco endereco =
+        Endereco.builder()
+            .id(UUID.randomUUID())
+            .perfil(perfilSalvo)
+            .cep("59910000")
+            .logradouro(dto.getLogradouro())
+            .numero(dto.getNumero())
+            .complemento(dto.getComplemento())
+            .bairro(dto.getBairro())
+            .cidade("Doutor Severiano")
+            .uf("RN")
+            .build();
 
-        Endereco endereco = Endereco.builder()
-                .id(UUID.randomUUID())
-                .perfil(perfilSalvo)
-                .cep("59910000")
-                .logradouro(dto.getLogradouro())
-                .numero(dto.getNumero())
-                .complemento(dto.getComplemento())
-                .bairro(dto.getBairro())
-                .cidade("Doutor Severiano")
-                .uf("RN")
-                .build();
+    Endereco enderecoSalvo = enderecoRepository.save(endereco);
+    dto.setEnderecoId(enderecoSalvo.getId());
 
-        Endereco enderecoSalvo = enderecoRepository.save(endereco);
-        dto.setEnderecoId(enderecoSalvo.getId());
-
-        return dto;
-    }
+    return dto;
+  }
 }

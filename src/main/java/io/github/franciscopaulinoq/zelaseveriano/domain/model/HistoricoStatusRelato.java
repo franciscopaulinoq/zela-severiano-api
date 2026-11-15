@@ -10,10 +10,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class HistoricoStatusRelato {
-    private Long id;
-    private Long relatoId;
-    private StatusRelato statusAnterior;
-    private StatusRelato statusNovo;
-    private String observacao;
-    private OffsetDateTime alteradoEm;
+  private Long id;
+  private Long relatoId;
+  private StatusRelato statusAnterior;
+  private StatusRelato statusNovo;
+  private String observacao;
+  private OffsetDateTime alteradoEm;
 }

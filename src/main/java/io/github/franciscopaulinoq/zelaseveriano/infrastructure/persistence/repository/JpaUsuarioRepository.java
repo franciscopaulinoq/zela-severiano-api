@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaUsuarioRepository extends JpaRepository<UsuarioEntity, UUID> {
-    Optional<UsuarioEntity> findByCpf(String cpf);
+  Optional<UsuarioEntity> findByCpf(String cpf);
 
-    boolean existsByCpf(String cpf);
+  boolean existsByCpf(String cpf);
 }

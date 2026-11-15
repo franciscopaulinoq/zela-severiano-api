@@ -19,18 +19,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CidadaoController {
 
-    private final ContaService contaService;
-    private final RegistrarCidadaoMapper mapper;
+  private final ContaService contaService;
+  private final RegistrarCidadaoMapper mapper;
 
-    @PostMapping
-    public ResponseEntity<RegistrarCidadaoResponse> registrar(@Valid @RequestBody RegistrarCidadaoRequest request) {
+  @PostMapping
+  public ResponseEntity<RegistrarCidadaoResponse> registrar(
+      @Valid @RequestBody RegistrarCidadaoRequest request) {
 
-        RegistrarCidadaoDTO dto = mapper.map(request);
+    RegistrarCidadaoDTO dto = mapper.map(request);
 
-        RegistrarCidadaoDTO resultado = contaService.registrarCidadao(dto, request.getSenha());
+    RegistrarCidadaoDTO resultado = contaService.registrarCidadao(dto, request.getSenha());
 
-        RegistrarCidadaoResponse response = mapper.map(resultado);
+    RegistrarCidadaoResponse response = mapper.map(resultado);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
 }

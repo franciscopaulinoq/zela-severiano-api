@@ -10,18 +10,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class HistoricoStatusRelatoRepositoryImpl implements HistoricoStatusRelatoRepository {
-    private final JpaHistoricoStatusRelatoRepository jpaRepository;
-    private final HistoricoStatusRelatoMapper mapper;
+  private final JpaHistoricoStatusRelatoRepository jpaRepository;
+  private final HistoricoStatusRelatoMapper mapper;
 
-    @Override
-    public HistoricoStatusRelato save(HistoricoStatusRelato historico) {
-        return mapper.map(jpaRepository.save(mapper.map(historico)));
-    }
+  @Override
+  public HistoricoStatusRelato save(HistoricoStatusRelato historico) {
+    return mapper.map(jpaRepository.save(mapper.map(historico)));
+  }
 
-    @Override
-    public List<HistoricoStatusRelato> findAllByRelatoId(Long relatoId) {
-        return jpaRepository.findAllByRelatoIdOrderByAlteradoEmAscIdAsc(relatoId).stream()
-                .map(mapper::map)
-                .toList();
-    }
+  @Override
+  public List<HistoricoStatusRelato> findAllByRelatoId(Long relatoId) {
+    return jpaRepository.findAllByRelatoIdOrderByAlteradoEmAscIdAsc(relatoId).stream()
+        .map(mapper::map)
+        .toList();
+  }
 }

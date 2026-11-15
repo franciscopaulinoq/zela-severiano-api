@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CategoriaResponse {
-    private Integer id;
-    private String nome;
-    private String iconeNome;
+  private Integer id;
+  private String nome;
+  private String iconeNome;
 }

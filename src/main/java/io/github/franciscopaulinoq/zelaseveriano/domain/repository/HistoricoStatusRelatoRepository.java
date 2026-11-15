@@ -4,7 +4,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRel
 import java.util.List;
 
 public interface HistoricoStatusRelatoRepository {
-    HistoricoStatusRelato save(HistoricoStatusRelato historico);
+  HistoricoStatusRelato save(HistoricoStatusRelato historico);
 
-    List<HistoricoStatusRelato> findAllByRelatoId(Long relatoId);
+  List<HistoricoStatusRelato> findAllByRelatoId(Long relatoId);
 }

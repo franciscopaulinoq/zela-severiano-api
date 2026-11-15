@@ -13,34 +13,35 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PerfilService {
 
-    private final PerfilRepository perfilRepository;
+  private final PerfilRepository perfilRepository;
 
-    @Transactional(readOnly = true)
-    public PerfilMeDTO obterMeuPerfil(UUID usuarioId) {
-        return toPerfilMeDTO(buscarPerfil(usuarioId));
-    }
+  @Transactional(readOnly = true)
+  public PerfilMeDTO obterMeuPerfil(UUID usuarioId) {
+    return toPerfilMeDTO(buscarPerfil(usuarioId));
+  }
 
-    @Transactional
-    public PerfilMeDTO atualizarMeuPerfil(UUID usuarioId, AtualizarPerfilDTO dados) {
-        Perfil perfil = buscarPerfil(usuarioId);
+  @Transactional
+  public PerfilMeDTO atualizarMeuPerfil(UUID usuarioId, AtualizarPerfilDTO dados) {
+    Perfil perfil = buscarPerfil(usuarioId);
 
-        perfil.atualizarDados(dados.getNomeCompleto(), dados.getEmail());
+    perfil.atualizarDados(dados.getNomeCompleto(), dados.getEmail());
 
-        return toPerfilMeDTO(perfilRepository.save(perfil));
-    }
+    return toPerfilMeDTO(perfilRepository.save(perfil));
+  }
 
-    private Perfil buscarPerfil(UUID usuarioId) {
-        return perfilRepository
-                .findByUsuarioId(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado para o usuário logado."));
-    }
+  private Perfil buscarPerfil(UUID usuarioId) {
+    return perfilRepository
+        .findByUsuarioId(usuarioId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("Perfil não encontrado para o usuário logado."));
+  }
 
-    private PerfilMeDTO toPerfilMeDTO(Perfil perfil) {
-        return PerfilMeDTO.builder()
-                .id(perfil.getId())
-                .nomeCompleto(perfil.getNomeCompleto())
-                .email(perfil.getEmail())
-                .cpf(perfil.getUsuario().getCpf())
-                .build();
-    }
+  private PerfilMeDTO toPerfilMeDTO(Perfil perfil) {
+    return PerfilMeDTO.builder()
+        .id(perfil.getId())
+        .nomeCompleto(perfil.getNomeCompleto())
+        .email(perfil.getEmail())
+        .cpf(perfil.getUsuario().getCpf())
+        .build();
+  }
 }

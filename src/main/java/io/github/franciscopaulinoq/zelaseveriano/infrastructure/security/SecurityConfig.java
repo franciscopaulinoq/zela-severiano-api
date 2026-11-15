@@ -16,28 +16,30 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final SecurityFilter securityFilter;
+  private final SecurityFilter securityFilter;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/cidadaos")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/categorias")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/publico/relatos")
-                        .permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-                        .permitAll()
-                        .requestMatchers("/api/v1/gestao/**")
-                        .hasRole("GESTOR")
-                        .anyRequest()
-                        .authenticated())
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http.csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authorize ->
+            authorize
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/cidadaos")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/categorias")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/publico/relatos")
+                .permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                .permitAll()
+                .requestMatchers("/api/v1/gestao/**")
+                .hasRole("GESTOR")
+                .anyRequest()
+                .authenticated())
+        .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        .build();
+  }
 }

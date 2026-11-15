@@ -20,62 +20,70 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import(CidadaosDeTeste.class)
 class TrocaSenhaIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private CidadaosDeTeste cidadaos;
+  @Autowired private CidadaosDeTeste cidadaos;
 
-    private Cidadao cidadao;
-    private String token;
+  private Cidadao cidadao;
+  private String token;
 
-    @BeforeEach
-    void setUp() {
-        cidadao = cidadaos.cadastrar("Marcos Dantas");
-        token = cidadaos.token(cidadao);
-    }
+  @BeforeEach
+  void setUp() {
+    cidadao = cidadaos.cadastrar("Marcos Dantas");
+    token = cidadaos.token(cidadao);
+  }
 
-    @Test
-    void comASenhaAtualCorretaANovaSenhaPassaAValerNoLogin() throws Exception {
-        trocarSenha("""
-                        {"senhaAtual": "%s", "novaSenha": "nova-senha-123"}
-                        """.formatted(CidadaosDeTeste.SENHA)).andExpect(status().isNoContent());
+  @Test
+  void comASenhaAtualCorretaANovaSenhaPassaAValerNoLogin() throws Exception {
+    trocarSenha(
+            """
+            {"senhaAtual": "%s", "novaSenha": "nova-senha-123"}
+            """
+                .formatted(CidadaosDeTeste.SENHA))
+        .andExpect(status().isNoContent());
 
-        login("nova-senha-123")
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
-        login(CidadaosDeTeste.SENHA).andExpect(status().isUnprocessableContent());
-    }
+    login("nova-senha-123").andExpect(status().isOk()).andExpect(jsonPath("$.token").exists());
+    login(CidadaosDeTeste.SENHA).andExpect(status().isUnprocessableContent());
+  }
 
-    @Test
-    void comASenhaAtualIncorretaNadaMuda() throws Exception {
-        trocarSenha("""
-                        {"senhaAtual": "senha-errada", "novaSenha": "nova-senha-123"}
-                        """).andExpect(status().isUnprocessableContent());
+  @Test
+  void comASenhaAtualIncorretaNadaMuda() throws Exception {
+    trocarSenha(
+            """
+            {"senhaAtual": "senha-errada", "novaSenha": "nova-senha-123"}
+            """)
+        .andExpect(status().isUnprocessableContent());
 
-        login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
-        login("nova-senha-123").andExpect(status().isUnprocessableContent());
-    }
+    login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
+    login("nova-senha-123").andExpect(status().isUnprocessableContent());
+  }
 
-    @Test
-    void novaSenhaCurtaEhRecusada() throws Exception {
-        trocarSenha("""
-                        {"senhaAtual": "%s", "novaSenha": "123"}
-                        """.formatted(CidadaosDeTeste.SENHA)).andExpect(status().isBadRequest());
-    }
+  @Test
+  void novaSenhaCurtaEhRecusada() throws Exception {
+    trocarSenha(
+            """
+            {"senhaAtual": "%s", "novaSenha": "123"}
+            """
+                .formatted(CidadaosDeTeste.SENHA))
+        .andExpect(status().isBadRequest());
+  }
 
-    private ResultActions trocarSenha(String corpo) throws Exception {
-        return mockMvc.perform(patch("/api/v1/perfis/me/senha")
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(corpo));
-    }
+  private ResultActions trocarSenha(String corpo) throws Exception {
+    return mockMvc.perform(
+        patch("/api/v1/perfis/me/senha")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(corpo));
+  }
 
-    private ResultActions login(String senha) throws Exception {
-        return mockMvc.perform(post("/api/v1/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"cpf": "%s", "senha": "%s"}
-                        """.formatted(cidadao.cpf(), senha)));
-    }
+  private ResultActions login(String senha) throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"cpf": "%s", "senha": "%s"}
+                """
+                    .formatted(cidadao.cpf(), senha)));
+  }
 }

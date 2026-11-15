@@ -14,16 +14,16 @@ import lombok.Setter;
 @Builder
 public class RegistrarCidadaoDTO {
 
-    private String cpf;
-    private String senhaHash;
-    private String nomeCompleto;
-    private String email;
-    private String logradouro;
-    private String numero;
-    private String complemento;
-    private String bairro;
+  private String cpf;
+  private String senhaHash;
+  private String nomeCompleto;
+  private String email;
+  private String logradouro;
+  private String numero;
+  private String complemento;
+  private String bairro;
 
-    private UUID usuarioId;
-    private UUID perfilId;
-    private UUID enderecoId;
+  private UUID usuarioId;
+  private UUID perfilId;
+  private UUID enderecoId;
 }

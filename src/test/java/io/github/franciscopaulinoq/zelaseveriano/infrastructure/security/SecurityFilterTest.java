@@ -26,57 +26,56 @@ import org.springframework.security.core.userdetails.UserDetails;
 @ExtendWith(MockitoExtension.class)
 class SecurityFilterTest {
 
-    @Mock
-    private JwtService jwtService;
+  @Mock private JwtService jwtService;
 
-    @Mock
-    private FilterChain filterChain;
+  @Mock private FilterChain filterChain;
 
-    @InjectMocks
-    private SecurityFilter securityFilter;
+  @InjectMocks private SecurityFilter securityFilter;
 
-    private final MockHttpServletRequest request = new MockHttpServletRequest();
-    private final MockHttpServletResponse response = new MockHttpServletResponse();
+  private final MockHttpServletRequest request = new MockHttpServletRequest();
+  private final MockHttpServletResponse response = new MockHttpServletResponse();
 
-    @AfterEach
-    void limparContexto() {
-        SecurityContextHolder.clearContext();
-    }
+  @AfterEach
+  void limparContexto() {
+    SecurityContextHolder.clearContext();
+  }
 
-    @Test
-    void autenticaComOPapelEOUsuarioDoTokenValido() throws Exception {
-        UUID usuarioId = UUID.randomUUID();
-        request.addHeader("Authorization", "Bearer token-valido");
-        when(jwtService.validarToken("token-valido")).thenReturn(Optional.of(new TokenPayload(usuarioId, Role.GESTOR)));
+  @Test
+  void autenticaComOPapelEOUsuarioDoTokenValido() throws Exception {
+    UUID usuarioId = UUID.randomUUID();
+    request.addHeader("Authorization", "Bearer token-valido");
+    when(jwtService.validarToken("token-valido"))
+        .thenReturn(Optional.of(new TokenPayload(usuarioId, Role.GESTOR)));
 
-        securityFilter.doFilter(request, response, filterChain);
+    securityFilter.doFilter(request, response, filterChain);
 
-        Authentication autenticacao = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(autenticacao).isNotNull();
-        assertThat(((UserDetails) autenticacao.getPrincipal()).getUsername()).isEqualTo(usuarioId.toString());
-        assertThat(autenticacao.getAuthorities())
-                .extracting(GrantedAuthority::getAuthority)
-                .containsExactly("ROLE_GESTOR");
-        verify(filterChain).doFilter(request, response);
-    }
+    Authentication autenticacao = SecurityContextHolder.getContext().getAuthentication();
+    assertThat(autenticacao).isNotNull();
+    assertThat(((UserDetails) autenticacao.getPrincipal()).getUsername())
+        .isEqualTo(usuarioId.toString());
+    assertThat(autenticacao.getAuthorities())
+        .extracting(GrantedAuthority::getAuthority)
+        .containsExactly("ROLE_GESTOR");
+    verify(filterChain).doFilter(request, response);
+  }
 
-    @Test
-    void naoAutenticaComTokenInvalidoMasSegueACadeia() throws Exception {
-        request.addHeader("Authorization", "Bearer token-invalido");
-        when(jwtService.validarToken("token-invalido")).thenReturn(Optional.empty());
+  @Test
+  void naoAutenticaComTokenInvalidoMasSegueACadeia() throws Exception {
+    request.addHeader("Authorization", "Bearer token-invalido");
+    when(jwtService.validarToken("token-invalido")).thenReturn(Optional.empty());
 
-        securityFilter.doFilter(request, response, filterChain);
+    securityFilter.doFilter(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-        verify(filterChain).doFilter(request, response);
-    }
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verify(filterChain).doFilter(request, response);
+  }
 
-    @Test
-    void naoConsultaOTokenQuandoNaoHaCabecalhoDeAutorizacao() throws Exception {
-        securityFilter.doFilter(request, response, filterChain);
+  @Test
+  void naoConsultaOTokenQuandoNaoHaCabecalhoDeAutorizacao() throws Exception {
+    securityFilter.doFilter(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-        verifyNoInteractions(jwtService);
-        verify(filterChain).doFilter(request, response);
-    }
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verifyNoInteractions(jwtService);
+    verify(filterChain).doFilter(request, response);
+  }
 }

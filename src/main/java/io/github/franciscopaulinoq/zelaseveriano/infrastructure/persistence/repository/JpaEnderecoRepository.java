@@ -6,5 +6,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaEnderecoRepository extends JpaRepository<EnderecoEntity, UUID> {
-    Optional<EnderecoEntity> findByPerfilId(UUID perfilId);
+  Optional<EnderecoEntity> findByPerfilId(UUID perfilId);
 }

@@ -12,6 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class AtualizarPerfilDTO {
-    private String nomeCompleto;
-    private String email;
+  private String nomeCompleto;
+  private String email;
 }

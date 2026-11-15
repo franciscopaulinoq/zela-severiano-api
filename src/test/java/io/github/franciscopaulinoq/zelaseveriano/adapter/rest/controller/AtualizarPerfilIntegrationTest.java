@@ -18,47 +18,53 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(CidadaosDeTeste.class)
 class AtualizarPerfilIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private CidadaosDeTeste cidadaos;
+  @Autowired private CidadaosDeTeste cidadaos;
 
-    private String token;
+  private String token;
 
-    @BeforeEach
-    void setUp() {
-        token = cidadaos.token(cidadaos.cadastrar("Helena Costa"));
-    }
+  @BeforeEach
+  void setUp() {
+    token = cidadaos.token(cidadaos.cadastrar("Helena Costa"));
+  }
 
-    @Test
-    void atualizaSoONomeEMantemOEmail() throws Exception {
-        mockMvc.perform(patch("/api/v1/perfis/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"nomeCompleto": "Helena Costa Lima"}
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeCompleto").value("Helena Costa Lima"))
-                .andExpect(jsonPath("$.email").value("cidadao@example.com"));
+  @Test
+  void atualizaSoONomeEMantemOEmail() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/v1/perfis/me")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"nomeCompleto": "Helena Costa Lima"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nomeCompleto").value("Helena Costa Lima"))
+        .andExpect(jsonPath("$.email").value("cidadao@example.com"));
 
-        mockMvc.perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + token))
-                .andExpect(jsonPath("$.nomeCompleto").value("Helena Costa Lima"));
-    }
+    mockMvc
+        .perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + token))
+        .andExpect(jsonPath("$.nomeCompleto").value("Helena Costa Lima"));
+  }
 
-    @Test
-    void emailInvalidoEhRecusadoComErroDeValidacao() throws Exception {
-        mockMvc.perform(patch("/api/v1/perfis/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"email": "nao-e-um-email"}
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.validation_errors.email").exists());
+  @Test
+  void emailInvalidoEhRecusadoComErroDeValidacao() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/v1/perfis/me")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email": "nao-e-um-email"}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validation_errors.email").exists());
 
-        mockMvc.perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + token))
-                .andExpect(jsonPath("$.email").value("cidadao@example.com"));
-    }
+    mockMvc
+        .perform(get("/api/v1/perfis/me").header("Authorization", "Bearer " + token))
+        .andExpect(jsonPath("$.email").value("cidadao@example.com"));
+  }
 }

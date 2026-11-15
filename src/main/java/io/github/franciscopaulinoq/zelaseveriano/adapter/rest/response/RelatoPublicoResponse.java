@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RelatoPublicoResponse {
-    private String categoriaNome;
-    private String categoriaIconeNome;
-    private StatusRelato status;
-    private OffsetDateTime criadoEm;
-    private Double latitude;
-    private Double longitude;
+  private String categoriaNome;
+  private String categoriaIconeNome;
+  private StatusRelato status;
+  private OffsetDateTime criadoEm;
+  private Double latitude;
+  private Double longitude;
 }

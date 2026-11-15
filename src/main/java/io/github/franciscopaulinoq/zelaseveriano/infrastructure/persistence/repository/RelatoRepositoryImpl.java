@@ -19,53 +19,55 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class RelatoRepositoryImpl implements RelatoRepository {
-    private final JpaRelatoRepository jpaRepository;
-    private static final Sort MAIS_RECENTES_PRIMEIRO = Sort.by(Sort.Direction.DESC, "criadoEm");
+  private final JpaRelatoRepository jpaRepository;
+  private static final Sort MAIS_RECENTES_PRIMEIRO = Sort.by(Sort.Direction.DESC, "criadoEm");
 
-    private final RelatoMapper mapper;
+  private final RelatoMapper mapper;
 
-    @Override
-    public Relato save(Relato relato) {
-        RelatoEntity entity = mapper.map(relato);
-        RelatoEntity saved = jpaRepository.save(entity);
-        return mapper.map(saved);
-    }
+  @Override
+  public Relato save(Relato relato) {
+    RelatoEntity entity = mapper.map(relato);
+    RelatoEntity saved = jpaRepository.save(entity);
+    return mapper.map(saved);
+  }
 
-    @Override
-    public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
-        return jpaRepository.findByPerfilIdAndId(perfilId, relatoId).map(mapper::map);
-    }
+  @Override
+  public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
+    return jpaRepository.findByPerfilIdAndId(perfilId, relatoId).map(mapper::map);
+  }
 
-    @Override
-    public Optional<Relato> findById(Long relatoId) {
-        return jpaRepository.findById(relatoId).map(mapper::map);
-    }
+  @Override
+  public Optional<Relato> findById(Long relatoId) {
+    return jpaRepository.findById(relatoId).map(mapper::map);
+  }
 
-    @Override
-    public Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable) {
-        PageRequest pageRequest =
-                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
-        return jpaRepository
-                .findAll(
-                        RelatoSpecifications.doPerfil(perfilId).and(RelatoSpecifications.comFiltro(filtro)),
-                        pageRequest)
-                .map(mapper::map);
-    }
+  @Override
+  public Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable) {
+    PageRequest pageRequest =
+        PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
+    return jpaRepository
+        .findAll(
+            RelatoSpecifications.doPerfil(perfilId).and(RelatoSpecifications.comFiltro(filtro)),
+            pageRequest)
+        .map(mapper::map);
+  }
 
-    @Override
-    public long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status) {
-        return jpaRepository.countByPerfilIdAndStatus(perfilId, status);
-    }
+  @Override
+  public long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status) {
+    return jpaRepository.countByPerfilIdAndStatus(perfilId, status);
+  }
 
-    @Override
-    public boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status) {
-        return jpaRepository.existsByCategoriaIdAndStatus(categoriaId, status);
-    }
+  @Override
+  public boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status) {
+    return jpaRepository.existsByCategoriaIdAndStatus(categoriaId, status);
+  }
 
-    @Override
-    public List<Relato> findAll(FiltroRelatos filtro) {
-        return jpaRepository.findAll(RelatoSpecifications.comFiltro(filtro), MAIS_RECENTES_PRIMEIRO).stream()
-                .map(mapper::map)
-                .toList();
-    }
+  @Override
+  public List<Relato> findAll(FiltroRelatos filtro) {
+    return jpaRepository
+        .findAll(RelatoSpecifications.comFiltro(filtro), MAIS_RECENTES_PRIMEIRO)
+        .stream()
+        .map(mapper::map)
+        .toList();
+  }
 }

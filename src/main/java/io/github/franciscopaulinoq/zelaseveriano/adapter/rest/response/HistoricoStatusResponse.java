@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class HistoricoStatusResponse {
-    private StatusRelato statusAnterior;
-    private StatusRelato statusNovo;
-    private String observacao;
-    private OffsetDateTime alteradoEm;
+  private StatusRelato statusAnterior;
+  private StatusRelato statusNovo;
+  private String observacao;
+  private OffsetDateTime alteradoEm;
 }

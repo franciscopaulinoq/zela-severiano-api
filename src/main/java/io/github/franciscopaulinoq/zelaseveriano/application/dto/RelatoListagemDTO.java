@@ -14,9 +14,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RelatoListagemDTO {
-    private Long id;
-    private String categoriaNome;
-    private String categoriaIconeNome;
-    private StatusRelato status;
-    private OffsetDateTime criadoEm;
+  private Long id;
+  private String categoriaNome;
+  private String categoriaIconeNome;
+  private StatusRelato status;
+  private OffsetDateTime criadoEm;
 }

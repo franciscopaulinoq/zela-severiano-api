@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface PerfilRestMapper {
-    PerfilMeResponse map(PerfilMeDTO dto);
+  PerfilMeResponse map(PerfilMeDTO dto);
 
-    AtualizarPerfilDTO map(AtualizarPerfilRequest request);
+  AtualizarPerfilDTO map(AtualizarPerfilRequest request);
 }

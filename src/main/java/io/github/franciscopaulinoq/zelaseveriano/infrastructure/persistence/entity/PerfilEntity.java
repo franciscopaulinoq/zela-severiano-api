@@ -24,20 +24,19 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 public class PerfilEntity {
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
-    private UsuarioEntity usuario;
+  @OneToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+  private UsuarioEntity usuario;
 
-    @Column(name = "nome_completo", nullable = false, length = 150)
-    private String nomeCompleto;
+  @Column(name = "nome_completo", nullable = false, length = 150)
+  private String nomeCompleto;
 
-    @Column(name = "email", nullable = true, length = 255)
-    private String email;
+  @Column(name = "email", nullable = true, length = 255)
+  private String email;
 
-    @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @CreationTimestamp
-    private OffsetDateTime criadoEm;
+  @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+  @CreationTimestamp
+  private OffsetDateTime criadoEm;
 }

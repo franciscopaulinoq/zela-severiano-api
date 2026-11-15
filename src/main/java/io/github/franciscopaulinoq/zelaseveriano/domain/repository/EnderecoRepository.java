@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EnderecoRepository {
-    Endereco save(Endereco endereco);
+  Endereco save(Endereco endereco);
 
-    Optional<Endereco> findById(UUID enderecoId);
+  Optional<Endereco> findById(UUID enderecoId);
 
-    Optional<Endereco> findByPerfilId(UUID perfilId);
+  Optional<Endereco> findByPerfilId(UUID perfilId);
 }

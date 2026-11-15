@@ -166,9 +166,9 @@
 				<version>3.11.0</version>
 				<configuration>
 					<java>
-						<palantirJavaFormat>
-							<version>2.103.0</version>
-						</palantirJavaFormat>
+						<googleJavaFormat>
+							<version>2.0.0</version>
+						</googleJavaFormat>
 						<removeUnusedImports/>
 						<importOrder/>
 						<trimTrailingWhitespace/>

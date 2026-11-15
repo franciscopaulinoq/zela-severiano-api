@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RelatoPublicoController {
 
-    private final RelatoService relatoService;
-    private final RelatoRestMapper mapper;
+  private final RelatoService relatoService;
+  private final RelatoRestMapper mapper;
 
-    @GetMapping
-    public ResponseEntity<List<RelatoPublicoResponse>> listar(
-            @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
-                    Integer categoriaId) {
-        return ResponseEntity.ok(mapper.mapPublico(relatoService.listarPublicos(categoriaId)));
-    }
+  @GetMapping
+  public ResponseEntity<List<RelatoPublicoResponse>> listar(
+      @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+          Integer categoriaId) {
+    return ResponseEntity.ok(mapper.mapPublico(relatoService.listarPublicos(categoriaId)));
+  }
 }

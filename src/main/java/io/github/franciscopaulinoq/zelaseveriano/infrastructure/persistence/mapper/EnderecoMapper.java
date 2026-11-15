@@ -5,10 +5,10 @@ import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.enti
 import org.mapstruct.Mapper;
 
 @Mapper(
-        componentModel = "spring",
-        uses = {PerfilMapper.class})
+    componentModel = "spring",
+    uses = {PerfilMapper.class})
 public interface EnderecoMapper {
-    EnderecoEntity map(Endereco endereco);
+  EnderecoEntity map(Endereco endereco);
 
-    Endereco map(EnderecoEntity enderecoEntity);
+  Endereco map(EnderecoEntity enderecoEntity);
 }

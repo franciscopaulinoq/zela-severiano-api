@@ -8,9 +8,9 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface CategoriaRestMapper {
-    CategoriaResponse map(CategoriaDTO dto);
+  CategoriaResponse map(CategoriaDTO dto);
 
-    List<CategoriaResponse> map(List<CategoriaDTO> dtos);
+  List<CategoriaResponse> map(List<CategoriaDTO> dtos);
 
-    CategoriaDTO map(CategoriaRequest request);
+  CategoriaDTO map(CategoriaRequest request);
 }

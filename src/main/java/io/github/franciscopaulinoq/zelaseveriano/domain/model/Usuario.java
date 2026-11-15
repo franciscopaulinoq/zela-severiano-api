@@ -8,22 +8,22 @@ import lombok.Getter;
 
 @Getter
 public class Usuario {
-    private UUID id;
-    private String cpf;
-    private String senhaHash;
-    private Role role;
-    private OffsetDateTime criadoEm;
+  private UUID id;
+  private String cpf;
+  private String senhaHash;
+  private Role role;
+  private OffsetDateTime criadoEm;
 
-    @Builder
-    public Usuario(UUID id, String cpf, String senhaHash, Role role, OffsetDateTime criadoEm) {
-        this.id = id != null ? id : UUID.randomUUID();
-        this.cpf = Cpf.of(cpf).valor();
-        this.senhaHash = senhaHash;
-        this.role = role != null ? role : Role.CIDADAO;
-        this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
-    }
+  @Builder
+  public Usuario(UUID id, String cpf, String senhaHash, Role role, OffsetDateTime criadoEm) {
+    this.id = id != null ? id : UUID.randomUUID();
+    this.cpf = Cpf.of(cpf).valor();
+    this.senhaHash = senhaHash;
+    this.role = role != null ? role : Role.CIDADAO;
+    this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
+  }
 
-    public void alterarSenha(String novoSenhaHash) {
-        this.senhaHash = novoSenhaHash;
-    }
+  public void alterarSenha(String novoSenhaHash) {
+    this.senhaHash = novoSenhaHash;
+  }
 }

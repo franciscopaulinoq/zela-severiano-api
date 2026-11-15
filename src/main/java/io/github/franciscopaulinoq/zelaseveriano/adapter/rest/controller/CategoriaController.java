@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CategoriaController {
 
-    private final CategoriaService categoriaService;
-    private final CategoriaRestMapper mapper;
+  private final CategoriaService categoriaService;
+  private final CategoriaRestMapper mapper;
 
-    @GetMapping
-    public ResponseEntity<List<CategoriaResponse>> listar() {
-        List<CategoriaResponse> response = mapper.map(categoriaService.listar());
-        return ResponseEntity.ok(response);
-    }
+  @GetMapping
+  public ResponseEntity<List<CategoriaResponse>> listar() {
+    List<CategoriaResponse> response = mapper.map(categoriaService.listar());
+    return ResponseEntity.ok(response);
+  }
 }

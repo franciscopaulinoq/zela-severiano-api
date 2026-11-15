@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RelatoCriadoResponse {
-    private Long id;
-    private StatusRelato status;
-    private String urlFoto;
-    private OffsetDateTime criadoEm;
+  private Long id;
+  private StatusRelato status;
+  private String urlFoto;
+  private OffsetDateTime criadoEm;
 }

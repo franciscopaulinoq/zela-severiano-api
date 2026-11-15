@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TokenService {
-    String gerarToken(Usuario usuario);
+  String gerarToken(Usuario usuario);
 
-    Optional<TokenPayload> validarToken(String token);
+  Optional<TokenPayload> validarToken(String token);
 
-    String gerarTokenDeRenovacao(Usuario usuario);
+  String gerarTokenDeRenovacao(Usuario usuario);
 
-    Optional<UUID> validarTokenDeRenovacao(String token);
+  Optional<UUID> validarTokenDeRenovacao(String token);
 }

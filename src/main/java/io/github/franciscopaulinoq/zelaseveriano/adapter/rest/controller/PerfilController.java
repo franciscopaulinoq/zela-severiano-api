@@ -23,30 +23,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PerfilController {
 
-    private final PerfilService perfilService;
-    private final ContaService contaService;
-    private final PerfilRestMapper mapper;
+  private final PerfilService perfilService;
+  private final ContaService contaService;
+  private final PerfilRestMapper mapper;
 
-    @GetMapping("/me")
-    public ResponseEntity<PerfilMeResponse> obterMeuPerfil(@AuthenticationPrincipal UserDetails userDetails) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        var perfil = perfilService.obterMeuPerfil(usuarioId);
-        return ResponseEntity.ok(mapper.map(perfil));
-    }
+  @GetMapping("/me")
+  public ResponseEntity<PerfilMeResponse> obterMeuPerfil(
+      @AuthenticationPrincipal UserDetails userDetails) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    var perfil = perfilService.obterMeuPerfil(usuarioId);
+    return ResponseEntity.ok(mapper.map(perfil));
+  }
 
-    @PatchMapping("/me")
-    public ResponseEntity<PerfilMeResponse> atualizarMeuPerfil(
-            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody AtualizarPerfilRequest request) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        var perfil = perfilService.atualizarMeuPerfil(usuarioId, mapper.map(request));
-        return ResponseEntity.ok(mapper.map(perfil));
-    }
+  @PatchMapping("/me")
+  public ResponseEntity<PerfilMeResponse> atualizarMeuPerfil(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @Valid @RequestBody AtualizarPerfilRequest request) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    var perfil = perfilService.atualizarMeuPerfil(usuarioId, mapper.map(request));
+    return ResponseEntity.ok(mapper.map(perfil));
+  }
 
-    @PatchMapping("/me/senha")
-    public ResponseEntity<Void> trocarSenha(
-            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody TrocarSenhaRequest request) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        contaService.trocarSenha(usuarioId, request.getSenhaAtual(), request.getNovaSenha());
-        return ResponseEntity.noContent().build();
-    }
+  @PatchMapping("/me/senha")
+  public ResponseEntity<Void> trocarSenha(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @Valid @RequestBody TrocarSenhaRequest request) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    contaService.trocarSenha(usuarioId, request.getSenhaAtual(), request.getNovaSenha());
+    return ResponseEntity.noContent().build();
+  }
 }

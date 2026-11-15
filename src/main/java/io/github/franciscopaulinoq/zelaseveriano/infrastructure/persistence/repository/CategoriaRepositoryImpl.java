@@ -13,31 +13,33 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class CategoriaRepositoryImpl implements CategoriaRepository {
-    private final JpaCategoriaRepository jpaRepository;
-    private final CategoriaMapper mapper;
+  private final JpaCategoriaRepository jpaRepository;
+  private final CategoriaMapper mapper;
 
-    @Override
-    public Optional<Categoria> findById(Integer categoriaId) {
-        return jpaRepository.findById(categoriaId).map(mapper::map);
-    }
+  @Override
+  public Optional<Categoria> findById(Integer categoriaId) {
+    return jpaRepository.findById(categoriaId).map(mapper::map);
+  }
 
-    @Override
-    public List<Categoria> findAll() {
-        return jpaRepository.findAll(Sort.by("id")).stream().map(mapper::map).collect(Collectors.toList());
-    }
+  @Override
+  public List<Categoria> findAll() {
+    return jpaRepository.findAll(Sort.by("id")).stream()
+        .map(mapper::map)
+        .collect(Collectors.toList());
+  }
 
-    @Override
-    public boolean existsById(Integer categoriaId) {
-        return jpaRepository.existsById(categoriaId);
-    }
+  @Override
+  public boolean existsById(Integer categoriaId) {
+    return jpaRepository.existsById(categoriaId);
+  }
 
-    @Override
-    public Categoria save(Categoria categoria) {
-        return mapper.map(jpaRepository.save(mapper.map(categoria)));
-    }
+  @Override
+  public Categoria save(Categoria categoria) {
+    return mapper.map(jpaRepository.save(mapper.map(categoria)));
+  }
 
-    @Override
-    public void deleteById(Integer categoriaId) {
-        jpaRepository.deleteById(categoriaId);
-    }
+  @Override
+  public void deleteById(Integer categoriaId) {
+    jpaRepository.deleteById(categoriaId);
+  }
 }

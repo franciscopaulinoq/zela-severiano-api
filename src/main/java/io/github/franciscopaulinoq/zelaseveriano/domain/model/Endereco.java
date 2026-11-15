@@ -10,14 +10,14 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class Endereco {
-    private UUID id;
-    private Perfil perfil;
-    private String cep;
-    private String logradouro;
-    private String numero;
-    private String complemento;
-    private String bairro;
-    private String cidade;
-    private String uf;
-    private OffsetDateTime criadoEm;
+  private UUID id;
+  private Perfil perfil;
+  private String cep;
+  private String logradouro;
+  private String numero;
+  private String complemento;
+  private String bairro;
+  private String cidade;
+  private String uf;
+  private OffsetDateTime criadoEm;
 }

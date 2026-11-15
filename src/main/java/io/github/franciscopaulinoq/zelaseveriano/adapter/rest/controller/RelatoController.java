@@ -39,62 +39,70 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class RelatoController {
 
-    private final RelatoService relatoService;
-    private final RelatoRestMapper mapper;
+  private final RelatoService relatoService;
+  private final RelatoRestMapper mapper;
 
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<RelatoCriadoResponse> registrar(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestPart("dados") RelatoRegistroRequest request,
-            @RequestPart(value = "foto", required = false) MultipartFile foto)
-            throws IOException {
+  @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  public ResponseEntity<RelatoCriadoResponse> registrar(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @Valid @RequestPart("dados") RelatoRegistroRequest request,
+      @RequestPart(value = "foto", required = false) MultipartFile foto)
+      throws IOException {
 
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        RelatoRegistroDTO dto = mapper.map(request);
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    RelatoRegistroDTO dto = mapper.map(request);
 
-        byte[] fileBytes = (foto != null) ? foto.getBytes() : null;
-        String originalFilename = (foto != null) ? foto.getOriginalFilename() : null;
-        String contentType = (foto != null) ? foto.getContentType() : null;
+    byte[] fileBytes = (foto != null) ? foto.getBytes() : null;
+    String originalFilename = (foto != null) ? foto.getOriginalFilename() : null;
+    String contentType = (foto != null) ? foto.getContentType() : null;
 
-        var resultado = relatoService.registrar(usuarioId, dto, fileBytes, originalFilename, contentType);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(resultado));
-    }
+    var resultado =
+        relatoService.registrar(usuarioId, dto, fileBytes, originalFilename, contentType);
+    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(resultado));
+  }
 
-    @GetMapping
-    @Parameter(name = "pagina", in = ParameterIn.QUERY, description = "Número da página, começando em 0")
-    @Parameter(name = "tamanho", in = ParameterIn.QUERY, description = "Itens por página (padrão 10, máximo 50)")
-    public ResponseEntity<Page<RelatoListagemResponse>> listarMeusRelatos(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Parameter(hidden = true) Pageable pageable,
-            @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
-                    StatusRelato status,
-            @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
-                    Integer categoriaId) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        FiltroRelatos filtro = new FiltroRelatos(status, categoriaId);
-        return ResponseEntity.ok(
-                relatoService.visualizarMeus(usuarioId, filtro, pageable).map(mapper::mapListagem));
-    }
+  @GetMapping
+  @Parameter(
+      name = "pagina",
+      in = ParameterIn.QUERY,
+      description = "Número da página, começando em 0")
+  @Parameter(
+      name = "tamanho",
+      in = ParameterIn.QUERY,
+      description = "Itens por página (padrão 10, máximo 50)")
+  public ResponseEntity<Page<RelatoListagemResponse>> listarMeusRelatos(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @Parameter(hidden = true) Pageable pageable,
+      @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
+          StatusRelato status,
+      @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+          Integer categoriaId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    FiltroRelatos filtro = new FiltroRelatos(status, categoriaId);
+    return ResponseEntity.ok(
+        relatoService.visualizarMeus(usuarioId, filtro, pageable).map(mapper::mapListagem));
+  }
 
-    @PatchMapping("/{id}/cancelamento")
-    public ResponseEntity<Void> cancelar(
-            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        relatoService.cancelar(usuarioId, relatoId);
-        return ResponseEntity.noContent().build();
-    }
+  @PatchMapping("/{id}/cancelamento")
+  public ResponseEntity<Void> cancelar(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    relatoService.cancelar(usuarioId, relatoId);
+    return ResponseEntity.noContent().build();
+  }
 
-    @GetMapping("/{id}/historico")
-    public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
-            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistorico(usuarioId, relatoId)));
-    }
+  @GetMapping("/{id}/historico")
+  public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    return ResponseEntity.ok(
+        mapper.mapHistorico(relatoService.obterHistorico(usuarioId, relatoId)));
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RelatoDetalheResponse> obterDetalhe(
-            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
-        UUID usuarioId = UUID.fromString(userDetails.getUsername());
-        return ResponseEntity.ok(mapper.mapDetalhe(relatoService.obterDetalhe(usuarioId, relatoId)));
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<RelatoDetalheResponse> obterDetalhe(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    return ResponseEntity.ok(mapper.mapDetalhe(relatoService.obterDetalhe(usuarioId, relatoId)));
+  }
 }

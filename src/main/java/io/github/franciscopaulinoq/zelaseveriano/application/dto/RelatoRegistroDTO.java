@@ -12,8 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RelatoRegistroDTO {
-    private Integer categoriaId;
-    private String descricao;
-    private Double latitude;
-    private Double longitude;
+  private Integer categoriaId;
+  private String descricao;
+  private Double latitude;
+  private Double longitude;
 }

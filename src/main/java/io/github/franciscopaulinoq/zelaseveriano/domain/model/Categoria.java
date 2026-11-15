@@ -9,13 +9,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class Categoria {
-    private Integer id;
-    private String nome;
-    private String iconeNome;
-    private OffsetDateTime criadoEm;
+  private Integer id;
+  private String nome;
+  private String iconeNome;
+  private OffsetDateTime criadoEm;
 
-    public void atualizar(String novoNome, String novoIconeNome) {
-        this.nome = novoNome;
-        this.iconeNome = novoIconeNome;
-    }
+  public void atualizar(String novoNome, String novoIconeNome) {
+    this.nome = novoNome;
+    this.iconeNome = novoIconeNome;
+  }
 }

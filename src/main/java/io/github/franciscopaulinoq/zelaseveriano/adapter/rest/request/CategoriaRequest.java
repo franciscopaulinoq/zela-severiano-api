@@ -12,11 +12,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoriaRequest {
-    @NotBlank(message = "Nome é obrigatório")
-    @Size(max = 50, message = "Nome deve ter no máximo 50 caracteres")
-    private String nome;
+  @NotBlank(message = "Nome é obrigatório")
+  @Size(max = 50, message = "Nome deve ter no máximo 50 caracteres")
+  private String nome;
 
-    @NotBlank(message = "Ícone é obrigatório")
-    @Size(max = 50, message = "Ícone deve ter no máximo 50 caracteres")
-    private String iconeNome;
+  @NotBlank(message = "Ícone é obrigatório")
+  @Size(max = 50, message = "Ícone deve ter no máximo 50 caracteres")
+  private String iconeNome;
 }

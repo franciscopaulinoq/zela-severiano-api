@@ -14,12 +14,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RelatoGestaoDTO {
-    private Long id;
-    private String cidadaoNome;
-    private String categoriaNome;
-    private StatusRelato status;
-    private String descricao;
-    private String observacaoResolucao;
-    private OffsetDateTime criadoEm;
-    private OffsetDateTime atualizadoEm;
+  private Long id;
+  private String cidadaoNome;
+  private String categoriaNome;
+  private StatusRelato status;
+  private String descricao;
+  private String observacaoResolucao;
+  private OffsetDateTime criadoEm;
+  private OffsetDateTime atualizadoEm;
 }

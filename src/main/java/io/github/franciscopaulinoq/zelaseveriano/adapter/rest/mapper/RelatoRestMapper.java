@@ -22,27 +22,27 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface RelatoRestMapper {
 
-    RelatoRegistroDTO map(RelatoRegistroRequest request);
+  RelatoRegistroDTO map(RelatoRegistroRequest request);
 
-    RelatoCriadoResponse map(Relato relato);
+  RelatoCriadoResponse map(Relato relato);
 
-    RelatoDetalheResponse mapDetalhe(RelatoDetalheDTO dto);
+  RelatoDetalheResponse mapDetalhe(RelatoDetalheDTO dto);
 
-    RelatoListagemResponse mapListagem(RelatoListagemDTO dto);
+  RelatoListagemResponse mapListagem(RelatoListagemDTO dto);
 
-    List<RelatoListagemResponse> mapListagem(List<RelatoListagemDTO> dtos);
+  List<RelatoListagemResponse> mapListagem(List<RelatoListagemDTO> dtos);
 
-    RelatoGestaoResponse mapGestao(RelatoGestaoDTO dto);
+  RelatoGestaoResponse mapGestao(RelatoGestaoDTO dto);
 
-    List<RelatoGestaoResponse> mapGestao(List<RelatoGestaoDTO> dtos);
+  List<RelatoGestaoResponse> mapGestao(List<RelatoGestaoDTO> dtos);
 
-    RelatoPublicoResponse mapPublico(RelatoPublicoDTO dto);
+  RelatoPublicoResponse mapPublico(RelatoPublicoDTO dto);
 
-    List<RelatoPublicoResponse> mapPublico(List<RelatoPublicoDTO> dtos);
+  List<RelatoPublicoResponse> mapPublico(List<RelatoPublicoDTO> dtos);
 
-    HistoricoStatusResponse mapHistorico(HistoricoStatusDTO dto);
+  HistoricoStatusResponse mapHistorico(HistoricoStatusDTO dto);
 
-    List<HistoricoStatusResponse> mapHistorico(List<HistoricoStatusDTO> dtos);
+  List<HistoricoStatusResponse> mapHistorico(List<HistoricoStatusDTO> dtos);
 
-    EstatisticasRelatosResponse mapEstatisticas(EstatisticasRelatosDTO dto);
+  EstatisticasRelatosResponse mapEstatisticas(EstatisticasRelatosDTO dto);
 }

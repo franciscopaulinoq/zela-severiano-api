@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PerfilMeResponse {
-    private UUID id;
-    private String nomeCompleto;
-    private String email;
-    private String cpf;
+  private UUID id;
+  private String nomeCompleto;
+  private String email;
+  private String cpf;
 }

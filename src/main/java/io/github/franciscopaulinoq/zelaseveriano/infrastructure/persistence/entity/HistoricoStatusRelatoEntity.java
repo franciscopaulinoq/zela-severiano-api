@@ -24,24 +24,24 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class HistoricoStatusRelatoEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "relato_id", nullable = false)
-    private Long relatoId;
+  @Column(name = "relato_id", nullable = false)
+  private Long relatoId;
 
-    @Column(name = "status_anterior", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
-    private StatusRelato statusAnterior;
+  @Column(name = "status_anterior", nullable = false, length = 20)
+  @Enumerated(EnumType.STRING)
+  private StatusRelato statusAnterior;
 
-    @Column(name = "status_novo", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
-    private StatusRelato statusNovo;
+  @Column(name = "status_novo", nullable = false, length = 20)
+  @Enumerated(EnumType.STRING)
+  private StatusRelato statusNovo;
 
-    @Column(name = "observacao", columnDefinition = "TEXT")
-    private String observacao;
+  @Column(name = "observacao", columnDefinition = "TEXT")
+  private String observacao;
 
-    @Column(name = "alterado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private OffsetDateTime alteradoEm;
+  @Column(name = "alterado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+  private OffsetDateTime alteradoEm;
 }

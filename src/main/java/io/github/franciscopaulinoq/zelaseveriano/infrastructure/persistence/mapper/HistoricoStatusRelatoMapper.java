@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface HistoricoStatusRelatoMapper {
-    HistoricoStatusRelatoEntity map(HistoricoStatusRelato historico);
+  HistoricoStatusRelatoEntity map(HistoricoStatusRelato historico);
 
-    HistoricoStatusRelato map(HistoricoStatusRelatoEntity entity);
+  HistoricoStatusRelato map(HistoricoStatusRelatoEntity entity);
 }

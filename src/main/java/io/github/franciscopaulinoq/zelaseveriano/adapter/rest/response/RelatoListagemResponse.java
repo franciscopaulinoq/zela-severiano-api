@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RelatoListagemResponse {
-    private Long id;
-    private String categoriaNome;
-    private String categoriaIconeNome;
-    private StatusRelato status;
-    private OffsetDateTime criadoEm;
+  private Long id;
+  private String categoriaNome;
+  private String categoriaIconeNome;
+  private StatusRelato status;
+  private OffsetDateTime criadoEm;
 }

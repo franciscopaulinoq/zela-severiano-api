@@ -12,24 +12,25 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @RequiredArgsConstructor
 public class CloudflareR2Storage implements FileStorage {
 
-    private final S3Client s3Client;
+  private final S3Client s3Client;
 
-    @Value("${cloudflare.r2.bucket-name}")
-    private String bucketName;
+  @Value("${cloudflare.r2.bucket-name}")
+  private String bucketName;
 
-    @Value("${cloudflare.r2.public-url}")
-    private String publicUrl;
+  @Value("${cloudflare.r2.public-url}")
+  private String publicUrl;
 
-    @Override
-    public String upload(byte[] bytes, String fileName, String contentType) {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .contentType(contentType)
-                .build();
+  @Override
+  public String upload(byte[] bytes, String fileName, String contentType) {
+    PutObjectRequest putObjectRequest =
+        PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(fileName)
+            .contentType(contentType)
+            .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
 
-        return publicUrl + "/" + fileName;
-    }
+    return publicUrl + "/" + fileName;
+  }
 }

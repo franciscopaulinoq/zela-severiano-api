@@ -14,8 +14,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class HistoricoStatusDTO {
-    private StatusRelato statusAnterior;
-    private StatusRelato statusNovo;
-    private String observacao;
-    private OffsetDateTime alteradoEm;
+  private StatusRelato statusAnterior;
+  private StatusRelato statusNovo;
+  private String observacao;
+  private OffsetDateTime alteradoEm;
 }

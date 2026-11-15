@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
-    UsuarioEntity map(Usuario usuario);
+  UsuarioEntity map(Usuario usuario);
 
-    Usuario map(UsuarioEntity usuarioEntity);
+  Usuario map(UsuarioEntity usuarioEntity);
 }

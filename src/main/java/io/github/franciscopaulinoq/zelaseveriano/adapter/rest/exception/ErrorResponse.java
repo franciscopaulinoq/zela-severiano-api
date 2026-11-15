@@ -16,21 +16,21 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
 
-    @JsonProperty("timestamp")
-    private OffsetDateTime timestamp;
+  @JsonProperty("timestamp")
+  private OffsetDateTime timestamp;
 
-    @JsonProperty("status")
-    private Integer status;
+  @JsonProperty("status")
+  private Integer status;
 
-    @JsonProperty("error")
-    private String error;
+  @JsonProperty("error")
+  private String error;
 
-    @JsonProperty("message")
-    private String message;
+  @JsonProperty("message")
+  private String message;
 
-    @JsonProperty("path")
-    private String path;
+  @JsonProperty("path")
+  private String path;
 
-    @JsonProperty("validation_errors")
-    private Map<String, String> validationErrors;
+  @JsonProperty("validation_errors")
+  private Map<String, String> validationErrors;
 }

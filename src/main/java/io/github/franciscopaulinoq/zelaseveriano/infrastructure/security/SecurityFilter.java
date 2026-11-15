@@ -19,30 +19,33 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+  private final JwtService jwtService;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        var token = this.recoverToken(request);
+  @Override
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
+    var token = this.recoverToken(request);
 
-        if (token != null) {
-            jwtService.validarToken(token).ifPresent(payload -> {
-                var authority =
-                        new SimpleGrantedAuthority("ROLE_" + payload.role().name());
-                UserDetails user = new User(payload.usuarioId().toString(), "", List.of(authority));
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            });
-        }
-        filterChain.doFilter(request, response);
+    if (token != null) {
+      jwtService
+          .validarToken(token)
+          .ifPresent(payload -> {
+            var authority = new SimpleGrantedAuthority("ROLE_" + payload.role().name());
+            UserDetails user = new User(payload.usuarioId().toString(), "", List.of(authority));
+            var authentication =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+          });
     }
+    filterChain.doFilter(request, response);
+  }
 
-    private String recoverToken(HttpServletRequest request) {
-        var authHeader = request.getHeader("Authorization");
-        if (authHeader == null) {
-            return null;
-        }
-        return authHeader.replace("Bearer ", "");
+  private String recoverToken(HttpServletRequest request) {
+    var authHeader = request.getHeader("Authorization");
+    if (authHeader == null) {
+      return null;
     }
+    return authHeader.replace("Bearer ", "");
+  }
 }

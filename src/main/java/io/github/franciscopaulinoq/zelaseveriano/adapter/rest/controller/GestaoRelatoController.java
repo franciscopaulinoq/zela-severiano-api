@@ -26,32 +26,34 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class GestaoRelatoController {
 
-    private final RelatoService relatoService;
-    private final RelatoRestMapper mapper;
+  private final RelatoService relatoService;
+  private final RelatoRestMapper mapper;
 
-    @GetMapping
-    public ResponseEntity<List<RelatoGestaoResponse>> listarTodos(
-            @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
-                    StatusRelato status,
-            @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
-                    Integer categoriaId) {
-        return ResponseEntity.ok(mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
-    }
+  @GetMapping
+  public ResponseEntity<List<RelatoGestaoResponse>> listarTodos(
+      @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
+          StatusRelato status,
+      @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+          Integer categoriaId) {
+    return ResponseEntity.ok(
+        mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
+  }
 
-    @GetMapping("/estatisticas")
-    public ResponseEntity<EstatisticasRelatosResponse> obterEstatisticas() {
-        return ResponseEntity.ok(mapper.mapEstatisticas(relatoService.obterEstatisticas()));
-    }
+  @GetMapping("/estatisticas")
+  public ResponseEntity<EstatisticasRelatosResponse> obterEstatisticas() {
+    return ResponseEntity.ok(mapper.mapEstatisticas(relatoService.obterEstatisticas()));
+  }
 
-    @GetMapping("/{id}/historico")
-    public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(@PathVariable("id") Long relatoId) {
-        return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistoricoGestao(relatoId)));
-    }
+  @GetMapping("/{id}/historico")
+  public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
+      @PathVariable("id") Long relatoId) {
+    return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistoricoGestao(relatoId)));
+  }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> atualizarStatus(
-            @PathVariable("id") Long relatoId, @Valid @RequestBody AtualizarStatusRelatoRequest request) {
-        relatoService.atualizarStatus(relatoId, request.getStatus(), request.getObservacao());
-        return ResponseEntity.noContent().build();
-    }
+  @PatchMapping("/{id}/status")
+  public ResponseEntity<Void> atualizarStatus(
+      @PathVariable("id") Long relatoId, @Valid @RequestBody AtualizarStatusRelatoRequest request) {
+    relatoService.atualizarStatus(relatoId, request.getStatus(), request.getObservacao());
+    return ResponseEntity.noContent().build();
+  }
 }

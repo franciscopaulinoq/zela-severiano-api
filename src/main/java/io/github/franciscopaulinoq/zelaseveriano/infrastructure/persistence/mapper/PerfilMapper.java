@@ -5,10 +5,10 @@ import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.enti
 import org.mapstruct.Mapper;
 
 @Mapper(
-        componentModel = "spring",
-        uses = {UsuarioMapper.class})
+    componentModel = "spring",
+    uses = {UsuarioMapper.class})
 public interface PerfilMapper {
-    PerfilEntity map(Perfil perfil);
+  PerfilEntity map(Perfil perfil);
 
-    Perfil map(PerfilEntity perfilEntity);
+  Perfil map(PerfilEntity perfilEntity);
 }

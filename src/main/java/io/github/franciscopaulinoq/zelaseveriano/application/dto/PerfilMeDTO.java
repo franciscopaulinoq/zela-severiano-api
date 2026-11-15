@@ -13,8 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class PerfilMeDTO {
-    private UUID id;
-    private String nomeCompleto;
-    private String email;
-    private String cpf;
+  private UUID id;
+  private String nomeCompleto;
+  private String email;
+  private String cpf;
 }

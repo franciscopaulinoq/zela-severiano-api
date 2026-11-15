@@ -19,33 +19,34 @@ import org.springframework.context.annotation.Import;
 @Import(CidadaosDeTeste.class)
 class LimiteRelatosPendentesIntegrationTest {
 
-    @Autowired
-    private RelatoService relatoService;
+  @Autowired private RelatoService relatoService;
 
-    @Autowired
-    private RelatoRepository relatoRepository;
+  @Autowired private RelatoRepository relatoRepository;
 
-    @Autowired
-    private CidadaosDeTeste cidadaos;
+  @Autowired private CidadaosDeTeste cidadaos;
 
-    @Test
-    void quandoUmPendenteEntraEmAnaliseOCidadaoVoltaAPoderRegistrar() {
-        Cidadao cidadao = cidadaos.cadastrar("Pedro Alves");
-        List<Relato> pendentes = new ArrayList<>();
-        for (int i = 0; i < RelatoService.LIMITE_RELATOS_PENDENTES; i++) {
-            pendentes.add(registrar(cidadao));
-        }
-
-        relatoService.atualizarStatus(pendentes.getFirst().getId(), StatusRelato.EM_ANALISE, null);
-        Relato novo = registrar(cidadao);
-
-        assertThat(novo.getStatus()).isEqualTo(StatusRelato.PENDENTE);
-        assertThat(relatoRepository.countByPerfilIdAndStatus(cidadao.perfilId(), StatusRelato.PENDENTE))
-                .isEqualTo(RelatoService.LIMITE_RELATOS_PENDENTES);
+  @Test
+  void quandoUmPendenteEntraEmAnaliseOCidadaoVoltaAPoderRegistrar() {
+    Cidadao cidadao = cidadaos.cadastrar("Pedro Alves");
+    List<Relato> pendentes = new ArrayList<>();
+    for (int i = 0; i < RelatoService.LIMITE_RELATOS_PENDENTES; i++) {
+      pendentes.add(registrar(cidadao));
     }
 
-    private Relato registrar(Cidadao cidadao) {
-        return relatoService.registrar(
-                cidadao.usuarioId(), new RelatoRegistroDTO(4, "Buraco na rua", -6.08, -38.38), null, null, null);
-    }
+    relatoService.atualizarStatus(pendentes.getFirst().getId(), StatusRelato.EM_ANALISE, null);
+    Relato novo = registrar(cidadao);
+
+    assertThat(novo.getStatus()).isEqualTo(StatusRelato.PENDENTE);
+    assertThat(relatoRepository.countByPerfilIdAndStatus(cidadao.perfilId(), StatusRelato.PENDENTE))
+        .isEqualTo(RelatoService.LIMITE_RELATOS_PENDENTES);
+  }
+
+  private Relato registrar(Cidadao cidadao) {
+    return relatoService.registrar(
+        cidadao.usuarioId(),
+        new RelatoRegistroDTO(4, "Buraco na rua", -6.08, -38.38),
+        null,
+        null,
+        null);
+  }
 }

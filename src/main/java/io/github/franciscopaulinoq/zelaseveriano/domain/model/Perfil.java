@@ -10,18 +10,18 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class Perfil {
-    private UUID id;
-    private Usuario usuario;
-    private String nomeCompleto;
-    private String email;
-    private OffsetDateTime criadoEm;
+  private UUID id;
+  private Usuario usuario;
+  private String nomeCompleto;
+  private String email;
+  private OffsetDateTime criadoEm;
 
-    public void atualizarDados(String novoNomeCompleto, String novoEmail) {
-        if (novoNomeCompleto != null) {
-            this.nomeCompleto = novoNomeCompleto;
-        }
-        if (novoEmail != null) {
-            this.email = novoEmail;
-        }
+  public void atualizarDados(String novoNomeCompleto, String novoEmail) {
+    if (novoNomeCompleto != null) {
+      this.nomeCompleto = novoNomeCompleto;
     }
+    if (novoEmail != null) {
+      this.email = novoEmail;
+    }
+  }
 }

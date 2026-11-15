@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CategoriaRepository {
-    Optional<Categoria> findById(Integer categoriaId);
+  Optional<Categoria> findById(Integer categoriaId);
 
-    List<Categoria> findAll();
+  List<Categoria> findAll();
 
-    boolean existsById(Integer categoriaId);
+  boolean existsById(Integer categoriaId);
 
-    Categoria save(Categoria categoria);
+  Categoria save(Categoria categoria);
 
-    void deleteById(Integer categoriaId);
+  void deleteById(Integer categoriaId);
 }

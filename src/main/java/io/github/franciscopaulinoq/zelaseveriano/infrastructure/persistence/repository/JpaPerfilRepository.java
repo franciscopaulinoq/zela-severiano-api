@@ -6,5 +6,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaPerfilRepository extends JpaRepository<PerfilEntity, UUID> {
-    Optional<PerfilEntity> findByUsuarioId(UUID usuarioId);
+  Optional<PerfilEntity> findByUsuarioId(UUID usuarioId);
 }

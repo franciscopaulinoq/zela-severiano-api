@@ -10,17 +10,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface RelatoRepository {
-    Relato save(Relato relato);
+  Relato save(Relato relato);
 
-    Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId);
+  Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
-    Optional<Relato> findById(Long relatoId);
+  Optional<Relato> findById(Long relatoId);
 
-    Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable);
+  Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable);
 
-    List<Relato> findAll(FiltroRelatos filtro);
+  List<Relato> findAll(FiltroRelatos filtro);
 
-    long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
+  long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
-    boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
+  boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status);
 }

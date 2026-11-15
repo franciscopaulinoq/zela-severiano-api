@@ -24,35 +24,34 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 public class EnderecoEntity {
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "perfil_id", nullable = false, unique = true)
-    private PerfilEntity perfil;
+  @OneToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "perfil_id", nullable = false, unique = true)
+  private PerfilEntity perfil;
 
-    @Column(name = "cep", nullable = false, length = 8)
-    private String cep = "59910000";
+  @Column(name = "cep", nullable = false, length = 8)
+  private String cep = "59910000";
 
-    @Column(name = "logradouro", nullable = false, length = 150)
-    private String logradouro;
+  @Column(name = "logradouro", nullable = false, length = 150)
+  private String logradouro;
 
-    @Column(name = "numero", nullable = false, length = 20)
-    private String numero;
+  @Column(name = "numero", nullable = false, length = 20)
+  private String numero;
 
-    @Column(name = "complemento", nullable = true, length = 100)
-    private String complemento;
+  @Column(name = "complemento", nullable = true, length = 100)
+  private String complemento;
 
-    @Column(name = "bairro", nullable = false, length = 100)
-    private String bairro;
+  @Column(name = "bairro", nullable = false, length = 100)
+  private String bairro;
 
-    @Column(name = "cidade", nullable = false, length = 100)
-    private String cidade;
+  @Column(name = "cidade", nullable = false, length = 100)
+  private String cidade;
 
-    @Column(name = "uf", nullable = true, length = 2)
-    private String uf = "RN";
+  @Column(name = "uf", nullable = true, length = 2)
+  private String uf = "RN";
 
-    @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @CreationTimestamp
-    private OffsetDateTime criadoEm;
+  @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+  @CreationTimestamp
+  private OffsetDateTime criadoEm;
 }

@@ -14,23 +14,27 @@ import org.springframework.test.web.servlet.MockMvc;
 @IntegrationTest
 class GestorDesenvolvimentoIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Test
-    void gestorDeDesenvolvimentoAcessaAsRotasDeGestao() throws Exception {
-        String corpo = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"cpf": "11144477735", "senha": "gestor123"}
-                                """))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-        String token = JsonPath.read(corpo, "$.token");
+  @Test
+  void gestorDeDesenvolvimentoAcessaAsRotasDeGestao() throws Exception {
+    String corpo =
+        mockMvc
+            .perform(
+                post("/api/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"cpf": "11144477735", "senha": "gestor123"}
+                        """))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String token = JsonPath.read(corpo, "$.token");
 
-        mockMvc.perform(get("/api/v1/gestao/relatos").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-    }
+    mockMvc
+        .perform(get("/api/v1/gestao/relatos").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+  }
 }

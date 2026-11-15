@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PerfilRepository {
-    Perfil save(Perfil perfil);
+  Perfil save(Perfil perfil);
 
-    Optional<Perfil> findById(UUID perfilId);
+  Optional<Perfil> findById(UUID perfilId);
 
-    Optional<Perfil> findByUsuarioId(UUID usuarioId);
+  Optional<Perfil> findByUsuarioId(UUID usuarioId);
 }

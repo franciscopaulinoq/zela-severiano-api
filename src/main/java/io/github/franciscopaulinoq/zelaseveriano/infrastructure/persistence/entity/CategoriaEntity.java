@@ -22,17 +22,17 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 public class CategoriaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    @Column(name = "nome", nullable = false, length = 50)
-    private String nome;
+  @Column(name = "nome", nullable = false, length = 50)
+  private String nome;
 
-    @Column(name = "icone_nome", nullable = true, length = 50)
-    private String iconeNome;
+  @Column(name = "icone_nome", nullable = true, length = 50)
+  private String iconeNome;
 
-    @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    @CreationTimestamp
-    private OffsetDateTime criadoEm;
+  @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+  @CreationTimestamp
+  private OffsetDateTime criadoEm;
 }
