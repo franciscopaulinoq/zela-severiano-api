@@ -1,83 +1,48 @@
 # Regras e convenções do projeto Zela Severiano
 
-> Este arquivo alimenta diretamente o contexto enviado aos modelos de IA no
-> pipeline de revisão (`scripts/pr-review/build_project_context.py`) e serve
-> como checklist de referência para revisão humana. Qualquer PR deve ser
-> avaliado contra estas regras.
-
 ## Arquitetura (Camadas Pragmáticas)
 
-O projeto mantém as 4 camadas e a regra de direção de dependência da Clean
-Architecture (o que de fato protege o domínio de acoplamento a framework),
-mas elimina a duplicação que só existia por "regra de camada", sem
-desacoplamento real em troca: uma classe por operação de negócio em vez de
-por agregado. Os DTOs de `application` **são mantidos** — eles continuam
-sendo o que desacopla o formato de resposta HTTP do modelo de domínio (um
-`Service` nunca deveria devolver a entidade de `domain` direto para o
+O projeto usa 4 camadas e a regra de direção de dependência da Clean
+Architecture, com casos de uso agrupados por agregado. Os DTOs de
+`application` desacoplam o formato de resposta HTTP do modelo de domínio
+(um `Service` nunca devolve a entidade de `domain` direto para o
 `adapter.rest` serializar). Cada camada tem seu próprio pacote raiz sob
-`io.github.franciscopaulinoq.zelaseveriano`. Motivação completa em
-[`docs/adr/0001-camadas-pragmaticas.md`](../adr/0001-camadas-pragmaticas.md).
+`io.github.franciscopaulinoq.zelaseveriano`.
 
 - **`domain`**: entidades de negócio puras (`model`), portas/interfaces de
   repositório e serviços (`repository`, `security`, `storage`) e exceções de
-  domínio (`exception`). **Não pode depender de JPA nem de nenhuma outra
-  camada.** De Spring, admite apenas tipos utilitários consolidados que não
-  amarram o domínio a uma tecnologia de persistência, como `Page`,
-  `Pageable` e `Sort` do Spring Data (ver abaixo).
+  domínio (`exception`). **Não pode depender de nenhuma outra camada.**
 - **`application`**: casos de uso agrupados por agregado/recurso REST em
-  classes `<Agregado>Service` (`service`), não mais uma classe por operação
-  (ex. `RelatoService` reúne registrar, listar, obter detalhe e atualizar
-  status de um relato — antes eram 5 classes `UseCase` separadas). Cada
-  método público continua sendo um caso de uso com responsabilidade única;
-  o que muda é o agrupamento por arquivo, não a responsabilidade. DTOs
-  (`dto`) continuam trafegando dados de entrada/saída entre `adapter` e
-  `domain`, exatamente como antes. Depende de `domain`, nunca de `adapter`
-  ou `infrastructure` diretamente (usa as interfaces do `domain`).
+  classes `<Agregado>Service` (`service`); por exemplo, `RelatoService`
+  reúne registrar, listar, obter detalhe e atualizar status de um relato.
+  Cada método público é um caso de uso com responsabilidade única. DTOs
+  (`dto`) trafegam dados de entrada/saída entre `adapter` e `domain`.
+  Depende de `domain`, nunca de `adapter` ou `infrastructure` diretamente
+  (usa as interfaces do `domain`).
 - **`adapter.rest`**: controllers, request/response, mappers REST
-  (MapStruct) e o `GlobalExceptionHandler`. Todo endpoint devolve um tipo
-  próprio de `adapter.rest.response` — nunca um DTO de `application`
-  diretamente como corpo HTTP (isso desacopla o contrato público da forma
-  interna que o `application` usa, que pode mudar por motivos que nada têm
-  a ver com a API). Depende de `application`, nunca acessa `infrastructure`
-  ou repositórios JPA diretamente.
+  (MapStruct) e o `GlobalExceptionHandler`. Depende de `application`, nunca
+  acessa `infrastructure` ou repositórios JPA diretamente.
 - **`infrastructure`**: implementações concretas dos ports do `domain`
   (`persistence`, `security`, `storage`) — JPA, JWT, S3/R2. Implementa as
-  interfaces definidas em `domain`. Inalterado pela refatoração.
+  interfaces definidas em `domain`.
 
 Uma dependência de uma camada mais interna (`domain`) apontando para uma
-mais externa (`adapter`/`infrastructure`) é sempre uma violação de
-arquitetura, mesmo que compile.
+mais externa (`adapter`/`infrastructure`) é uma violação de arquitetura,
+mesmo que compile.
 
-As camadas são um meio, não um fim: a regra de dependência é aplicada de
-forma pragmática. Quando o ecossistema Java/Spring já oferece uma solução
-consolidada (paginação com `Pageable`/`Page`, ordenação com `Sort`,
-validação com Bean Validation), ela é usada diretamente, inclusive nas
-portas do `domain` e nos `Service`s, em vez de criar um equivalente próprio
-só para manter a camada "pura". Um tipo próprio só se justifica quando
-desacopla algo que de fato pode mudar. Anotações e entidades JPA continuam
-restritas a `infrastructure`.
-
-### O que a refatoração corrigiu (e o que preservou)
-
-- Corrigiu: 9 classes `UseCase` de método único viraram 4 `Service`s por
-  agregado (`RelatoService`, `ContaService`, `PerfilService`,
-  `CategoriaService`) — menos arquivos para tocar numa mesma mudança de
-  negócio, sem juntar agregados diferentes na mesma classe.
-  `RelatoDetalheDTO`/`RelatoListagemDTO` eram devolvidos direto como corpo
-  HTTP pelo `RelatoController` (inconsistência de camada — os outros
-  endpoints sempre passavam por um `Response` próprio); agora existem
-  `RelatoDetalheResponse`/`RelatoListagemResponse` e todo endpoint segue o
-  mesmo padrão `Service` (DTO) → mapper REST → `Response`.
-- Preservou: os DTOs de `application` (`application.dto`) continuam
-  existindo com os mesmos campos de antes — eles são o que impede um
-  `Service` de vazar o modelo de `domain` (com suas associações completas,
-  regras de negócio e forma pensada para persistência/consistência) direto
-  para o contrato HTTP público.
+A arquitetura deve ser seguida, mas não é um dogma. Concessões são aceitas
+quando deixam o código mais simples e fácil de manter: uma arquitetura
+rígida que gera código repetitivo, complexo e em que qualquer alteração
+mínima se espalha por muitos arquivos não é o objetivo. O isolamento da
+Clean Architecture vale sobretudo para o que é externo à aplicação (banco
+de dados, mensageria, e-mail, armazenamento de arquivos), para facilitar a
+troca ou a adição de implementações, e não para engessar o código da
+aplicação.
 
 ## Convenções de nomenclatura
 
 - Modelo de domínio, casos de uso, tabelas e campos: **português** (ex.:
-  `Relato`, `RegistrarRelatoUseCase`, `criado_em`). DTOs/Requests/Responses
+  `Relato`, `RelatoService`, `criado_em`). DTOs/Requests/Responses
   seguem o mesmo idioma para consistência com o domínio.
 - Enums de domínio (`StatusRelato`, `Role`) ficam em
   `domain.model.enums` e são persistidos como `@Enumerated(EnumType.STRING)`
@@ -90,23 +55,6 @@ restritas a `infrastructure`.
   branch resolve; o slug é só pra legibilidade, não precisa repetir o
   título inteiro da issue. O PR referencia a mesma issue (`Closes #N`), o
   que a vincula ao PR e a fecha no merge.
-
-## Regras de negócio vigentes
-
-- Um `Relato` nasce sempre com `status = PENDENTE`.
-- Transições de status são controladas por `Relato.atualizarStatus` e só
-  podem seguir o mapa definido lá. Qualquer nova transição deve ser
-  adicionada nesse método, nunca via SQL direto ou verificação solta em um
-  use case.
-- Mudar o status de um relato para `REJEITADO` exige uma observação não
-  vazia.
-- Endpoints sob `/api/v1/gestao/**` exigem o papel `GESTOR`
-  (`SecurityConfig` + claim `role` no JWT). Endpoints de cidadão nunca devem
-  confiar em dado enviado pelo cliente para decidir permissão — sempre a
-  partir do token.
-- Um cidadão só enxerga/opera os próprios relatos, nunca os de terceiros
-  (toda consulta de cidadão é escopada por `perfilId`, obtido do token, não
-  de parâmetro de request).
 
 ## Padrões de qualidade esperados (SOLID / DRY)
 
@@ -125,7 +73,7 @@ restritas a `infrastructure`.
   — não copiadas.
 - Logging de erro/depuração sempre via SLF4J (`@Slf4j`); nunca
   `System.out`/`System.err`/`printStackTrace`.
-- Formatação no padrão palantir-java-format, verificada pelo Spotless, e
+- Formatação no padrão google-java-format, verificada pelo Spotless, e
   regras básicas do PMD (`config/pmd/ruleset.xml`): sem imports, variáveis,
   campos ou métodos privados sem uso, sem blocos vazios e sempre com chaves
   em `if`/`for`/`while`. O CI roda `./mvnw verify`, que inclui as duas
