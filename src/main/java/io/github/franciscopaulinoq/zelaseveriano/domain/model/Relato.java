@@ -14,6 +14,7 @@ import lombok.Getter;
 @Builder
 public class Relato {
   private Long id;
+  private String identificadorExterno;
   private Perfil perfil;
   private Categoria categoria;
   private StatusRelato status;

@@ -35,6 +35,17 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public List<Relato> saveAll(List<Relato> relatos) {
+    List<RelatoEntity> entidades = relatos.stream().map(mapper::map).toList();
+    return jpaRepository.saveAll(entidades).stream().map(mapper::map).toList();
+  }
+
+  @Override
+  public Optional<Relato> findByIdentificadorExterno(String identificadorExterno) {
+    return jpaRepository.findByIdentificadorExterno(identificadorExterno).map(mapper::map);
+  }
+
+  @Override
   public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
     return jpaRepository.findByPerfilIdAndId(perfilId, relatoId).map(mapper::map);
   }

@@ -19,6 +19,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface JpaRelatoRepository
     extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
+  @EntityGraph(attributePaths = {"perfil", "perfil.usuario", "categoria"})
+  Optional<RelatoEntity> findByIdentificadorExterno(String identificadorExterno);
+
   Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
