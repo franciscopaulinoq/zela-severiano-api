@@ -4,6 +4,8 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.PerfilEntity;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.PerfilMapper;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,11 @@ public class PerfilRepositoryImpl implements PerfilRepository {
   @Override
   public Optional<Perfil> findById(UUID perfilId) {
     return jpaRepository.findById(perfilId).map(mapper::map);
+  }
+
+  @Override
+  public List<Perfil> findAllById(Collection<UUID> perfilIds) {
+    return jpaRepository.findAllById(perfilIds).stream().map(mapper::map).toList();
   }
 
   @Override
