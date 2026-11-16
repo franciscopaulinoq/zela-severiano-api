@@ -16,6 +16,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRel
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.event.MudancaStatusRelatoEvent;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TransicaoStatusInvalidaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
@@ -39,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +64,8 @@ class RelatoServiceTest {
   @Mock private FileStorage fileStorage;
 
   @Mock private HistoricoStatusRelatoRepository historicoRepository;
+
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks private RelatoService relatoService;
 
@@ -306,6 +310,38 @@ class RelatoServiceTest {
     relatoService.atualizarStatus(42L, StatusRelato.CONCLUIDO, "Lâmpada trocada");
 
     verify(historicoRepository, times(2)).save(any());
+    ArgumentCaptor<MudancaStatusRelatoEvent> eventos =
+        ArgumentCaptor.forClass(MudancaStatusRelatoEvent.class);
+    verify(eventPublisher, times(2)).publishEvent(eventos.capture());
+    assertThat(eventos.getAllValues())
+        .extracting(MudancaStatusRelatoEvent::novoStatus)
+        .containsExactly(StatusRelato.EM_ANALISE, StatusRelato.CONCLUIDO);
+  }
+
+  @Test
+  void cancelamentoPublicaEventoComDestinatarioEStatus() {
+    Perfil autor = Perfil.builder().id(UUID.randomUUID()).email("autor@example.com").build();
+    Relato relato =
+        Relato.builder()
+            .id(42L)
+            .perfil(autor)
+            .categoria(CATEGORIA)
+            .status(StatusRelato.PENDENTE)
+            .build();
+    when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(autor));
+    when(relatoRepository.findByPerfilIdAndIdParaAtualizacao(autor.getId(), 42L))
+        .thenReturn(Optional.of(relato));
+    when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+
+    relatoService.cancelar(USUARIO_ID, 42L);
+
+    ArgumentCaptor<MudancaStatusRelatoEvent> evento =
+        ArgumentCaptor.forClass(MudancaStatusRelatoEvent.class);
+    verify(eventPublisher).publishEvent(evento.capture());
+    assertThat(evento.getValue().relatoId()).isEqualTo(42L);
+    assertThat(evento.getValue().email()).isEqualTo("autor@example.com");
+    assertThat(evento.getValue().novoStatus()).isEqualTo(StatusRelato.CANCELADO);
+    verify(historicoRepository).save(any());
   }
 
   @Test
@@ -322,7 +358,7 @@ class RelatoServiceTest {
     assertThatThrownBy(() -> relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null))
         .isInstanceOf(TransicaoStatusInvalidaException.class);
 
-    verifyNoInteractions(historicoRepository);
+    verifyNoInteractions(historicoRepository, eventPublisher);
   }
 
   @Test

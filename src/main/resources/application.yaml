@@ -6,6 +6,17 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS:false}
 
   jpa:
     open-in-view: false
@@ -33,6 +44,9 @@ cloudflare:
     public-url: ${CLOUDFLARE_R2_PUBLIC_URL}
 
 api:
+  notificacoes:
+    email:
+      remetente: ${SMTP_REMETENTE:no-reply@example.com}
   security:
     token:
       secret: ${JWT_SECRET}
