@@ -5,8 +5,10 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorSta
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
 import jakarta.persistence.LockModeType;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +17,23 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface JpaRelatoRepository
     extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
+  @Modifying
+  @Transactional
+  @Query(
+      "UPDATE RelatoEntity r SET r.categoria.id = :categoriaId, r.atualizadoEm = :atualizadoEm WHERE r.id IN :relatoIds")
+  int atualizarCategoriaEmLote(
+      Set<Long> relatoIds, Integer categoriaId, OffsetDateTime atualizadoEm);
+
+  @Override
+  @EntityGraph(attributePaths = {"perfil.usuario", "categoria"})
+  List<RelatoEntity> findAllById(Iterable<Long> relatoIds);
+
   Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)

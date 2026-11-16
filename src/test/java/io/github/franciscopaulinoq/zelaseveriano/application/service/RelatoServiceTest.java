@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.ReclassificacaoRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
@@ -32,6 +33,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoReposit
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -288,6 +290,45 @@ class RelatoServiceTest {
           assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
         });
     verify(relatoRepository, never()).findAll(any(), any());
+  }
+
+  @Test
+  void reclassificacaoAtualizaTodoOLoteComUmaUnicaOperacao() {
+    Categoria novaCategoria = Categoria.builder().id(3).nome("Limpeza").iconeNome("trash").build();
+    Set<Long> ids = Set.of(42L, 43L);
+    when(categoriaRepository.findById(3)).thenReturn(Optional.of(novaCategoria));
+    when(relatoRepository.atualizarCategoriaEmLote(eq(ids), eq(3), any())).thenReturn(2);
+
+    relatoService.reclassificar(new ReclassificacaoRelatosDTO(ids, 3));
+
+    verify(relatoRepository).atualizarCategoriaEmLote(eq(ids), eq(3), any());
+    verify(relatoRepository, never()).findAllById(any());
+    verify(relatoRepository, never()).findById(any());
+  }
+
+  @Test
+  void reclassificacaoInformaIdentificadorInexistente() {
+    Set<Long> ids = Set.of(99L);
+    when(categoriaRepository.findById(3))
+        .thenReturn(Optional.of(Categoria.builder().id(3).nome("Limpeza").build()));
+    when(relatoRepository.atualizarCategoriaEmLote(eq(ids), eq(3), any())).thenReturn(0);
+    when(relatoRepository.findAllById(ids)).thenReturn(List.of());
+
+    assertThatThrownBy(() -> relatoService.reclassificar(new ReclassificacaoRelatosDTO(ids, 3)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("99");
+    verify(relatoRepository).atualizarCategoriaEmLote(eq(ids), eq(3), any());
+  }
+
+  @Test
+  void reclassificacaoComCategoriaInexistenteNaoBuscaRelatos() {
+    Set<Long> ids = Set.of(42L);
+    when(categoriaRepository.findById(99)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> relatoService.reclassificar(new ReclassificacaoRelatosDTO(ids, 99)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Categoria");
+    verifyNoInteractions(relatoRepository);
   }
 
   @Test

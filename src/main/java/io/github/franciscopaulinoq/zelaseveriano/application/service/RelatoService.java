@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.ReclassificacaoRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
@@ -23,12 +24,14 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.time.OffsetDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -163,6 +166,34 @@ public class RelatoService {
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, observacao);
     return toCriadoDTO(salvo);
+  }
+
+  public void reclassificar(ReclassificacaoRelatosDTO dados) {
+    Categoria categoria =
+        categoriaRepository
+            .findById(dados.categoriaId())
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
+    int atualizados =
+        relatoRepository.atualizarCategoriaEmLote(
+            dados.relatoIds(), categoria.getId(), OffsetDateTime.now());
+    if (atualizados == dados.relatoIds().size()) {
+      return;
+    }
+
+    Set<Long> idsEncontrados =
+        relatoRepository.findAllById(dados.relatoIds()).stream()
+            .map(Relato::getId)
+            .collect(Collectors.toSet());
+    Long inexistente =
+        dados.relatoIds().stream()
+            .filter(relatoId -> !idsEncontrados.contains(relatoId))
+            .findFirst()
+            .orElse(null);
+    if (inexistente != null) {
+      throw new RecursoNaoEncontradoException("Relato não encontrado: " + inexistente);
+    }
+    throw new IllegalStateException(
+        "Não foi possível confirmar a reclassificação de todos os relatos.");
   }
 
   @Transactional(readOnly = true)

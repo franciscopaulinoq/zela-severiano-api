@@ -8,8 +8,10 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.RelatoMapper;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +37,12 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public int atualizarCategoriaEmLote(
+      Set<Long> relatoIds, Integer categoriaId, OffsetDateTime atualizadoEm) {
+    return jpaRepository.atualizarCategoriaEmLote(relatoIds, categoriaId, atualizadoEm);
+  }
+
+  @Override
   public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
     return jpaRepository.findByPerfilIdAndId(perfilId, relatoId).map(mapper::map);
   }
@@ -42,6 +50,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   @Override
   public Optional<Relato> findById(Long relatoId) {
     return jpaRepository.findById(relatoId).map(mapper::map);
+  }
+
+  @Override
+  public List<Relato> findAllById(Set<Long> relatoIds) {
+    return jpaRepository.findAllById(relatoIds).stream().map(mapper::map).toList();
   }
 
   @Override
