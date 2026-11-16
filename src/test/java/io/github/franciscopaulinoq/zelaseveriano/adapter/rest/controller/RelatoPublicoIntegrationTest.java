@@ -70,6 +70,8 @@ class RelatoPublicoIntegrationTest {
         .andExpect(jsonPath("$[*].perfil").doesNotExist())
         .andExpect(jsonPath("$[*].perfilId").doesNotExist())
         .andExpect(jsonPath("$[*].urlFoto").doesNotExist())
-        .andExpect(jsonPath("$[*].descricao").doesNotExist());
+        .andExpect(jsonPath("$[*].descricao").doesNotExist())
+        .andExpect(jsonPath("$[*].latitude").doesNotExist())
+        .andExpect(jsonPath("$[*].longitude").doesNotExist());
   }
 }

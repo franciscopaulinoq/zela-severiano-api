@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
-import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import java.util.Optional;
@@ -73,7 +72,7 @@ class CategoriaServiceTest {
   @Test
   void removeCategoriaSemRelatos() {
     when(categoriaRepository.existsById(7)).thenReturn(true);
-    when(relatoRepository.existsByCategoriaIdAndStatus(7, StatusRelato.PENDENTE)).thenReturn(false);
+    when(relatoRepository.existsByCategoriaId(7)).thenReturn(false);
 
     categoriaService.remover(7);
 
@@ -83,7 +82,7 @@ class CategoriaServiceTest {
   @Test
   void recusaRemoverCategoriaComRelatoVinculado() {
     when(categoriaRepository.existsById(7)).thenReturn(true);
-    when(relatoRepository.existsByCategoriaIdAndStatus(7, StatusRelato.PENDENTE)).thenReturn(true);
+    when(relatoRepository.existsByCategoriaId(7)).thenReturn(true);
 
     assertThatThrownBy(() -> categoriaService.remover(7))
         .isInstanceOf(CategoriaEmUsoException.class);

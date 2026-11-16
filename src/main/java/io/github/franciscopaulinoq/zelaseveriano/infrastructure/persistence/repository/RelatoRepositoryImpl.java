@@ -2,6 +2,8 @@ package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.rep
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorCategoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
@@ -58,8 +60,8 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
-  public boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status) {
-    return jpaRepository.existsByCategoriaIdAndStatus(categoriaId, status);
+  public boolean existsByCategoriaId(Integer categoriaId) {
+    return jpaRepository.existsByCategoriaId(categoriaId);
   }
 
   @Override
@@ -69,5 +71,20 @@ public class RelatoRepositoryImpl implements RelatoRepository {
         .stream()
         .map(mapper::map)
         .toList();
+  }
+
+  @Override
+  public long count() {
+    return jpaRepository.count();
+  }
+
+  @Override
+  public List<TotalRelatosPorStatus> contarPorStatus() {
+    return jpaRepository.contarPorStatus();
+  }
+
+  @Override
+  public List<TotalRelatosPorCategoria> contarPorCategoria() {
+    return jpaRepository.contarPorCategoria();
   }
 }

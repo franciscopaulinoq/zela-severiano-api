@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,9 +70,10 @@ public class RelatoService {
             .findByUsuarioId(usuarioId)
             .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
+    perfilRepository.bloquear(perfil.getId());
     long pendentes =
         relatoRepository.countByPerfilIdAndStatus(perfil.getId(), StatusRelato.PENDENTE);
-    if (pendentes > LIMITE_RELATOS_PENDENTES) {
+    if (pendentes >= LIMITE_RELATOS_PENDENTES) {
       throw new LimiteRelatosPendentesException(
           "Você já tem %d relatos aguardando avaliação. Aguarde a avaliação de algum deles para registrar um novo."
               .formatted(LIMITE_RELATOS_PENDENTES));
@@ -153,8 +153,8 @@ public class RelatoService {
             .findById(relatoId)
             .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
 
-    relato.atualizarStatus(novoStatus, observacao);
     StatusRelato statusAnterior = relato.getStatus();
+    relato.atualizarStatus(novoStatus, observacao);
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, observacao);
@@ -178,29 +178,21 @@ public class RelatoService {
 
   @Transactional(readOnly = true)
   public EstatisticasRelatosDTO obterEstatisticas() {
-    List<Relato> relatos = relatoRepository.findAll(FiltroRelatos.semFiltro());
-
     Map<StatusRelato, Long> porStatus = new EnumMap<>(StatusRelato.class);
     for (StatusRelato status : StatusRelato.values()) {
       porStatus.put(status, 0L);
     }
-    relatos.forEach(relato -> porStatus.merge(relato.getStatus(), 1L, Long::sum));
+    relatoRepository
+        .contarPorStatus()
+        .forEach(total -> porStatus.put(total.status(), total.total()));
 
-    Map<Integer, Long> totaisPorCategoria =
-        relatos.stream()
-            .collect(
-                Collectors.groupingBy(
-                    relato -> relato.getCategoria().getId(), Collectors.counting()));
     List<TotalPorCategoria> porCategoria =
-        categoriaRepository.findAll().stream()
-            .map(categoria ->
-                new TotalPorCategoria(
-                    categoria.getId(),
-                    categoria.getNome(),
-                    totaisPorCategoria.getOrDefault(categoria.getId(), 0L)))
+        relatoRepository.contarPorCategoria().stream()
+            .map(total ->
+                new TotalPorCategoria(total.categoriaId(), total.categoriaNome(), total.total()))
             .toList();
 
-    return new EstatisticasRelatosDTO(relatos.size(), porStatus, porCategoria);
+    return new EstatisticasRelatosDTO(relatoRepository.count(), porStatus, porCategoria);
   }
 
   @Transactional(readOnly = true)
@@ -214,17 +206,20 @@ public class RelatoService {
 
   @Transactional
   public void cancelar(UUID usuarioId, Long relatoId) {
-    perfilRepository
-        .findByUsuarioId(usuarioId)
-        .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+    Perfil perfil =
+        perfilRepository
+            .findByUsuarioId(usuarioId)
+            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
 
     Relato relato =
         relatoRepository
-            .findById(relatoId)
-            .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+            .findByPerfilIdAndId(perfil.getId(), relatoId)
+            .orElseThrow(() ->
+                new IllegalArgumentException(
+                    "Relato não encontrado ou não pertence a este usuário."));
 
-    relato.cancelar();
     StatusRelato statusAnterior = relato.getStatus();
+    relato.cancelar();
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, null);
@@ -290,8 +285,6 @@ public class RelatoService {
         .categoriaIconeNome(relato.getCategoria().getIconeNome())
         .status(relato.getStatus())
         .criadoEm(relato.getCriadoEm())
-        .latitude(relato.getLatitude())
-        .longitude(relato.getLongitude())
         .build();
   }
 

@@ -54,7 +54,9 @@ class HistoricoStatusIntegrationTest {
                 .header("Authorization", "Bearer " + cidadaos.token(cidadao)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[0].statusAnterior").value("PENDENTE"))
         .andExpect(jsonPath("$[0].statusNovo").value("EM_ANALISE"))
+        .andExpect(jsonPath("$[1].statusAnterior").value("EM_ANALISE"))
         .andExpect(jsonPath("$[1].statusNovo").value("CONCLUIDO"))
         .andExpect(jsonPath("$[1].observacao").value("Reator substituído"))
         .andExpect(jsonPath("$[1].alteradoEm").exists());

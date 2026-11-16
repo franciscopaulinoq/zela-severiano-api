@@ -31,4 +31,9 @@ public class PerfilRepositoryImpl implements PerfilRepository {
   public Optional<Perfil> findByUsuarioId(UUID usuarioId) {
     return jpaRepository.findByUsuarioId(usuarioId).map(mapper::map);
   }
+
+  @Override
+  public void bloquear(UUID perfilId) {
+    jpaRepository.bloquear(perfilId);
+  }
 }

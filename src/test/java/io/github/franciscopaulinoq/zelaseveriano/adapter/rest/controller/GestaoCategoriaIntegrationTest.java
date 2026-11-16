@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste.Cidadao;
 import io.github.franciscopaulinoq.zelaseveriano.support.IntegrationTest;
@@ -98,6 +100,31 @@ class GestaoCategoriaIntegrationTest {
             delete("/api/v1/gestao/categorias/{id}", id)
                 .header("Authorization", "Bearer " + tokenGestor))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  void categoriaComRelatoConcluidoNaoPodeSerRemovida() throws Exception {
+    Integer id = criarCategoria();
+    Cidadao cidadao = cidadaos.cadastrar("Sandra Prado");
+    Long relatoId =
+        relatoService
+            .registrar(
+                cidadao.usuarioId(),
+                new RelatoRegistroDTO(id, "Calçada quebrada", -6.08, -38.38),
+                null,
+                null,
+                null)
+            .getId();
+    relatoService.atualizarStatus(relatoId, StatusRelato.EM_ANALISE, null);
+    relatoService.atualizarStatus(relatoId, StatusRelato.CONCLUIDO, "Reparo concluído");
+
+    mockMvc
+        .perform(
+            delete("/api/v1/gestao/categorias/{id}", id)
+                .header("Authorization", "Bearer " + tokenGestor))
+        .andExpect(status().isConflict());
+
+    assertThat(relatoService.obterHistoricoGestao(relatoId)).hasSize(2);
   }
 
   @Test

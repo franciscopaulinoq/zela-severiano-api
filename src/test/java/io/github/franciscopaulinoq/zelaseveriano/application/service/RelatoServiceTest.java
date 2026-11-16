@@ -22,13 +22,14 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorCategoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -142,10 +143,10 @@ class RelatoServiceTest {
   }
 
   @Test
-  void recusaNovoRelatoQuandoOLimiteDePendentesFoiUltrapassado() {
+  void recusaNovoRelatoQuandoOLimiteDePendentesFoiAtingido() {
     when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
     when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
-        .thenReturn(6L);
+        .thenReturn(5L);
 
     assertThatThrownBy(() ->
             relatoService.registrar(
@@ -300,16 +301,18 @@ class RelatoServiceTest {
   }
 
   @Test
-  void estatisticasAgrupamPorStatusEPorCategoria() {
-    Categoria limpeza = Categoria.builder().id(3).nome("Limpeza").build();
-    List<Relato> relatos = new ArrayList<>();
-    for (int i = 0; i < 4; i++) {
-      relatos.add(relatoDaCategoria(StatusRelato.PENDENTE));
-    }
-    relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
-    relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
-    when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(relatos);
-    when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA, limpeza));
+  void estatisticasAgrupamPorStatusEPorCategoriaSemCarregarRelatos() {
+    when(relatoRepository.count()).thenReturn(6L);
+    when(relatoRepository.contarPorStatus())
+        .thenReturn(
+            List.of(
+                new TotalRelatosPorStatus(StatusRelato.PENDENTE, 4),
+                new TotalRelatosPorStatus(StatusRelato.CONCLUIDO, 2)));
+    when(relatoRepository.contarPorCategoria())
+        .thenReturn(
+            List.of(
+                new TotalRelatosPorCategoria(1, "Iluminação", 6),
+                new TotalRelatosPorCategoria(3, "Limpeza", 0)));
 
     EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
 
@@ -322,12 +325,14 @@ class RelatoServiceTest {
         .containsExactly(
             new EstatisticasRelatosDTO.TotalPorCategoria(1, "Iluminação", 6),
             new EstatisticasRelatosDTO.TotalPorCategoria(3, "Limpeza", 0));
+    verify(relatoRepository, never()).findAll(any());
+    verify(categoriaRepository, never()).findAll();
   }
 
   @Test
   void semRelatosAsContagensVemZeradas() {
-    when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(List.of());
-    when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA));
+    when(relatoRepository.contarPorCategoria())
+        .thenReturn(List.of(new TotalRelatosPorCategoria(1, "Iluminação", 0)));
 
     EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
 
@@ -338,10 +343,6 @@ class RelatoServiceTest {
     assertThat(estatisticas.porCategoria())
         .singleElement()
         .satisfies(item -> assertThat(item.total()).isZero());
-  }
-
-  private static Relato relatoDaCategoria(StatusRelato status) {
-    return Relato.builder().perfil(PERFIL).categoria(CATEGORIA).status(status).build();
   }
 
   private void prepararPerfilECategoria() {
