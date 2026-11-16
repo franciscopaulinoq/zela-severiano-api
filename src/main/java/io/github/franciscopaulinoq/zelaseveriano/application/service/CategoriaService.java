@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaJaRegistradaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
@@ -26,9 +27,17 @@ public class CategoriaService {
 
   @Transactional
   public CategoriaDTO criar(CategoriaRegistroDTO dados) {
-    Categoria categoria =
-        Categoria.builder().nome(dados.getNome()).iconeNome(dados.getIconeNome()).build();
+    String nomeNormalizado = Categoria.normalizarNome(dados.getNome());
+    if (categoriaRepository.existsByNomeNormalizado(nomeNormalizado)) {
+      throw new CategoriaJaRegistradaException();
+    }
 
+    Categoria categoria =
+        Categoria.builder()
+            .nome(dados.getNome().trim())
+            .nomeNormalizado(nomeNormalizado)
+            .iconeNome(dados.getIconeNome())
+            .build();
     return toDTO(categoriaRepository.save(categoria));
   }
 
@@ -38,9 +47,12 @@ public class CategoriaService {
         categoriaRepository
             .findById(categoriaId)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
+    String nomeNormalizado = Categoria.normalizarNome(dados.getNome());
+    if (categoriaRepository.existsByNomeNormalizadoAndIdNot(nomeNormalizado, categoriaId)) {
+      throw new CategoriaJaRegistradaException();
+    }
 
     categoria.atualizar(dados.getNome(), dados.getIconeNome());
-
     return toDTO(categoriaRepository.save(categoria));
   }
 

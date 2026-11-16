@@ -11,6 +11,10 @@ public interface CategoriaRepository {
 
   boolean existsById(Integer categoriaId);
 
+  boolean existsByNomeNormalizado(String nomeNormalizado);
+
+  boolean existsByNomeNormalizadoAndIdNot(String nomeNormalizado, Integer categoriaId);
+
   Categoria save(Categoria categoria);
 
   void deleteById(Integer categoriaId);

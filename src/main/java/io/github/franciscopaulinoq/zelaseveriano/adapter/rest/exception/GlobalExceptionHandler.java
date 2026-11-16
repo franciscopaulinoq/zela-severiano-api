@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaJaRegistradaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
@@ -65,6 +66,12 @@ public class GlobalExceptionHandler {
       CidadaoJaRegistradoException ex, HttpServletRequest request) {
     return resposta(
         HttpStatus.CONFLICT, "Conflito de regra de negócio", ex.getMessage(), request, null);
+  }
+
+  @ExceptionHandler(CategoriaJaRegistradaException.class)
+  public ResponseEntity<ErrorResponse> handleCategoriaJaRegistrada(
+      CategoriaJaRegistradaException ex, HttpServletRequest request) {
+    return resposta(HttpStatus.CONFLICT, "Categoria já cadastrada", ex.getMessage(), request, null);
   }
 
   @ExceptionHandler(CategoriaEmUsoException.class)

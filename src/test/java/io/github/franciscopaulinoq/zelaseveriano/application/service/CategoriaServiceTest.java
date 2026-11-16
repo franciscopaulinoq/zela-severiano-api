@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaJaRegistradaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
@@ -68,6 +69,42 @@ class CategoriaServiceTest {
 
     assertThatThrownBy(() -> categoriaService.atualizar(99, new CategoriaRegistroDTO("X", "y")))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void recusaNomeDuplicadoNaCriacao() {
+    when(categoriaRepository.existsByNomeNormalizado("iluminação")).thenReturn(true);
+
+    assertThatThrownBy(
+            () -> categoriaService.criar(new CategoriaRegistroDTO("  ILUMINAÇÃO  ", "lamp")))
+        .isInstanceOf(CategoriaJaRegistradaException.class);
+    verify(categoriaRepository, never()).save(any());
+  }
+
+  @Test
+  void recusaNomeDeOutraCategoriaNaAtualizacao() {
+    Categoria existente = Categoria.builder().id(3).nome("Praças").build();
+    when(categoriaRepository.findById(3)).thenReturn(Optional.of(existente));
+    when(categoriaRepository.existsByNomeNormalizadoAndIdNot("limpeza", 3)).thenReturn(true);
+
+    assertThatThrownBy(
+            () -> categoriaService.atualizar(3, new CategoriaRegistroDTO(" Limpeza ", "trash")))
+        .isInstanceOf(CategoriaJaRegistradaException.class);
+    assertThat(existente.getNome()).isEqualTo("Praças");
+    verify(categoriaRepository, never()).save(any());
+  }
+
+  @Test
+  void permiteAtualizarMantendoOProprioNome() {
+    Categoria existente = Categoria.builder().id(3).nome("Limpeza").build();
+    when(categoriaRepository.findById(3)).thenReturn(Optional.of(existente));
+    when(categoriaRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
+
+    CategoriaDTO atualizada =
+        categoriaService.atualizar(3, new CategoriaRegistroDTO(" limpeza ", "broom"));
+
+    assertThat(atualizada.getNome()).isEqualTo("limpeza");
+    assertThat(atualizada.getIconeNome()).isEqualTo("broom");
   }
 
   @Test
