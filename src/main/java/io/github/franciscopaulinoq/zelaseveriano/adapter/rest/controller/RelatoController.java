@@ -5,7 +5,9 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.VistoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
+import io.github.franciscopaulinoq.zelaseveriano.application.service.VistoriaService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class RelatoController {
 
   private final RelatoService relatoService;
+  private final VistoriaService vistoriaService;
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<RelatoCriadoDTO> registrar(
@@ -84,6 +87,13 @@ public class RelatoController {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
     relatoService.cancelar(usuarioId, relatoId);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/vistorias")
+  public ResponseEntity<List<VistoriaDTO>> listarVistorias(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    return ResponseEntity.ok(vistoriaService.listarDoCidadao(usuarioId, relatoId));
   }
 
   @GetMapping("/{id}/historico")

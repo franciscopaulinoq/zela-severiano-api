@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.ConflitoVistoriaException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
@@ -71,6 +72,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleCategoriaEmUso(
       CategoriaEmUsoException ex, HttpServletRequest request) {
     return resposta(HttpStatus.CONFLICT, "Categoria em uso", ex.getMessage(), request, null);
+  }
+
+  @ExceptionHandler(ConflitoVistoriaException.class)
+  public ResponseEntity<ErrorResponse> handleConflitoVistoria(
+      ConflitoVistoriaException ex, HttpServletRequest request) {
+    return resposta(HttpStatus.CONFLICT, "Conflito de horário", ex.getMessage(), request, null);
   }
 
   @ExceptionHandler(LimiteRelatosPendentesException.class)
