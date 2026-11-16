@@ -1,5 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.DisponibilidadeFotoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.DisponibilidadeFotoDTO.SituacaoFoto;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
@@ -140,6 +142,21 @@ public class RelatoService {
   @Transactional(readOnly = true)
   public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
     return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<DisponibilidadeFotoDTO> verificarDisponibilidadeFotos(
+      FiltroRelatos filtro, Pageable pageable) {
+    return relatoRepository
+        .findAll(filtro, pageable)
+        .map(relato -> {
+          if (relato.getUrlFoto() == null) {
+            return new DisponibilidadeFotoDTO(relato.getId(), SituacaoFoto.SEM_FOTO);
+          }
+          boolean disponivel = fileStorage.existe(relato.getUrlFoto());
+          return new DisponibilidadeFotoDTO(
+              relato.getId(), disponivel ? SituacaoFoto.DISPONIVEL : SituacaoFoto.INDISPONIVEL);
+        });
   }
 
   @Transactional(readOnly = true)
