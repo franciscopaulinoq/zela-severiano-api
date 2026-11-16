@@ -22,18 +22,20 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorCategoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -68,28 +70,30 @@ class RelatoServiceTest {
     prepararPerfilECategoria();
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
+    var relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
 
     assertThat(relato.getStatus()).isEqualTo(StatusRelato.PENDENTE);
-    assertThat(relato.getPerfil()).isSameAs(PERFIL);
-    assertThat(relato.getCategoria()).isSameAs(CATEGORIA);
-    assertThat(relato.getDescricao()).isEqualTo("Poste apagado na esquina");
-    assertThat(relato.getLatitude()).isEqualTo(-6.08);
-    assertThat(relato.getLongitude()).isEqualTo(-38.38);
     assertThat(relato.getUrlFoto()).isNull();
+    ArgumentCaptor<Relato> salvo = ArgumentCaptor.forClass(Relato.class);
+    verify(relatoRepository).save(salvo.capture());
+    assertThat(salvo.getValue().getPerfil()).isSameAs(PERFIL);
+    assertThat(salvo.getValue().getCategoria()).isSameAs(CATEGORIA);
+    assertThat(salvo.getValue().getDescricao()).isEqualTo("Poste apagado na esquina");
+    assertThat(salvo.getValue().getLatitude()).isEqualTo(-6.08);
+    assertThat(salvo.getValue().getLongitude()).isEqualTo(-38.38);
     verifyNoInteractions(fileStorage);
   }
 
   @Test
   void registraRelatoComFotoGuardandoAUrlDoArquivoEnviado() {
     prepararPerfilECategoria();
-    byte[] foto = {1, 2, 3};
-    when(fileStorage.upload(eq(foto), endsWith("_poste.jpg"), eq("image/jpeg")))
+    byte[] foto = fotoJpeg();
+    when(fileStorage.upload(eq(foto), endsWith(".jpg"), eq("image/jpeg")))
         .thenReturn("https://arquivos.example.com/poste.jpg");
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato =
-        relatoService.registrar(USUARIO_ID, novoRelato(), foto, "poste.jpg", "image/jpeg");
+    var relato =
+        relatoService.registrar(USUARIO_ID, novoRelato(), foto, "../poste.jpg", "IMAGE/JPEG");
 
     assertThat(relato.getUrlFoto()).isEqualTo("https://arquivos.example.com/poste.jpg");
   }
@@ -101,11 +105,11 @@ class RelatoServiceTest {
         .thenReturn("https://arquivos.example.com/foto");
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.png", "image/png");
-    relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.webp", "IMAGE/WEBP");
+    relatoService.registrar(USUARIO_ID, novoRelato(), fotoPng(), "buraco.png", "image/png");
+    relatoService.registrar(USUARIO_ID, novoRelato(), fotoWebp(), "buraco.webp", "IMAGE/WEBP");
 
-    verify(fileStorage).upload(any(), endsWith("_buraco.png"), eq("image/png"));
-    verify(fileStorage).upload(any(), endsWith("_buraco.webp"), eq("IMAGE/WEBP"));
+    verify(fileStorage).upload(any(), endsWith(".png"), eq("image/png"));
+    verify(fileStorage).upload(any(), endsWith(".webp"), eq("image/webp"));
   }
 
   @Test
@@ -130,26 +134,47 @@ class RelatoServiceTest {
   }
 
   @Test
+  void recusaConteudoQueNaoCorrespondeAoTipoDeclarado() {
+    assertThatThrownBy(() ->
+            relatoService.registrar(
+                USUARIO_ID, novoRelato(), new byte[] {1, 2, 3}, "falso.jpg", "image/jpeg"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("conteúdo do arquivo");
+
+    verifyNoInteractions(fileStorage, relatoRepository, perfilRepository);
+  }
+
+  @Test
+  void recusaFotoAcimaDoLimiteMesmoSemPassarPeloServidorHttp() {
+    byte[] foto = new byte[10 * 1024 * 1024 + 1];
+
+    assertThatThrownBy(() ->
+            relatoService.registrar(USUARIO_ID, novoRelato(), foto, "grande.jpg", "image/jpeg"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("10 MB");
+
+    verifyNoInteractions(fileStorage, relatoRepository, perfilRepository);
+  }
+
+  @Test
   void permiteNovoRelatoQuandoOCidadaoTemQuatroPendentes() {
     prepararPerfilECategoria();
     when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
         .thenReturn(4L);
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
+    var relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
 
     assertThat(relato.getStatus()).isEqualTo(StatusRelato.PENDENTE);
   }
 
   @Test
-  void recusaNovoRelatoQuandoOLimiteDePendentesFoiUltrapassado() {
+  void recusaNovoRelatoQuandoOLimiteDePendentesFoiAtingido() {
     when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
     when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
-        .thenReturn(6L);
+        .thenReturn(5L);
 
-    assertThatThrownBy(() ->
-            relatoService.registrar(
-                USUARIO_ID, novoRelato(), new byte[] {1}, "poste.jpg", "image/jpeg"))
+    assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null))
         .isInstanceOf(LimiteRelatosPendentesException.class)
         .hasMessageContaining("aguardando avaliação");
 
@@ -165,9 +190,11 @@ class RelatoServiceTest {
     naZonaRural.setLatitude(-6.15);
     naZonaRural.setLongitude(-38.45);
 
-    Relato relato = relatoService.registrar(USUARIO_ID, naZonaRural, null, null, null);
+    relatoService.registrar(USUARIO_ID, naZonaRural, null, null, null);
 
-    assertThat(relato.getLatitude()).isEqualTo(-6.15);
+    ArgumentCaptor<Relato> salvo = ArgumentCaptor.forClass(Relato.class);
+    verify(relatoRepository).save(salvo.capture());
+    assertThat(salvo.getValue().getLatitude()).isEqualTo(-6.15);
   }
 
   @Test
@@ -210,8 +237,7 @@ class RelatoServiceTest {
     when(categoriaRepository.findById(1)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() ->
-            relatoService.registrar(
-                USUARIO_ID, novoRelato(), new byte[] {1}, "a.jpg", "image/jpeg"))
+            relatoService.registrar(USUARIO_ID, novoRelato(), fotoJpeg(), "a.jpg", "image/jpeg"))
         .isInstanceOf(IllegalArgumentException.class);
 
     verify(relatoRepository, never()).save(any());
@@ -261,7 +287,7 @@ class RelatoServiceTest {
           assertThat(relato.getCategoriaNome()).isEqualTo("Iluminação");
           assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
         });
-    verify(relatoRepository, never()).findAll(any());
+    verify(relatoRepository, never()).findAll(any(), any());
   }
 
   @Test
@@ -273,7 +299,7 @@ class RelatoServiceTest {
             .categoria(CATEGORIA)
             .status(StatusRelato.PENDENTE)
             .build();
-    when(relatoRepository.findById(42L)).thenReturn(Optional.of(relato));
+    when(relatoRepository.findByIdParaAtualizacao(42L)).thenReturn(Optional.of(relato));
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
     relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null);
@@ -291,7 +317,7 @@ class RelatoServiceTest {
             .categoria(CATEGORIA)
             .status(StatusRelato.CONCLUIDO)
             .build();
-    when(relatoRepository.findById(42L)).thenReturn(Optional.of(concluido));
+    when(relatoRepository.findByIdParaAtualizacao(42L)).thenReturn(Optional.of(concluido));
 
     assertThatThrownBy(() -> relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null))
         .isInstanceOf(TransicaoStatusInvalidaException.class);
@@ -300,16 +326,18 @@ class RelatoServiceTest {
   }
 
   @Test
-  void estatisticasAgrupamPorStatusEPorCategoria() {
-    Categoria limpeza = Categoria.builder().id(3).nome("Limpeza").build();
-    List<Relato> relatos = new ArrayList<>();
-    for (int i = 0; i < 4; i++) {
-      relatos.add(relatoDaCategoria(StatusRelato.PENDENTE));
-    }
-    relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
-    relatos.add(relatoDaCategoria(StatusRelato.CONCLUIDO));
-    when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(relatos);
-    when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA, limpeza));
+  void estatisticasAgrupamPorStatusEPorCategoriaSemCarregarRelatos() {
+    when(relatoRepository.count()).thenReturn(6L);
+    when(relatoRepository.contarPorStatus())
+        .thenReturn(
+            List.of(
+                new TotalRelatosPorStatus(StatusRelato.PENDENTE, 4),
+                new TotalRelatosPorStatus(StatusRelato.CONCLUIDO, 2)));
+    when(relatoRepository.contarPorCategoria())
+        .thenReturn(
+            List.of(
+                new TotalRelatosPorCategoria(1, "Iluminação", 6),
+                new TotalRelatosPorCategoria(3, "Limpeza", 0)));
 
     EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
 
@@ -322,12 +350,14 @@ class RelatoServiceTest {
         .containsExactly(
             new EstatisticasRelatosDTO.TotalPorCategoria(1, "Iluminação", 6),
             new EstatisticasRelatosDTO.TotalPorCategoria(3, "Limpeza", 0));
+    verify(relatoRepository, never()).findAll(any(), any());
+    verify(categoriaRepository, never()).findAll();
   }
 
   @Test
   void semRelatosAsContagensVemZeradas() {
-    when(relatoRepository.findAll(FiltroRelatos.semFiltro())).thenReturn(List.of());
-    when(categoriaRepository.findAll()).thenReturn(List.of(CATEGORIA));
+    when(relatoRepository.contarPorCategoria())
+        .thenReturn(List.of(new TotalRelatosPorCategoria(1, "Iluminação", 0)));
 
     EstatisticasRelatosDTO estatisticas = relatoService.obterEstatisticas();
 
@@ -340,13 +370,21 @@ class RelatoServiceTest {
         .satisfies(item -> assertThat(item.total()).isZero());
   }
 
-  private static Relato relatoDaCategoria(StatusRelato status) {
-    return Relato.builder().perfil(PERFIL).categoria(CATEGORIA).status(status).build();
-  }
-
   private void prepararPerfilECategoria() {
     when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
     when(categoriaRepository.findById(1)).thenReturn(Optional.of(CATEGORIA));
+  }
+
+  private static byte[] fotoJpeg() {
+    return new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0};
+  }
+
+  private static byte[] fotoPng() {
+    return new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+  }
+
+  private static byte[] fotoWebp() {
+    return new byte[] {0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50};
   }
 
   private RelatoRegistroDTO novoRelato() {

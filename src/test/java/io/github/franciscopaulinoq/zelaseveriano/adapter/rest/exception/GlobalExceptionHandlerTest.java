@@ -52,6 +52,14 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
+  void uploadRecusadoPeloContainerVira413() {
+    ResponseEntity<ErrorResponse> resposta = handler.handleUploadExcedente(request);
+
+    assertThat(resposta.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+    assertThat(resposta.getBody().getMessage()).contains("10 MB");
+  }
+
+  @Test
   void erroInesperadoViraErroInternoERegistraODetalheNoLog(CapturedOutput saida) {
     ResponseEntity<ErrorResponse> resposta =
         handler.handleGenericException(new IllegalStateException("conexão recusada"), request);

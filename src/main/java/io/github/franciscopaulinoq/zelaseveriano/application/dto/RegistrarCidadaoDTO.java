@@ -1,6 +1,5 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,17 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RegistrarCidadaoDTO {
-
   private String cpf;
-  private String senhaHash;
   private String nomeCompleto;
   private String email;
   private String logradouro;
   private String numero;
   private String complemento;
   private String bairro;
-
-  private UUID usuarioId;
-  private UUID perfilId;
-  private UUID enderecoId;
 }

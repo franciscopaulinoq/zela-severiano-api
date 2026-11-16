@@ -18,7 +18,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
   @Override
   public Usuario save(Usuario usuario) {
     UsuarioEntity entity = mapper.map(usuario);
-    UsuarioEntity savedEntity = jpaRepository.save(entity);
+    UsuarioEntity savedEntity = jpaRepository.saveAndFlush(entity);
     return mapper.map(savedEntity);
   }
 

@@ -2,8 +2,8 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
-import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import java.util.List;
@@ -36,7 +36,7 @@ public class CategoriaService {
     Categoria categoria =
         categoriaRepository
             .findById(categoriaId)
-            .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada."));
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
 
     categoria.atualizar(dados.getNome(), dados.getIconeNome());
 
@@ -46,10 +46,10 @@ public class CategoriaService {
   @Transactional
   public void remover(Integer categoriaId) {
     if (!categoriaRepository.existsById(categoriaId)) {
-      throw new IllegalArgumentException("Categoria não encontrada.");
+      throw new RecursoNaoEncontradoException("Categoria não encontrada.");
     }
 
-    if (relatoRepository.existsByCategoriaIdAndStatus(categoriaId, StatusRelato.PENDENTE)) {
+    if (relatoRepository.existsByCategoriaId(categoriaId)) {
       throw new CategoriaEmUsoException(
           "A categoria possui relatos vinculados e não pode ser removida.");
     }

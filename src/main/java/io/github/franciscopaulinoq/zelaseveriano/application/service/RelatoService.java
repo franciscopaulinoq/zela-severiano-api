@@ -3,12 +3,14 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
@@ -27,7 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,7 @@ public class RelatoService {
   private final HistoricoStatusRelatoRepository historicoRepository;
 
   @Transactional
-  public Relato registrar(
+  public RelatoCriadoDTO registrar(
       UUID usuarioId,
       RelatoRegistroDTO dto,
       byte[] fileBytes,
@@ -61,19 +62,19 @@ public class RelatoService {
           "A localização informada fica fora do município de Doutor Severiano.");
     }
 
-    boolean temFoto = fileBytes != null && fileBytes.length > 0;
-    if (temFoto) {
-      validarTipoDaFoto(contentType);
-    }
+    boolean temFoto = fileBytes != null;
+    String tipoFoto = temFoto ? validarFoto(fileBytes, contentType) : null;
 
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
+    perfilRepository.bloquear(perfil.getId());
     long pendentes =
         relatoRepository.countByPerfilIdAndStatus(perfil.getId(), StatusRelato.PENDENTE);
-    if (pendentes > LIMITE_RELATOS_PENDENTES) {
+    if (pendentes >= LIMITE_RELATOS_PENDENTES) {
       throw new LimiteRelatosPendentesException(
           "Você já tem %d relatos aguardando avaliação. Aguarde a avaliação de algum deles para registrar um novo."
               .formatted(LIMITE_RELATOS_PENDENTES));
@@ -82,12 +83,12 @@ public class RelatoService {
     Categoria categoria =
         categoriaRepository
             .findById(dto.getCategoriaId())
-            .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada."));
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
 
     String urlFoto = null;
     if (temFoto) {
-      String fileName = UUID.randomUUID() + "_" + originalFilename;
-      urlFoto = fileStorage.upload(fileBytes, fileName, contentType);
+      String fileName = UUID.randomUUID() + extensaoDaFoto(tipoFoto, originalFilename);
+      urlFoto = fileStorage.upload(fileBytes, fileName, tipoFoto);
     }
 
     Relato relato =
@@ -101,7 +102,7 @@ public class RelatoService {
             .longitude(dto.getLongitude())
             .build();
 
-    return relatoRepository.save(relato);
+    return toCriadoDTO(relatoRepository.save(relato));
   }
 
   @Transactional(readOnly = true)
@@ -110,7 +111,8 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     return relatoRepository
         .findAllByPerfilId(perfil.getId(), filtro, pageable)
@@ -122,43 +124,45 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     Relato relato =
         relatoRepository
             .findByPerfilIdAndId(perfil.getId(), relatoId)
             .orElseThrow(() ->
-                new IllegalArgumentException(
+                new RecursoNaoEncontradoException(
                     "Relato não encontrado ou não pertence a este usuário."));
 
     return toDetalheDTO(relato);
   }
 
   @Transactional(readOnly = true)
-  public List<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro) {
-    return relatoRepository.findAll(filtro).stream().map(this::toGestaoDTO).toList();
+  public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
+    return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
   }
 
   @Transactional(readOnly = true)
-  public List<RelatoPublicoDTO> listarPublicos(Integer categoriaId) {
-    return relatoRepository.findAll(new FiltroRelatos(null, categoriaId)).stream()
-        .map(this::toPublicoDTO)
-        .toList();
+  public Page<RelatoPublicoDTO> listarPublicos(Integer categoriaId, Pageable pageable) {
+    return relatoRepository
+        .findAll(new FiltroRelatos(null, categoriaId), pageable)
+        .map(this::toPublicoDTO);
   }
 
   @Transactional
-  public Relato atualizarStatus(Long relatoId, StatusRelato novoStatus, String observacao) {
+  public RelatoCriadoDTO atualizarStatus(
+      Long relatoId, StatusRelato novoStatus, String observacao) {
     Relato relato =
         relatoRepository
-            .findById(relatoId)
-            .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+            .findByIdParaAtualizacao(relatoId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
 
-    relato.atualizarStatus(novoStatus, observacao);
     StatusRelato statusAnterior = relato.getStatus();
+    relato.atualizarStatus(novoStatus, observacao);
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, observacao);
-    return salvo;
+    return toCriadoDTO(salvo);
   }
 
   @Transactional(readOnly = true)
@@ -166,65 +170,63 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     relatoRepository
         .findByPerfilIdAndId(perfil.getId(), relatoId)
         .orElseThrow(() ->
-            new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
+            new RecursoNaoEncontradoException(
+                "Relato não encontrado ou não pertence a este usuário."));
 
     return listarHistorico(relatoId);
   }
 
   @Transactional(readOnly = true)
   public EstatisticasRelatosDTO obterEstatisticas() {
-    List<Relato> relatos = relatoRepository.findAll(FiltroRelatos.semFiltro());
-
     Map<StatusRelato, Long> porStatus = new EnumMap<>(StatusRelato.class);
     for (StatusRelato status : StatusRelato.values()) {
       porStatus.put(status, 0L);
     }
-    relatos.forEach(relato -> porStatus.merge(relato.getStatus(), 1L, Long::sum));
+    relatoRepository
+        .contarPorStatus()
+        .forEach(total -> porStatus.put(total.status(), total.total()));
 
-    Map<Integer, Long> totaisPorCategoria =
-        relatos.stream()
-            .collect(
-                Collectors.groupingBy(
-                    relato -> relato.getCategoria().getId(), Collectors.counting()));
     List<TotalPorCategoria> porCategoria =
-        categoriaRepository.findAll().stream()
-            .map(categoria ->
-                new TotalPorCategoria(
-                    categoria.getId(),
-                    categoria.getNome(),
-                    totaisPorCategoria.getOrDefault(categoria.getId(), 0L)))
+        relatoRepository.contarPorCategoria().stream()
+            .map(total ->
+                new TotalPorCategoria(total.categoriaId(), total.categoriaNome(), total.total()))
             .toList();
 
-    return new EstatisticasRelatosDTO(relatos.size(), porStatus, porCategoria);
+    return new EstatisticasRelatosDTO(relatoRepository.count(), porStatus, porCategoria);
   }
 
   @Transactional(readOnly = true)
   public List<HistoricoStatusDTO> obterHistoricoGestao(Long relatoId) {
     relatoRepository
         .findById(relatoId)
-        .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+        .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
 
     return listarHistorico(relatoId);
   }
 
   @Transactional
   public void cancelar(UUID usuarioId, Long relatoId) {
-    perfilRepository
-        .findByUsuarioId(usuarioId)
-        .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+    Perfil perfil =
+        perfilRepository
+            .findByUsuarioId(usuarioId)
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     Relato relato =
         relatoRepository
-            .findById(relatoId)
-            .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+            .findByPerfilIdAndIdParaAtualizacao(perfil.getId(), relatoId)
+            .orElseThrow(() ->
+                new RecursoNaoEncontradoException(
+                    "Relato não encontrado ou não pertence a este usuário."));
 
-    relato.cancelar();
     StatusRelato statusAnterior = relato.getStatus();
+    relato.cancelar();
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, null);
@@ -253,12 +255,69 @@ public class RelatoService {
         .toList();
   }
 
-  private void validarTipoDaFoto(String contentType) {
-    if (contentType == null
-        || !TIPOS_DE_FOTO_PERMITIDOS.contains(contentType.toLowerCase(Locale.ROOT))) {
+  private String validarFoto(byte[] fileBytes, String contentType) {
+    if (fileBytes.length > 10 * 1024 * 1024) {
+      throw new IllegalArgumentException("A foto deve ter no máximo 10 MB.");
+    }
+    if (contentType == null) {
       throw new IllegalArgumentException(
           "Tipo de arquivo não permitido para a foto. Envie uma imagem JPEG, PNG ou WebP.");
     }
+
+    String tipo = contentType.toLowerCase(Locale.ROOT);
+    if (!TIPOS_DE_FOTO_PERMITIDOS.contains(tipo)) {
+      throw new IllegalArgumentException(
+          "Tipo de arquivo não permitido para a foto. Envie uma imagem JPEG, PNG ou WebP.");
+    }
+
+    boolean conteudoValido =
+        switch (tipo) {
+          case "image/jpeg" -> assinaturaConfere(fileBytes, 0, 0xFF, 0xD8, 0xFF);
+          case "image/png" ->
+              assinaturaConfere(fileBytes, 0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+          case "image/webp" ->
+              assinaturaConfere(fileBytes, 0, 0x52, 0x49, 0x46, 0x46)
+                  && assinaturaConfere(fileBytes, 8, 0x57, 0x45, 0x42, 0x50);
+          default -> false;
+        };
+    if (!conteudoValido) {
+      throw new IllegalArgumentException(
+          "O conteúdo do arquivo não corresponde a uma imagem JPEG, PNG ou WebP válida.");
+    }
+    return tipo;
+  }
+
+  private String extensaoDaFoto(String tipo, String originalFilename) {
+    if ("image/png".equals(tipo)) {
+      return ".png";
+    }
+    if ("image/webp".equals(tipo)) {
+      return ".webp";
+    }
+    return originalFilename != null && originalFilename.toLowerCase(Locale.ROOT).endsWith(".jpeg")
+        ? ".jpeg"
+        : ".jpg";
+  }
+
+  private static boolean assinaturaConfere(byte[] bytes, int offset, int... assinatura) {
+    if (bytes.length < offset + assinatura.length) {
+      return false;
+    }
+    for (int i = 0; i < assinatura.length; i++) {
+      if ((bytes[offset + i] & 0xFF) != assinatura[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private RelatoCriadoDTO toCriadoDTO(Relato relato) {
+    return RelatoCriadoDTO.builder()
+        .id(relato.getId())
+        .status(relato.getStatus())
+        .urlFoto(relato.getUrlFoto())
+        .criadoEm(relato.getCriadoEm())
+        .build();
   }
 
   private RelatoListagemDTO toListagemDTO(Relato relato) {
@@ -290,8 +349,6 @@ public class RelatoService {
         .categoriaIconeNome(relato.getCategoria().getIconeNome())
         .status(relato.getStatus())
         .criadoEm(relato.getCriadoEm())
-        .latitude(relato.getLatitude())
-        .longitude(relato.getLongitude())
         .build();
   }
 

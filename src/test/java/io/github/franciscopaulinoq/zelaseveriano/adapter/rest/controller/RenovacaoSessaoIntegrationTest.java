@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -36,6 +35,9 @@ class RenovacaoSessaoIntegrationTest {
 
   @Value("${api.security.token.secret}")
   private String secret;
+
+  @Value("${api.security.token.refresh-secret}")
+  private String refreshSecret;
 
   @Test
   void tokenDeRenovacaoDoLoginEmiteNovoTokenDeAcessoValido() throws Exception {
@@ -77,8 +79,10 @@ class RenovacaoSessaoIntegrationTest {
   void tokenDeRenovacaoExpiradoEhRecusadoSemEmitirToken() throws Exception {
     Cidadao cidadao = cidadaos.cadastrar("Vera Lúcia");
     JwtService geradoHaOitoDias =
-        new JwtService(Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC));
-    ReflectionTestUtils.setField(geradoHaOitoDias, "secret", secret);
+        new JwtService(
+            Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC),
+            secret,
+            refreshSecret);
     String expirado =
         geradoHaOitoDias.gerarTokenDeRenovacao(
             usuarioRepository.findById(cidadao.usuarioId()).orElseThrow());

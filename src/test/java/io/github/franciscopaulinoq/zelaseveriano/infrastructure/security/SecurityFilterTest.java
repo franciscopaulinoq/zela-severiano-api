@@ -71,6 +71,17 @@ class SecurityFilterTest {
   }
 
   @Test
+  void naoConsultaOTokenQuandoOEsquemaNaoEhBearer() throws Exception {
+    request.addHeader("Authorization", "Basic token-valido");
+
+    securityFilter.doFilter(request, response, filterChain);
+
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verifyNoInteractions(jwtService);
+    verify(filterChain).doFilter(request, response);
+  }
+
+  @Test
   void naoConsultaOTokenQuandoNaoHaCabecalhoDeAutorizacao() throws Exception {
     securityFilter.doFilter(request, response, filterChain);
 

@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RegistrarCidadaoMapper;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RegistrarCidadaoRequest;
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RegistrarCidadaoResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistradoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
 import jakarta.validation.Valid;
@@ -28,7 +29,7 @@ public class CidadaoController {
 
     RegistrarCidadaoDTO dto = mapper.map(request);
 
-    RegistrarCidadaoDTO resultado = contaService.registrarCidadao(dto, request.getSenha());
+    CidadaoRegistradoDTO resultado = contaService.registrarCidadao(dto, request.getSenha());
 
     RegistrarCidadaoResponse response = mapper.map(resultado);
 

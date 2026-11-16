@@ -9,9 +9,11 @@ import io.github.franciscopaulinoq.zelaseveriano.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @IntegrationTest
+@ActiveProfiles({"test", "dev"})
 class GestorDesenvolvimentoIntegrationTest {
 
   @Autowired private MockMvc mockMvc;

@@ -16,6 +16,4 @@ public class RelatoPublicoResponse {
   private String categoriaIconeNome;
   private StatusRelato status;
   private OffsetDateTime criadoEm;
-  private Double latitude;
-  private Double longitude;
 }

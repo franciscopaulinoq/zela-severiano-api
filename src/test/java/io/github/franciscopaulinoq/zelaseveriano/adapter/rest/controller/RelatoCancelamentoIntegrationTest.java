@@ -49,6 +49,29 @@ class RelatoCancelamentoIntegrationTest {
     mockMvc
         .perform(get("/api/v1/relatos/{id}", relatoId).header("Authorization", "Bearer " + token))
         .andExpect(jsonPath("$.status").value("CANCELADO"));
+
+    mockMvc
+        .perform(
+            get("/api/v1/relatos/{id}/historico", relatoId)
+                .header("Authorization", "Bearer " + token))
+        .andExpect(jsonPath("$[0].statusAnterior").value("PENDENTE"))
+        .andExpect(jsonPath("$[0].statusNovo").value("CANCELADO"));
+  }
+
+  @Test
+  void cidadaoNaoCancelaRelatoDeOutroCidadao() throws Exception {
+    Long relatoId = registrar();
+    String tokenDeOutro = cidadaos.token(cidadaos.cadastrar("Outro Cidadão"));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/relatos/{id}/cancelamento", relatoId)
+                .header("Authorization", "Bearer " + tokenDeOutro))
+        .andExpect(status().isNotFound());
+
+    mockMvc
+        .perform(get("/api/v1/relatos/{id}", relatoId).header("Authorization", "Bearer " + token))
+        .andExpect(jsonPath("$.status").value("PENDENTE"));
   }
 
   @Test

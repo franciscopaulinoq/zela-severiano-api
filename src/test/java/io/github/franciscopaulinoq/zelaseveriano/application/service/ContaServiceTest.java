@@ -8,8 +8,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistradoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
@@ -27,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class ContaServiceTest {
@@ -46,6 +49,20 @@ class ContaServiceTest {
   @InjectMocks private ContaService contaService;
 
   @Test
+  void cpfInexistenteTambemPassaPelaVerificacaoDeSenha() {
+    when(usuarioRepository.findByCpf(CPF)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> contaService.autenticar(CPF, "senha-informada"))
+        .isInstanceOf(CredenciaisInvalidasException.class)
+        .hasMessage("CPF ou senha inválidos");
+
+    verify(passwordHasher)
+        .matches("senha-informada", "$2a$12$yG48DtlJmfemBdYb7Byuv./c35yRg/MUcOqGrcxZtrEZZ85MZeSm6");
+    verify(tokenService, never()).gerarToken(any());
+    verify(tokenService, never()).gerarTokenDeRenovacao(any());
+  }
+
+  @Test
   void recusaCadastroDeCpfJaRegistradoSemPersistirNada() {
     when(usuarioRepository.existsByCpf(CPF)).thenReturn(true);
 
@@ -59,6 +76,20 @@ class ContaServiceTest {
   }
 
   @Test
+  void violacaoDeUnicidadeDoCpfViraConflitoDeNegocio() {
+    when(usuarioRepository.existsByCpf(CPF)).thenReturn(false);
+    when(usuarioRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicado"));
+
+    assertThatThrownBy(() -> contaService.registrarCidadao(novoCidadao(), "senha-secreta"))
+        .isInstanceOf(CidadaoJaRegistradoException.class)
+        .hasMessage("CPF já registrado no sistema")
+        .hasCauseInstanceOf(DataIntegrityViolationException.class);
+
+    verify(perfilRepository, never()).save(any());
+    verify(enderecoRepository, never()).save(any());
+  }
+
+  @Test
   void cadastraCidadaoComSenhaHasheadaPapelCidadaoEEnderecoNoMunicipio() {
     when(usuarioRepository.existsByCpf(CPF)).thenReturn(false);
     when(passwordHasher.hash("senha-secreta")).thenReturn("hash-da-senha");
@@ -66,7 +97,7 @@ class ContaServiceTest {
     when(perfilRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
     when(enderecoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    RegistrarCidadaoDTO resultado = contaService.registrarCidadao(novoCidadao(), "senha-secreta");
+    CidadaoRegistradoDTO resultado = contaService.registrarCidadao(novoCidadao(), "senha-secreta");
 
     ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
     verify(usuarioRepository).save(usuario.capture());
@@ -87,9 +118,9 @@ class ContaServiceTest {
     assertThat(endereco.getValue().getCep()).isEqualTo("59910000");
     assertThat(endereco.getValue().getBairro()).isEqualTo("Centro");
 
-    assertThat(resultado.getUsuarioId()).isEqualTo(usuario.getValue().getId());
-    assertThat(resultado.getPerfilId()).isEqualTo(perfil.getValue().getId());
-    assertThat(resultado.getEnderecoId()).isEqualTo(endereco.getValue().getId());
+    assertThat(resultado.usuarioId()).isEqualTo(usuario.getValue().getId());
+    assertThat(resultado.perfilId()).isEqualTo(perfil.getValue().getId());
+    assertThat(resultado.enderecoId()).isEqualTo(endereco.getValue().getId());
   }
 
   private RegistrarCidadaoDTO novoCidadao() {
@@ -127,6 +158,20 @@ class ContaServiceTest {
         .hasMessage("Senha atual incorreta.");
 
     assertThat(usuario.getSenhaHash()).isEqualTo("hash-antigo");
+    verify(usuarioRepository, never()).save(any());
+  }
+
+  @Test
+  void recusaTrocaDeSenhaSemInformarASenhaAtual() {
+    Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
+    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+
+    assertThatThrownBy(() -> contaService.trocarSenha(usuario.getId(), null, "senha-nova"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Senha atual incorreta.");
+
+    assertThat(usuario.getSenhaHash()).isEqualTo("hash-antigo");
+    verify(passwordHasher, never()).matches(anyString(), anyString());
     verify(usuarioRepository, never()).save(any());
   }
 

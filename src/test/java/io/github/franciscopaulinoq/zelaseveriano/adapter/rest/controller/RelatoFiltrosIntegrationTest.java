@@ -116,6 +116,13 @@ class RelatoFiltrosIntegrationTest {
   }
 
   @Test
+  void gestorNaoAcessaAListagemExclusivaDoCidadao() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/relatos").header("Authorization", bearer(tokenGestor)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void gestorCombinaOsDoisFiltros() throws Exception {
     mockMvc
         .perform(
@@ -124,9 +131,9 @@ class RelatoFiltrosIntegrationTest {
                 .param("categoriaId", String.valueOf(LIMPEZA))
                 .header("Authorization", bearer(tokenGestor)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[?(@.id == %d)]", limpezaEmAnalise).exists())
-        .andExpect(jsonPath("$[*].status", everyItem(is("EM_ANALISE"))))
-        .andExpect(jsonPath("$[?(@.id == %d)]", iluminacaoEmAnalise).doesNotExist());
+        .andExpect(jsonPath("$.content[?(@.id == %d)]", limpezaEmAnalise).exists())
+        .andExpect(jsonPath("$.content[*].status", everyItem(is("EM_ANALISE"))))
+        .andExpect(jsonPath("$.content[?(@.id == %d)]", iluminacaoEmAnalise).doesNotExist());
   }
 
   private Long registrar(Cidadao cidadao, int categoriaId) {

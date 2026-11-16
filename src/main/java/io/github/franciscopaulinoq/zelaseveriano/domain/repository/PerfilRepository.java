@@ -10,4 +10,6 @@ public interface PerfilRepository {
   Optional<Perfil> findById(UUID perfilId);
 
   Optional<Perfil> findByUsuarioId(UUID usuarioId);
+
+  void bloquear(UUID perfilId);
 }

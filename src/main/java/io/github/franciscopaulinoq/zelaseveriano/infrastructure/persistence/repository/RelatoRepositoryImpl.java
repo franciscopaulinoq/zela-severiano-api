@@ -2,6 +2,8 @@ package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.rep
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorCategoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
@@ -19,9 +21,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class RelatoRepositoryImpl implements RelatoRepository {
-  private final JpaRelatoRepository jpaRepository;
-  private static final Sort MAIS_RECENTES_PRIMEIRO = Sort.by(Sort.Direction.DESC, "criadoEm");
+  private static final Sort MAIS_RECENTES_PRIMEIRO =
+      Sort.by(Sort.Direction.DESC, "criadoEm").and(Sort.by(Sort.Direction.DESC, "id"));
 
+  private final JpaRelatoRepository jpaRepository;
   private final RelatoMapper mapper;
 
   @Override
@@ -42,13 +45,28 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public Optional<Relato> findByIdParaAtualizacao(Long relatoId) {
+    return jpaRepository.findByIdParaAtualizacao(relatoId).map(mapper::map);
+  }
+
+  @Override
+  public Optional<Relato> findByPerfilIdAndIdParaAtualizacao(UUID perfilId, Long relatoId) {
+    return jpaRepository.findByPerfilIdAndIdParaAtualizacao(perfilId, relatoId).map(mapper::map);
+  }
+
+  @Override
   public Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable) {
-    PageRequest pageRequest =
-        PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
     return jpaRepository
         .findAll(
             RelatoSpecifications.doPerfil(perfilId).and(RelatoSpecifications.comFiltro(filtro)),
-            pageRequest)
+            paginar(pageable))
+        .map(mapper::map);
+  }
+
+  @Override
+  public Page<Relato> findAll(FiltroRelatos filtro, Pageable pageable) {
+    return jpaRepository
+        .findAll(RelatoSpecifications.comFiltro(filtro), paginar(pageable))
         .map(mapper::map);
   }
 
@@ -58,16 +76,26 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
-  public boolean existsByCategoriaIdAndStatus(Integer categoriaId, StatusRelato status) {
-    return jpaRepository.existsByCategoriaIdAndStatus(categoriaId, status);
+  public boolean existsByCategoriaId(Integer categoriaId) {
+    return jpaRepository.existsByCategoriaId(categoriaId);
   }
 
   @Override
-  public List<Relato> findAll(FiltroRelatos filtro) {
-    return jpaRepository
-        .findAll(RelatoSpecifications.comFiltro(filtro), MAIS_RECENTES_PRIMEIRO)
-        .stream()
-        .map(mapper::map)
-        .toList();
+  public long count() {
+    return jpaRepository.count();
+  }
+
+  @Override
+  public List<TotalRelatosPorStatus> contarPorStatus() {
+    return jpaRepository.contarPorStatus();
+  }
+
+  @Override
+  public List<TotalRelatosPorCategoria> contarPorCategoria() {
+    return jpaRepository.contarPorCategoria();
+  }
+
+  private static PageRequest paginar(Pageable pageable) {
+    return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
   }
 }

@@ -43,7 +43,7 @@ class TrocaSenhaIntegrationTest {
         .andExpect(status().isNoContent());
 
     login("nova-senha-123").andExpect(status().isOk()).andExpect(jsonPath("$.token").exists());
-    login(CidadaosDeTeste.SENHA).andExpect(status().isUnprocessableContent());
+    login(CidadaosDeTeste.SENHA).andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -55,7 +55,19 @@ class TrocaSenhaIntegrationTest {
         .andExpect(status().isUnprocessableContent());
 
     login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
-    login("nova-senha-123").andExpect(status().isUnprocessableContent());
+    login("nova-senha-123").andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void senhaAtualAusenteEhRecusadaSemAlterarASenha() throws Exception {
+    trocarSenha(
+            """
+            {"novaSenha": "nova-senha-123"}
+            """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validation_errors.senhaAtual").exists());
+
+    login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
   }
 
   @Test
@@ -66,6 +78,19 @@ class TrocaSenhaIntegrationTest {
             """
                 .formatted(CidadaosDeTeste.SENHA))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void novaSenhaAcimaDoLimiteEhRecusada() throws Exception {
+    trocarSenha(
+            """
+            {"senhaAtual": "%s", "novaSenha": "%s"}
+            """
+                .formatted(CidadaosDeTeste.SENHA, "x".repeat(73)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validation_errors.novaSenha").exists());
+
+    login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
   }
 
   private ResultActions trocarSenha(String corpo) throws Exception {
