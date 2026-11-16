@@ -111,7 +111,12 @@ class JwtServiceTest {
   void segredosIguaisSaoRecusados() {
     Clock clock = Clock.fixed(AGORA, ZoneOffset.UTC);
 
-    assertThatThrownBy(() -> new JwtService(clock, SEGREDO_ACESSO, SEGREDO_ACESSO))
+    assertThatThrownBy(() ->
+            new JwtService(
+                clock,
+                SEGREDO_ACESSO,
+                SEGREDO_ACESSO,
+                new AccessTokenValidator(clock, SEGREDO_ACESSO)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("devem ser diferentes");
   }
@@ -120,12 +125,15 @@ class JwtServiceTest {
   void segredoCurtoEhRecusado() {
     Clock clock = Clock.fixed(AGORA, ZoneOffset.UTC);
 
-    assertThatThrownBy(() -> new JwtService(clock, "curto", SEGREDO_RENOVACAO))
+    assertThatThrownBy(() ->
+            new JwtService(
+                clock, "curto", SEGREDO_RENOVACAO, new AccessTokenValidator(clock, SEGREDO_ACESSO)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("32 bytes");
   }
 
   private static JwtService comRelogio(Clock clock) {
-    return new JwtService(clock, SEGREDO_ACESSO, SEGREDO_RENOVACAO);
+    return new JwtService(
+        clock, SEGREDO_ACESSO, SEGREDO_RENOVACAO, new AccessTokenValidator(clock, SEGREDO_ACESSO));
   }
 }

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
+import io.github.franciscopaulinoq.zelaseveriano.infrastructure.security.AccessTokenValidator;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.security.JwtService;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste.Cidadao;
@@ -78,11 +79,9 @@ class RenovacaoSessaoIntegrationTest {
   @Test
   void tokenDeRenovacaoExpiradoEhRecusadoSemEmitirToken() throws Exception {
     Cidadao cidadao = cidadaos.cadastrar("Vera Lúcia");
+    Clock clock = Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC);
     JwtService geradoHaOitoDias =
-        new JwtService(
-            Clock.fixed(Instant.now().minus(Duration.ofDays(8)), ZoneOffset.UTC),
-            secret,
-            refreshSecret);
+        new JwtService(clock, secret, refreshSecret, new AccessTokenValidator(clock, secret));
     String expirado =
         geradoHaOitoDias.gerarTokenDeRenovacao(
             usuarioRepository.findById(cidadao.usuarioId()).orElseThrow());
