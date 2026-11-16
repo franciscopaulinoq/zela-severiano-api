@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.infrastructure.storage;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.UrlPublicaArquivo;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,6 @@ public class CloudflareR2Storage implements FileStorage {
 
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
 
-    return publicUrl + "/" + fileName;
+    return UrlPublicaArquivo.compor(publicUrl, fileName);
   }
 }

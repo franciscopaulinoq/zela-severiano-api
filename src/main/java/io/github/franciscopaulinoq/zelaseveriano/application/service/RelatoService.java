@@ -17,6 +17,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRel
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.LimitesDoMunicipio;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.UrlPublicaArquivo;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
@@ -31,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,6 +142,23 @@ public class RelatoService {
   @Transactional(readOnly = true)
   public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
     return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
+  }
+
+  @Transactional
+  public int sanearUrlsFotos(String basePublica) {
+    int atualizados = 0;
+    Page<Relato> pagina;
+    do {
+      pagina =
+          relatoRepository.findByUrlFotoStartingWith(
+              UrlPublicaArquivo.prefixoCandidatos(basePublica), PageRequest.of(0, 50));
+      for (Relato relato : pagina.getContent()) {
+        relato.atualizarUrlFoto(UrlPublicaArquivo.normalizar(basePublica, relato.getUrlFoto()));
+        relatoRepository.save(relato);
+        atualizados++;
+      }
+    } while (!pagina.isEmpty());
+    return atualizados;
   }
 
   @Transactional(readOnly = true)

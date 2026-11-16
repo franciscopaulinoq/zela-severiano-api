@@ -33,6 +33,9 @@ cloudflare:
     public-url: ${CLOUDFLARE_R2_PUBLIC_URL}
 
 api:
+  saneamento:
+    urls-fotos:
+      enabled: ${SANEAMENTO_URLS_FOTOS_ENABLED:false}
   security:
     token:
       secret: ${JWT_SECRET}
