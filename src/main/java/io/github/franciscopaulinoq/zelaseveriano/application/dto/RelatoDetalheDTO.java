@@ -18,6 +18,8 @@ public class RelatoDetalheDTO {
   private String urlFoto;
   private StatusRelato status;
   private OffsetDateTime criadoEm;
+  private OffsetDateTime atualizadoEm;
+  private String observacaoResolucao;
   private String categoriaNome;
   private Double latitude;
   private Double longitude;

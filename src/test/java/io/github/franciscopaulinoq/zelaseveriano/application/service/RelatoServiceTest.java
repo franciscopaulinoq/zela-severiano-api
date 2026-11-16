@@ -30,6 +30,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -267,6 +268,35 @@ class RelatoServiceTest {
     assertThat(detalhe.getCategoriaNome()).isEqualTo("Iluminação");
     assertThat(detalhe.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
     assertThat(detalhe.getDescricao()).isEqualTo("Poste apagado na esquina");
+  }
+
+  @Test
+  void detalheExpoeObservacaoEMomentoDaUltimaAvaliacao() {
+    when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
+    var primeiraAvaliacao = OffsetDateTime.parse("2026-01-10T12:00:00-03:00");
+    var segundaAvaliacao = primeiraAvaliacao.plusDays(2);
+
+    verificaDetalheAvaliado(StatusRelato.REJEITADO, "Foto insuficiente", primeiraAvaliacao);
+    verificaDetalheAvaliado(StatusRelato.CONCLUIDO, "Luminária substituída", segundaAvaliacao);
+  }
+
+  private void verificaDetalheAvaliado(
+      StatusRelato status, String observacao, OffsetDateTime atualizadoEm) {
+    Relato relato =
+        Relato.builder()
+            .id(42L)
+            .perfil(PERFIL)
+            .categoria(CATEGORIA)
+            .status(status)
+            .observacaoResolucao(observacao)
+            .atualizadoEm(atualizadoEm)
+            .build();
+    when(relatoRepository.findByPerfilIdAndId(PERFIL.getId(), 42L)).thenReturn(Optional.of(relato));
+
+    RelatoDetalheDTO detalhe = relatoService.obterDetalhe(USUARIO_ID, 42L);
+
+    assertThat(detalhe.getObservacaoResolucao()).isEqualTo(observacao);
+    assertThat(detalhe.getAtualizadoEm()).isEqualTo(atualizadoEm);
   }
 
   @Test

@@ -336,6 +336,9 @@ public class RelatoService {
         .urlFoto(relato.getUrlFoto())
         .status(relato.getStatus())
         .criadoEm(relato.getCriadoEm())
+        .atualizadoEm(
+            java.util.Optional.ofNullable(relato.getAtualizadoEm()).orElse(relato.getCriadoEm()))
+        .observacaoResolucao(relato.getObservacaoResolucao())
         .categoriaNome(relato.getCategoria().getNome())
         .latitude(relato.getLatitude())
         .longitude(relato.getLongitude())
