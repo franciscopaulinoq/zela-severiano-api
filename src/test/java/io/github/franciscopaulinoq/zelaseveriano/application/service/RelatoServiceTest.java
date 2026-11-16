@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -69,15 +70,17 @@ class RelatoServiceTest {
     prepararPerfilECategoria();
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
+    var relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
 
     assertThat(relato.getStatus()).isEqualTo(StatusRelato.PENDENTE);
-    assertThat(relato.getPerfil()).isSameAs(PERFIL);
-    assertThat(relato.getCategoria()).isSameAs(CATEGORIA);
-    assertThat(relato.getDescricao()).isEqualTo("Poste apagado na esquina");
-    assertThat(relato.getLatitude()).isEqualTo(-6.08);
-    assertThat(relato.getLongitude()).isEqualTo(-38.38);
     assertThat(relato.getUrlFoto()).isNull();
+    ArgumentCaptor<Relato> salvo = ArgumentCaptor.forClass(Relato.class);
+    verify(relatoRepository).save(salvo.capture());
+    assertThat(salvo.getValue().getPerfil()).isSameAs(PERFIL);
+    assertThat(salvo.getValue().getCategoria()).isSameAs(CATEGORIA);
+    assertThat(salvo.getValue().getDescricao()).isEqualTo("Poste apagado na esquina");
+    assertThat(salvo.getValue().getLatitude()).isEqualTo(-6.08);
+    assertThat(salvo.getValue().getLongitude()).isEqualTo(-38.38);
     verifyNoInteractions(fileStorage);
   }
 
@@ -89,7 +92,7 @@ class RelatoServiceTest {
         .thenReturn("https://arquivos.example.com/poste.jpg");
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato =
+    var relato =
         relatoService.registrar(USUARIO_ID, novoRelato(), foto, "../poste.jpg", "IMAGE/JPEG");
 
     assertThat(relato.getUrlFoto()).isEqualTo("https://arquivos.example.com/poste.jpg");
@@ -160,7 +163,7 @@ class RelatoServiceTest {
         .thenReturn(4L);
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    Relato relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
+    var relato = relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null);
 
     assertThat(relato.getStatus()).isEqualTo(StatusRelato.PENDENTE);
   }
@@ -187,9 +190,11 @@ class RelatoServiceTest {
     naZonaRural.setLatitude(-6.15);
     naZonaRural.setLongitude(-38.45);
 
-    Relato relato = relatoService.registrar(USUARIO_ID, naZonaRural, null, null, null);
+    relatoService.registrar(USUARIO_ID, naZonaRural, null, null, null);
 
-    assertThat(relato.getLatitude()).isEqualTo(-6.15);
+    ArgumentCaptor<Relato> salvo = ArgumentCaptor.forClass(Relato.class);
+    verify(relatoRepository).save(salvo.capture());
+    assertThat(salvo.getValue().getLatitude()).isEqualTo(-6.15);
   }
 
   @Test

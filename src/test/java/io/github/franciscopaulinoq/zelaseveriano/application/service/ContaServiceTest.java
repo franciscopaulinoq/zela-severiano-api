@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistradoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
@@ -96,7 +97,7 @@ class ContaServiceTest {
     when(perfilRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
     when(enderecoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    RegistrarCidadaoDTO resultado = contaService.registrarCidadao(novoCidadao(), "senha-secreta");
+    CidadaoRegistradoDTO resultado = contaService.registrarCidadao(novoCidadao(), "senha-secreta");
 
     ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
     verify(usuarioRepository).save(usuario.capture());
@@ -117,9 +118,9 @@ class ContaServiceTest {
     assertThat(endereco.getValue().getCep()).isEqualTo("59910000");
     assertThat(endereco.getValue().getBairro()).isEqualTo("Centro");
 
-    assertThat(resultado.getUsuarioId()).isEqualTo(usuario.getValue().getId());
-    assertThat(resultado.getPerfilId()).isEqualTo(perfil.getValue().getId());
-    assertThat(resultado.getEnderecoId()).isEqualTo(endereco.getValue().getId());
+    assertThat(resultado.usuarioId()).isEqualTo(usuario.getValue().getId());
+    assertThat(resultado.perfilId()).isEqualTo(perfil.getValue().getId());
+    assertThat(resultado.enderecoId()).isEqualTo(endereco.getValue().getId());
   }
 
   private RegistrarCidadaoDTO novoCidadao() {

@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.support;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistradoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
@@ -31,8 +32,8 @@ public class CidadaosDeTeste {
             .numero("10")
             .bairro("Centro")
             .build();
-    RegistrarCidadaoDTO registrado = contaService.registrarCidadao(dto, SENHA);
-    return new Cidadao(registrado.getUsuarioId(), registrado.getPerfilId(), cpf);
+    CidadaoRegistradoDTO registrado = contaService.registrarCidadao(dto, SENHA);
+    return new Cidadao(registrado.usuarioId(), registrado.perfilId(), cpf);
   }
 
   public String tokenDeNovoGestor() {

@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistradoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.SessaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
@@ -75,13 +76,12 @@ public class ContaService {
   }
 
   @Transactional
-  public RegistrarCidadaoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
+  public CidadaoRegistradoDTO registrarCidadao(RegistrarCidadaoDTO dto, String senhaPura) {
     if (usuarioRepository.existsByCpf(dto.getCpf())) {
       throw new CidadaoJaRegistradoException("CPF já registrado no sistema");
     }
 
     String senhaHash = passwordHasher.hash(senhaPura);
-
     Usuario usuario =
         Usuario.builder().id(UUID.randomUUID()).cpf(dto.getCpf()).senhaHash(senhaHash).build();
 
@@ -91,7 +91,6 @@ public class ContaService {
     } catch (DataIntegrityViolationException exception) {
       throw new CidadaoJaRegistradoException("CPF já registrado no sistema", exception);
     }
-    dto.setUsuarioId(usuarioSalvo.getId());
 
     Perfil perfil =
         Perfil.builder()
@@ -100,9 +99,7 @@ public class ContaService {
             .nomeCompleto(dto.getNomeCompleto())
             .email(dto.getEmail())
             .build();
-
     Perfil perfilSalvo = perfilRepository.save(perfil);
-    dto.setPerfilId(perfilSalvo.getId());
 
     Endereco endereco =
         Endereco.builder()
@@ -116,10 +113,14 @@ public class ContaService {
             .cidade("Doutor Severiano")
             .uf("RN")
             .build();
-
     Endereco enderecoSalvo = enderecoRepository.save(endereco);
-    dto.setEnderecoId(enderecoSalvo.getId());
 
-    return dto;
+    return new CidadaoRegistradoDTO(
+        usuarioSalvo.getId(),
+        perfilSalvo.getId(),
+        enderecoSalvo.getId(),
+        dto.getCpf(),
+        dto.getNomeCompleto(),
+        dto.getEmail());
   }
 }

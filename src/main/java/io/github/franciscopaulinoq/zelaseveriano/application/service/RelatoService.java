@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
@@ -50,7 +51,7 @@ public class RelatoService {
   private final HistoricoStatusRelatoRepository historicoRepository;
 
   @Transactional
-  public Relato registrar(
+  public RelatoCriadoDTO registrar(
       UUID usuarioId,
       RelatoRegistroDTO dto,
       byte[] fileBytes,
@@ -101,7 +102,7 @@ public class RelatoService {
             .longitude(dto.getLongitude())
             .build();
 
-    return relatoRepository.save(relato);
+    return toCriadoDTO(relatoRepository.save(relato));
   }
 
   @Transactional(readOnly = true)
@@ -149,7 +150,8 @@ public class RelatoService {
   }
 
   @Transactional
-  public Relato atualizarStatus(Long relatoId, StatusRelato novoStatus, String observacao) {
+  public RelatoCriadoDTO atualizarStatus(
+      Long relatoId, StatusRelato novoStatus, String observacao) {
     Relato relato =
         relatoRepository
             .findByIdParaAtualizacao(relatoId)
@@ -160,7 +162,7 @@ public class RelatoService {
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, observacao);
-    return salvo;
+    return toCriadoDTO(salvo);
   }
 
   @Transactional(readOnly = true)
@@ -307,6 +309,15 @@ public class RelatoService {
       }
     }
     return true;
+  }
+
+  private RelatoCriadoDTO toCriadoDTO(Relato relato) {
+    return RelatoCriadoDTO.builder()
+        .id(relato.getId())
+        .status(relato.getStatus())
+        .urlFoto(relato.getUrlFoto())
+        .criadoEm(relato.getCriadoEm())
+        .build();
   }
 
   private RelatoListagemDTO toListagemDTO(Relato relato) {

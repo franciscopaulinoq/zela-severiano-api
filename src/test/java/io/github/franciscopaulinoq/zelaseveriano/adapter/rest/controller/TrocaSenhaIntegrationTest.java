@@ -59,7 +59,7 @@ class TrocaSenhaIntegrationTest {
   }
 
   @Test
-  void senhaAtualAusenteEhRecusadaSemAlterarALSenha() throws Exception {
+  void senhaAtualAusenteEhRecusadaSemAlterarASenha() throws Exception {
     trocarSenha(
             """
             {"novaSenha": "nova-senha-123"}
@@ -78,6 +78,19 @@ class TrocaSenhaIntegrationTest {
             """
                 .formatted(CidadaosDeTeste.SENHA))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void novaSenhaAcimaDoLimiteEhRecusada() throws Exception {
+    trocarSenha(
+            """
+            {"senhaAtual": "%s", "novaSenha": "%s"}
+            """
+                .formatted(CidadaosDeTeste.SENHA, "x".repeat(73)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validation_errors.novaSenha").exists());
+
+    login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
   }
 
   private ResultActions trocarSenha(String corpo) throws Exception {

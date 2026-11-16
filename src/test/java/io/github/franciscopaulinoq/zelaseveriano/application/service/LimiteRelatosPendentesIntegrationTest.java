@@ -3,9 +3,9 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
-import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
@@ -47,13 +47,13 @@ class LimiteRelatosPendentesIntegrationTest {
   @Test
   void quandoUmPendenteEntraEmAnaliseOCidadaoVoltaAPoderRegistrar() {
     Cidadao cidadao = cidadaos.cadastrar("Paulo Alves");
-    List<Relato> pendentes = new ArrayList<>();
+    List<RelatoCriadoDTO> pendentes = new ArrayList<>();
     for (int i = 0; i < RelatoService.LIMITE_RELATOS_PENDENTES; i++) {
       pendentes.add(registrar(cidadao));
     }
 
     relatoService.atualizarStatus(pendentes.getFirst().getId(), StatusRelato.EM_ANALISE, null);
-    Relato novo = registrar(cidadao);
+    RelatoCriadoDTO novo = registrar(cidadao);
 
     assertThat(novo.getStatus()).isEqualTo(StatusRelato.PENDENTE);
     assertThat(relatoRepository.countByPerfilIdAndStatus(cidadao.perfilId(), StatusRelato.PENDENTE))
@@ -63,15 +63,15 @@ class LimiteRelatosPendentesIntegrationTest {
   @Test
   void registrosSimultaneosNaoExcedemOLimite() throws Exception {
     Cidadao cidadao = cidadaos.cadastrar("Concorrente da Silva");
-    List<Callable<Relato>> chamadas = new ArrayList<>();
+    List<Callable<RelatoCriadoDTO>> chamadas = new ArrayList<>();
     for (int i = 0; i < 8; i++) {
       chamadas.add(() -> registrar(cidadao));
     }
 
     int registrosConcluidos = 0;
     try (var executor = Executors.newFixedThreadPool(8)) {
-      List<Future<Relato>> resultados = executor.invokeAll(chamadas);
-      for (Future<Relato> resultado : resultados) {
+      List<Future<RelatoCriadoDTO>> resultados = executor.invokeAll(chamadas);
+      for (Future<RelatoCriadoDTO> resultado : resultados) {
         try {
           resultado.get();
           registrosConcluidos++;
@@ -86,7 +86,7 @@ class LimiteRelatosPendentesIntegrationTest {
         .isEqualTo(RelatoService.LIMITE_RELATOS_PENDENTES);
   }
 
-  private Relato registrar(Cidadao cidadao) {
+  private RelatoCriadoDTO registrar(Cidadao cidadao) {
     return relatoService.registrar(
         cidadao.usuarioId(),
         new RelatoRegistroDTO(4, "Buraco na rua", -6.08, -38.38),

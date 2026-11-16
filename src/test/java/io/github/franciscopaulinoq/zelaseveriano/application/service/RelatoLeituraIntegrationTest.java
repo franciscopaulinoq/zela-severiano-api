@@ -7,7 +7,6 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
-import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste;
 import io.github.franciscopaulinoq.zelaseveriano.support.CidadaosDeTeste.Cidadao;
@@ -29,7 +28,7 @@ class RelatoLeituraIntegrationTest {
   @Test
   void fluxosDeLeituraCarregamCidadaoECategoriaSemErro() {
     Cidadao cidadao = cidadaos.cadastrar("Joana Pereira");
-    Relato criado =
+    var criado =
         relatoService.registrar(
             cidadao.usuarioId(),
             new RelatoRegistroDTO(1, "Lâmpada queimada", -6.08, -38.38),
@@ -44,8 +43,7 @@ class RelatoLeituraIntegrationTest {
     RelatoDetalheDTO detalhe = relatoService.obterDetalhe(cidadao.usuarioId(), criado.getId());
     List<RelatoGestaoDTO> todos =
         relatoService.listarTodos(FiltroRelatos.semFiltro(), PageRequest.of(0, 10)).getContent();
-    Relato atualizado =
-        relatoService.atualizarStatus(criado.getId(), StatusRelato.EM_ANALISE, null);
+    var atualizado = relatoService.atualizarStatus(criado.getId(), StatusRelato.EM_ANALISE, null);
 
     assertThat(meus)
         .singleElement()
@@ -60,6 +58,5 @@ class RelatoLeituraIntegrationTest {
         .singleElement()
         .satisfies(item -> assertThat(item.getCidadaoNome()).isEqualTo("Joana Pereira"));
     assertThat(atualizado.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
-    assertThat(atualizado.getPerfil().getNomeCompleto()).isEqualTo("Joana Pereira");
   }
 }
