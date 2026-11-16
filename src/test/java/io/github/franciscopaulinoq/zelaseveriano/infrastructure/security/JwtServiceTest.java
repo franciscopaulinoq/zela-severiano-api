@@ -8,13 +8,13 @@ import com.auth0.jwt.algorithms.Algorithm;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenPayload;
+import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenRenovacaoPayload;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,10 +55,14 @@ class JwtServiceTest {
 
   @Test
   void tokenDeRenovacaoValidoDevolveOUsuario() {
-    Optional<UUID> usuarioId =
+    Optional<TokenRenovacaoPayload> payload =
         jwtService.validarTokenDeRenovacao(jwtService.gerarTokenDeRenovacao(USUARIO));
 
-    assertThat(usuarioId).contains(USUARIO.getId());
+    assertThat(payload)
+        .hasValueSatisfying(dados -> {
+          assertThat(dados.usuarioId()).isEqualTo(USUARIO.getId());
+          assertThat(dados.versaoTokens()).isZero();
+        });
   }
 
   @Test

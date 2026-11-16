@@ -14,6 +14,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.EnderecoRepos
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
+import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenRenovacaoPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -48,12 +49,19 @@ public class ContaService {
 
   @Transactional(readOnly = true)
   public String renovarSessao(String tokenRenovacao) {
-    Usuario usuario =
+    TokenRenovacaoPayload payload =
         tokenService
             .validarTokenDeRenovacao(tokenRenovacao)
-            .flatMap(usuarioRepository::findById)
             .orElseThrow(
                 () -> new TokenInvalidoException("Token de renovação inválido ou expirado."));
+    Usuario usuario =
+        usuarioRepository
+            .findById(payload.usuarioId())
+            .orElseThrow(
+                () -> new TokenInvalidoException("Token de renovação inválido ou expirado."));
+    if (usuario.getVersaoTokens() != payload.versaoTokens()) {
+      throw new TokenInvalidoException("Token de renovação inválido ou expirado.");
+    }
 
     return tokenService.gerarToken(usuario);
   }
@@ -62,7 +70,7 @@ public class ContaService {
   public void trocarSenha(UUID usuarioId, String senhaAtual, String novaSenha) {
     Usuario usuario =
         usuarioRepository
-            .findById(usuarioId)
+            .findByIdParaAtualizacao(usuarioId)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
     if (senhaAtual == null
@@ -72,6 +80,7 @@ public class ContaService {
     }
 
     usuario.alterarSenha(passwordHasher.hash(novaSenha));
+    usuario.invalidarTokensDeRenovacao();
     usuarioRepository.save(usuario);
   }
 

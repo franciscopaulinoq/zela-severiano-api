@@ -32,6 +32,9 @@ public class UsuarioEntity {
   @Column(name = "senha_hash", nullable = false, length = 255)
   private String senhaHash;
 
+  @Column(name = "versao_tokens", nullable = false)
+  private long versaoTokens;
+
   @Column(name = "role", nullable = false, length = 20)
   @Enumerated(EnumType.STRING)
   private Role role;

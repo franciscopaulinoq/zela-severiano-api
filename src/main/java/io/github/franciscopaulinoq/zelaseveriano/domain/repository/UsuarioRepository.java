@@ -9,6 +9,8 @@ public interface UsuarioRepository {
 
   Optional<Usuario> findById(UUID usuarioId);
 
+  Optional<Usuario> findByIdParaAtualizacao(UUID usuarioId);
+
   Optional<Usuario> findByCpf(String cpf);
 
   boolean existsByCpf(String cpf);

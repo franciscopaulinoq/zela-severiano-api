@@ -2,7 +2,6 @@ package io.github.franciscopaulinoq.zelaseveriano.domain.security;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface TokenService {
   String gerarToken(Usuario usuario);
@@ -11,5 +10,5 @@ public interface TokenService {
 
   String gerarTokenDeRenovacao(Usuario usuario);
 
-  Optional<UUID> validarTokenDeRenovacao(String token);
+  Optional<TokenRenovacaoPayload> validarTokenDeRenovacao(String token);
 }
