@@ -61,7 +61,9 @@ public class ContaService {
             .findById(usuarioId)
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-    if (senhaAtual != null && !passwordHasher.matches(senhaAtual, usuario.getSenhaHash())) {
+    if (senhaAtual == null
+        || senhaAtual.isBlank()
+        || !passwordHasher.matches(senhaAtual, usuario.getSenhaHash())) {
       throw new IllegalArgumentException("Senha atual incorreta.");
     }
 

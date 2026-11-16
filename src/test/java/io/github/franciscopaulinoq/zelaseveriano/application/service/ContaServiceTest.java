@@ -131,6 +131,20 @@ class ContaServiceTest {
   }
 
   @Test
+  void recusaTrocaDeSenhaSemInformarASenhaAtual() {
+    Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
+    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+
+    assertThatThrownBy(() -> contaService.trocarSenha(usuario.getId(), null, "senha-nova"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Senha atual incorreta.");
+
+    assertThat(usuario.getSenhaHash()).isEqualTo("hash-antigo");
+    verify(passwordHasher, never()).matches(anyString(), anyString());
+    verify(usuarioRepository, never()).save(any());
+  }
+
+  @Test
   void recusaTrocaDeSenhaDeUsuarioInexistente() {
     UUID usuarioId = UUID.randomUUID();
     when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());

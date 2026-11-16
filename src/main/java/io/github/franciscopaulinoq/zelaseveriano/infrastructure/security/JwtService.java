@@ -1,67 +1,80 @@
 package io.github.franciscopaulinoq.zelaseveriano.infrastructure.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class JwtService implements TokenService {
 
   private static final String ISSUER = "zela-severiano-api";
   private static final String CLAIM_ROLE = "role";
   private static final String CLAIM_TIPO = "tipo";
+  private static final String TIPO_ACESSO = "acesso";
   private static final String TIPO_RENOVACAO = "renovacao";
+  private static final Duration VALIDADE_TOKEN_ACESSO = Duration.ofHours(24);
   private static final Duration VALIDADE_TOKEN_RENOVACAO = Duration.ofDays(7);
-  private static final long HORAS_VALIDADE_TOKEN = 24;
+  private static final int TAMANHO_MINIMO_SEGREDO_EM_BYTES = 32;
 
   private final Clock clock;
+  private final String secret;
+  private final String refreshSecret;
 
-  @Value("${api.security.token.secret}")
-  private String secret;
+  public JwtService(
+      Clock clock,
+      @Value("${api.security.token.secret}") String secret,
+      @Value("${api.security.token.refresh-secret}") String refreshSecret) {
+    validarSegredo(secret, "acesso");
+    validarSegredo(refreshSecret, "renovação");
+    if (secret.equals(refreshSecret)) {
+      throw new IllegalArgumentException("Os segredos dos tokens devem ser diferentes.");
+    }
+    this.clock = clock;
+    this.secret = secret;
+    this.refreshSecret = refreshSecret;
+  }
 
   @Override
   public String gerarToken(Usuario usuario) {
     try {
-      Algorithm algorithm = Algorithm.HMAC256(secret);
       return JWT.create()
           .withIssuer(ISSUER)
           .withSubject(usuario.getId().toString())
           .withClaim(CLAIM_ROLE, usuario.getRole().name())
-          .withExpiresAt(genExpirationDate())
-          .sign(algorithm);
+          .withClaim(CLAIM_TIPO, TIPO_ACESSO)
+          .withExpiresAt(clock.instant().plus(VALIDADE_TOKEN_ACESSO))
+          .sign(Algorithm.HMAC256(secret));
     } catch (JWTCreationException exception) {
-      throw new RuntimeException("Erro ao gerar token JWT", exception);
+      throw new IllegalStateException("Erro ao gerar token JWT", exception);
     }
   }
 
   @Override
   public Optional<TokenPayload> validarToken(String token) {
     try {
-      Algorithm algorithm = Algorithm.HMAC256(secret);
-      var decoded = JWT.require(algorithm).withIssuer(ISSUER).build().verify(token);
-      if (TIPO_RENOVACAO.equals(decoded.getClaim(CLAIM_TIPO).asString())) {
+      DecodedJWT decoded = verificador(secret).verify(token);
+      String subject = decoded.getSubject();
+      String role = decoded.getClaim(CLAIM_ROLE).asString();
+      if (!TIPO_ACESSO.equals(decoded.getClaim(CLAIM_TIPO).asString())
+          || subject == null
+          || role == null) {
         return Optional.empty();
       }
-
-      UUID usuarioId = UUID.fromString(decoded.getSubject());
-      Role role = Role.valueOf(decoded.getClaim(CLAIM_ROLE).asString());
-      return Optional.of(new TokenPayload(usuarioId, role));
+      return Optional.of(new TokenPayload(UUID.fromString(subject), Role.valueOf(role)));
     } catch (JWTVerificationException | IllegalArgumentException exception) {
       return Optional.empty();
     }
@@ -75,23 +88,37 @@ public class JwtService implements TokenService {
           .withSubject(usuario.getId().toString())
           .withClaim(CLAIM_TIPO, TIPO_RENOVACAO)
           .withExpiresAt(clock.instant().plus(VALIDADE_TOKEN_RENOVACAO))
-          .sign(Algorithm.HMAC256(secret));
+          .sign(Algorithm.HMAC256(refreshSecret));
     } catch (JWTCreationException exception) {
-      throw new RuntimeException("Erro ao gerar token de renovação", exception);
+      throw new IllegalStateException("Erro ao gerar token de renovação", exception);
     }
   }
 
   @Override
   public Optional<UUID> validarTokenDeRenovacao(String token) {
     try {
-      var decoded = JWT.require(Algorithm.HMAC256(secret)).withIssuer(ISSUER).build().verify(token);
-      return Optional.of(UUID.fromString(decoded.getSubject()));
+      DecodedJWT decoded = verificador(refreshSecret).verify(token);
+      String subject = decoded.getSubject();
+      if (!TIPO_RENOVACAO.equals(decoded.getClaim(CLAIM_TIPO).asString()) || subject == null) {
+        return Optional.empty();
+      }
+      return Optional.of(UUID.fromString(subject));
     } catch (JWTVerificationException | IllegalArgumentException exception) {
       return Optional.empty();
     }
   }
 
-  private Instant genExpirationDate() {
-    return LocalDateTime.now(clock).plusHours(HORAS_VALIDADE_TOKEN).toInstant(ZoneOffset.UTC);
+  private JWTVerifier verificador(String signingSecret) {
+    var verification = (JWTVerifier.BaseVerification) JWT.require(Algorithm.HMAC256(signingSecret));
+    verification.withIssuer(ISSUER);
+    return verification.build(clock);
+  }
+
+  private static void validarSegredo(String secret, String tipo) {
+    if (secret == null
+        || secret.getBytes(StandardCharsets.UTF_8).length < TAMANHO_MINIMO_SEGREDO_EM_BYTES) {
+      throw new IllegalArgumentException(
+          "O segredo do token de %s deve ter pelo menos 32 bytes.".formatted(tipo));
+    }
   }
 }

@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrocarSenhaRequest {
+  @NotBlank(message = "Senha atual é obrigatória")
   private String senhaAtual;
 
   @NotBlank(message = "Nova senha é obrigatória")

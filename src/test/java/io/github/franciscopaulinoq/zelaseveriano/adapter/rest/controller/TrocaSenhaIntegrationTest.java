@@ -59,6 +59,18 @@ class TrocaSenhaIntegrationTest {
   }
 
   @Test
+  void senhaAtualAusenteEhRecusadaSemAlterarALSenha() throws Exception {
+    trocarSenha(
+            """
+            {"novaSenha": "nova-senha-123"}
+            """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.validation_errors.senhaAtual").exists());
+
+    login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
+  }
+
+  @Test
   void novaSenhaCurtaEhRecusada() throws Exception {
     trocarSenha(
             """

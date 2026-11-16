@@ -38,3 +38,4 @@ api:
   security:
     token:
       secret: ${JWT_SECRET:zela-secret-key-default}
+      refresh-secret: ${JWT_REFRESH_SECRET}

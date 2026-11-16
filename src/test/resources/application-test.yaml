@@ -11,4 +11,5 @@ cloudflare:
 api:
   security:
     token:
-      secret: segredo-somente-para-testes
+      secret: segredo-de-acesso-somente-para-testes
+      refresh-secret: segredo-de-renovacao-somente-para-testes
