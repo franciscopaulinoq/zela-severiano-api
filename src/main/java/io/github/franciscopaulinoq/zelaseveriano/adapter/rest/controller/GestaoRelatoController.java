@@ -1,10 +1,9 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarStatusRelatoRequest;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.EstatisticasRelatosResponse;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoGestaoResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarStatusRelatoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
@@ -29,36 +28,33 @@ import org.springframework.web.bind.annotation.RestController;
 public class GestaoRelatoController {
 
   private final RelatoService relatoService;
-  private final RelatoRestMapper mapper;
 
   @GetMapping
-  public ResponseEntity<Page<RelatoGestaoResponse>> listarTodos(
+  public ResponseEntity<Page<RelatoGestaoDTO>> listarTodos(
       @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
           StatusRelato status,
       @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
           Integer categoriaId,
       @Parameter(hidden = true) Pageable pageable) {
     return ResponseEntity.ok(
-        relatoService
-            .listarTodos(new FiltroRelatos(status, categoriaId), pageable)
-            .map(mapper::mapGestao));
+        relatoService.listarTodos(new FiltroRelatos(status, categoriaId), pageable));
   }
 
   @GetMapping("/estatisticas")
-  public ResponseEntity<EstatisticasRelatosResponse> obterEstatisticas() {
-    return ResponseEntity.ok(mapper.mapEstatisticas(relatoService.obterEstatisticas()));
+  public ResponseEntity<EstatisticasRelatosDTO> obterEstatisticas() {
+    return ResponseEntity.ok(relatoService.obterEstatisticas());
   }
 
   @GetMapping("/{id}/historico")
-  public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
+  public ResponseEntity<List<HistoricoStatusDTO>> obterHistorico(
       @PathVariable("id") Long relatoId) {
-    return ResponseEntity.ok(mapper.mapHistorico(relatoService.obterHistoricoGestao(relatoId)));
+    return ResponseEntity.ok(relatoService.obterHistoricoGestao(relatoId));
   }
 
   @PatchMapping("/{id}/status")
   public ResponseEntity<Void> atualizarStatus(
-      @PathVariable("id") Long relatoId, @Valid @RequestBody AtualizarStatusRelatoRequest request) {
-    relatoService.atualizarStatus(relatoId, request.getStatus(), request.getObservacao());
+      @PathVariable("id") Long relatoId, @Valid @RequestBody AtualizarStatusRelatoDTO dados) {
+    relatoService.atualizarStatus(relatoId, dados.getStatus(), dados.getObservacao());
     return ResponseEntity.noContent().build();
   }
 }

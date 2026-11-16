@@ -8,4 +8,5 @@ public record CidadaoRegistradoDTO(
     UUID enderecoId,
     String cpf,
     String nomeCompleto,
-    String email) {}
+    String email,
+    String mensagem) {}

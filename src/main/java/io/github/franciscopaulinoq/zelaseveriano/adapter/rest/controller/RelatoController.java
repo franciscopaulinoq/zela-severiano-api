@@ -1,11 +1,9 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestMapper;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.RelatoRegistroRequest;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.HistoricoStatusResponse;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoCriadoResponse;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoDetalheResponse;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoListagemResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
@@ -40,25 +38,23 @@ import org.springframework.web.multipart.MultipartFile;
 public class RelatoController {
 
   private final RelatoService relatoService;
-  private final RelatoRestMapper mapper;
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<RelatoCriadoResponse> registrar(
+  public ResponseEntity<RelatoCriadoDTO> registrar(
       @AuthenticationPrincipal UserDetails userDetails,
-      @Valid @RequestPart("dados") RelatoRegistroRequest request,
+      @Valid @RequestPart("dados") RelatoRegistroDTO dados,
       @RequestPart(value = "foto", required = false) MultipartFile foto)
       throws IOException {
 
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    RelatoRegistroDTO dto = mapper.map(request);
 
     byte[] fileBytes = (foto != null) ? foto.getBytes() : null;
     String originalFilename = (foto != null) ? foto.getOriginalFilename() : null;
     String contentType = (foto != null) ? foto.getContentType() : null;
 
-    var resultado =
-        relatoService.registrar(usuarioId, dto, fileBytes, originalFilename, contentType);
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(resultado));
+    RelatoCriadoDTO resultado =
+        relatoService.registrar(usuarioId, dados, fileBytes, originalFilename, contentType);
+    return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
   }
 
   @GetMapping
@@ -70,7 +66,7 @@ public class RelatoController {
       name = "tamanho",
       in = ParameterIn.QUERY,
       description = "Itens por página (padrão 10, máximo 50)")
-  public ResponseEntity<Page<RelatoListagemResponse>> listarMeusRelatos(
+  public ResponseEntity<Page<RelatoListagemDTO>> listarMeusRelatos(
       @AuthenticationPrincipal UserDetails userDetails,
       @Parameter(hidden = true) Pageable pageable,
       @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
@@ -79,8 +75,7 @@ public class RelatoController {
           Integer categoriaId) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
     FiltroRelatos filtro = new FiltroRelatos(status, categoriaId);
-    return ResponseEntity.ok(
-        relatoService.visualizarMeus(usuarioId, filtro, pageable).map(mapper::mapListagem));
+    return ResponseEntity.ok(relatoService.visualizarMeus(usuarioId, filtro, pageable));
   }
 
   @PatchMapping("/{id}/cancelamento")
@@ -92,17 +87,16 @@ public class RelatoController {
   }
 
   @GetMapping("/{id}/historico")
-  public ResponseEntity<List<HistoricoStatusResponse>> obterHistorico(
+  public ResponseEntity<List<HistoricoStatusDTO>> obterHistorico(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    return ResponseEntity.ok(
-        mapper.mapHistorico(relatoService.obterHistorico(usuarioId, relatoId)));
+    return ResponseEntity.ok(relatoService.obterHistorico(usuarioId, relatoId));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<RelatoDetalheResponse> obterDetalhe(
+  public ResponseEntity<RelatoDetalheDTO> obterDetalhe(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    return ResponseEntity.ok(mapper.mapDetalhe(relatoService.obterDetalhe(usuarioId, relatoId)));
+    return ResponseEntity.ok(relatoService.obterDetalhe(usuarioId, relatoId));
   }
 }

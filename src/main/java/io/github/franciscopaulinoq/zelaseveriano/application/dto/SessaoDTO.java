@@ -1,3 +1,9 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
-public record SessaoDTO(String tokenAcesso, String tokenRenovacao) {}
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record SessaoDTO(
+    @JsonProperty("token") String tokenAcesso,
+    @JsonProperty("refreshToken") @JsonInclude(JsonInclude.Include.NON_NULL)
+        String tokenRenovacao) {}

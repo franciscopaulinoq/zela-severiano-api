@@ -35,11 +35,11 @@ Para formatar o código automaticamente: `./mvnw spotless:apply`.
 
 ## 🏗 Arquitetura
 O projeto usa uma variação pragmática da Clean Architecture: 4 camadas, com DTOs
-para desacoplar o contrato HTTP do modelo de domínio, mas agrupando casos
+como contrato HTTP desacoplado do modelo de domínio, mas agrupando casos
 de uso por agregado em vez de uma classe por operação de negócio.
 - **domain**: Entidades e regras de negócio puras.
-- **application**: `Service`s agrupados por agregado/recurso REST (um por operação de negócio dentro do método, não da classe) e DTOs de entrada/saída.
-- **adapter**: Controladores, request/response REST e mappers (MapStruct) entre DTOs e o contrato HTTP.
+- **application**: `Service`s agrupados por agregado/recurso REST (um por operação de negócio dentro do método, não da classe) e DTOs de entrada/saída usados diretamente pelos controllers.
+- **adapter**: Controladores REST e tratamento global de exceções.
 - **infrastructure**: Implementações de persistência, banco de dados e drivers.
 
 Detalhes e convenções completas em [`docs/public/regras_projeto.md`](docs/public/regras_projeto.md).

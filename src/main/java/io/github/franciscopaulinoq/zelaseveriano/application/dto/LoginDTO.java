@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request;
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class LoginDTO {
   @NotBlank(message = "CPF é obrigatório")
   private String cpf;
 

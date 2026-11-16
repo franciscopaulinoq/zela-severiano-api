@@ -1,9 +1,8 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.PerfilRestMapper;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.AtualizarPerfilRequest;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.TrocarSenhaRequest;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.PerfilMeResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarPerfilDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.TrocarSenhaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.PerfilService;
 import jakarta.validation.Valid;
@@ -25,31 +24,27 @@ public class PerfilController {
 
   private final PerfilService perfilService;
   private final ContaService contaService;
-  private final PerfilRestMapper mapper;
 
   @GetMapping("/me")
-  public ResponseEntity<PerfilMeResponse> obterMeuPerfil(
+  public ResponseEntity<PerfilMeDTO> obterMeuPerfil(
       @AuthenticationPrincipal UserDetails userDetails) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    var perfil = perfilService.obterMeuPerfil(usuarioId);
-    return ResponseEntity.ok(mapper.map(perfil));
+    return ResponseEntity.ok(perfilService.obterMeuPerfil(usuarioId));
   }
 
   @PatchMapping("/me")
-  public ResponseEntity<PerfilMeResponse> atualizarMeuPerfil(
+  public ResponseEntity<PerfilMeDTO> atualizarMeuPerfil(
       @AuthenticationPrincipal UserDetails userDetails,
-      @Valid @RequestBody AtualizarPerfilRequest request) {
+      @Valid @RequestBody AtualizarPerfilDTO dados) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    var perfil = perfilService.atualizarMeuPerfil(usuarioId, mapper.map(request));
-    return ResponseEntity.ok(mapper.map(perfil));
+    return ResponseEntity.ok(perfilService.atualizarMeuPerfil(usuarioId, dados));
   }
 
   @PatchMapping("/me/senha")
   public ResponseEntity<Void> trocarSenha(
-      @AuthenticationPrincipal UserDetails userDetails,
-      @Valid @RequestBody TrocarSenhaRequest request) {
+      @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody TrocarSenhaDTO dados) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
-    contaService.trocarSenha(usuarioId, request.getSenhaAtual(), request.getNovaSenha());
+    contaService.trocarSenha(usuarioId, dados.getSenhaAtual(), dados.getNovaSenha());
     return ResponseEntity.noContent().build();
   }
 }

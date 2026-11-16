@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
@@ -24,7 +25,7 @@ public class CategoriaService {
   }
 
   @Transactional
-  public CategoriaDTO criar(CategoriaDTO dados) {
+  public CategoriaDTO criar(CategoriaRegistroDTO dados) {
     Categoria categoria =
         Categoria.builder().nome(dados.getNome()).iconeNome(dados.getIconeNome()).build();
 
@@ -32,7 +33,7 @@ public class CategoriaService {
   }
 
   @Transactional
-  public CategoriaDTO atualizar(Integer categoriaId, CategoriaDTO dados) {
+  public CategoriaDTO atualizar(Integer categoriaId, CategoriaRegistroDTO dados) {
     Categoria categoria =
         categoriaRepository
             .findById(categoriaId)

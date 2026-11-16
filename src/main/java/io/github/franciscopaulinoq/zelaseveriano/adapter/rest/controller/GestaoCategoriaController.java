@@ -1,8 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.CategoriaRestMapper;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request.CategoriaRequest;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.CategoriaResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.CategoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +21,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class GestaoCategoriaController {
 
   private final CategoriaService categoriaService;
-  private final CategoriaRestMapper mapper;
 
   @PostMapping
-  public ResponseEntity<CategoriaResponse> criar(@Valid @RequestBody CategoriaRequest request) {
-    var criada = categoriaService.criar(mapper.map(request));
-    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.map(criada));
+  public ResponseEntity<CategoriaDTO> criar(@Valid @RequestBody CategoriaRegistroDTO dados) {
+    CategoriaDTO criada = categoriaService.criar(dados);
+    return ResponseEntity.status(HttpStatus.CREATED).body(criada);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<CategoriaResponse> atualizar(
-      @PathVariable("id") Integer categoriaId, @Valid @RequestBody CategoriaRequest request) {
-    var atualizada = categoriaService.atualizar(categoriaId, mapper.map(request));
-    return ResponseEntity.ok(mapper.map(atualizada));
+  public ResponseEntity<CategoriaDTO> atualizar(
+      @PathVariable("id") Integer categoriaId, @Valid @RequestBody CategoriaRegistroDTO dados) {
+    CategoriaDTO atualizada = categoriaService.atualizar(categoriaId, dados);
+    return ResponseEntity.ok(atualizada);
   }
 
   @DeleteMapping("/{id}")

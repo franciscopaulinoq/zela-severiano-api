@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request;
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoriaRequest {
+public class CategoriaRegistroDTO {
   @NotBlank(message = "Nome é obrigatório")
   @Size(max = 50, message = "Nome deve ter no máximo 50 caracteres")
   private String nome;

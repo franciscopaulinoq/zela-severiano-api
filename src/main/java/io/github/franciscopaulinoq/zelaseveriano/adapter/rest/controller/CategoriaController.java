@@ -1,7 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.CategoriaRestMapper;
-import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.CategoriaResponse;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.CategoriaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class CategoriaController {
 
   private final CategoriaService categoriaService;
-  private final CategoriaRestMapper mapper;
 
   @GetMapping
-  public ResponseEntity<List<CategoriaResponse>> listar() {
-    List<CategoriaResponse> response = mapper.map(categoriaService.listar());
-    return ResponseEntity.ok(response);
+  public ResponseEntity<List<CategoriaDTO>> listar() {
+    return ResponseEntity.ok(categoriaService.listar());
   }
 }

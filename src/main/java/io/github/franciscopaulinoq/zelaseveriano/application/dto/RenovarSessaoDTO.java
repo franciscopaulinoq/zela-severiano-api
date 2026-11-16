@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request;
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RenovarSessaoRequest {
+public class RenovarSessaoDTO {
   @NotBlank(message = "Token de renovação é obrigatório")
   private String refreshToken;
 }

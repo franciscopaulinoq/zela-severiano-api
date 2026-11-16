@@ -4,7 +4,7 @@
 
 O projeto usa 4 camadas e a regra de direção de dependência da Clean
 Architecture, com casos de uso agrupados por agregado. Os DTOs de
-`application` desacoplam o formato de resposta HTTP do modelo de domínio
+`application` formam o contrato HTTP e o desacoplam do modelo de domínio
 (um `Service` nunca devolve a entidade de `domain` direto para o
 `adapter.rest` serializar). Cada camada tem seu próprio pacote raiz sob
 `io.github.franciscopaulinoq.zelaseveriano`.
@@ -19,9 +19,10 @@ Architecture, com casos de uso agrupados por agregado. Os DTOs de
   (`dto`) trafegam dados de entrada/saída entre `adapter` e `domain`.
   Depende de `domain`, nunca de `adapter` ou `infrastructure` diretamente
   (usa as interfaces do `domain`).
-- **`adapter.rest`**: controllers, request/response, mappers REST
-  (MapStruct) e o `GlobalExceptionHandler`. Depende de `application`, nunca
-  acessa `infrastructure` ou repositórios JPA diretamente.
+- **`adapter.rest`**: controllers e o `GlobalExceptionHandler`. Os
+  controllers recebem e devolvem diretamente os DTOs de `application`.
+  Depende de `application`, nunca acessa `infrastructure` ou repositórios
+  JPA diretamente.
 - **`infrastructure`**: implementações concretas dos ports do `domain`
   (`persistence`, `security`, `storage`) — JPA, JWT, S3/R2. Implementa as
   interfaces definidas em `domain`.
@@ -42,8 +43,8 @@ aplicação.
 ## Convenções de nomenclatura
 
 - Modelo de domínio, casos de uso, tabelas e campos: **português** (ex.:
-  `Relato`, `RelatoService`, `criado_em`). DTOs/Requests/Responses
-  seguem o mesmo idioma para consistência com o domínio.
+  `Relato`, `RelatoService`, `criado_em`). DTOs seguem o mesmo idioma para
+  consistência com o domínio.
 - Enums de domínio (`StatusRelato`, `Role`) ficam em
   `domain.model.enums` e são persistidos como `@Enumerated(EnumType.STRING)`
   — nunca `ORDINAL` (adicionar um valor no meio quebraria dados existentes).
@@ -66,7 +67,7 @@ aplicação.
 - Validação de regra de negócio pertence ao `domain` (ex.:
   `Relato.atualizarStatus`) ou ao topo do use case, nunca ao controller.
 - Bean Validation (`jakarta.validation`) cobre validação de formato/sintaxe
-  nos `Request`; validação de regra de negócio (que depende de estado
+  nos DTOs de entrada; validação de regra de negócio (que depende de estado
   persistido) é sempre feita no `application`/`domain`.
 - Regras duplicadas em mais de um lugar (ex.: validação de CPF, cálculo de
   transição de status) devem ser extraídas para um único ponto reutilizável

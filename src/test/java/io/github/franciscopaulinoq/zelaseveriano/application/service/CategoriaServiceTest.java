@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
@@ -41,7 +42,7 @@ class CategoriaServiceTest {
         });
 
     CategoriaDTO criada =
-        categoriaService.criar(new CategoriaDTO(null, "Calçadas", "person-walking"));
+        categoriaService.criar(new CategoriaRegistroDTO("Calçadas", "person-walking"));
 
     assertThat(criada.getId()).isEqualTo(10);
     assertThat(criada.getNome()).isEqualTo("Calçadas");
@@ -55,7 +56,7 @@ class CategoriaServiceTest {
     when(categoriaRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
     CategoriaDTO atualizada =
-        categoriaService.atualizar(3, new CategoriaDTO(null, "Limpeza urbana", "broom"));
+        categoriaService.atualizar(3, new CategoriaRegistroDTO("Limpeza urbana", "broom"));
 
     assertThat(atualizada.getNome()).isEqualTo("Limpeza urbana");
     assertThat(atualizada.getIconeNome()).isEqualTo("broom");
@@ -65,7 +66,7 @@ class CategoriaServiceTest {
   void recusaAtualizarCategoriaInexistente() {
     when(categoriaRepository.findById(99)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> categoriaService.atualizar(99, new CategoriaDTO(null, "X", "y")))
+    assertThatThrownBy(() -> categoriaService.atualizar(99, new CategoriaRegistroDTO("X", "y")))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

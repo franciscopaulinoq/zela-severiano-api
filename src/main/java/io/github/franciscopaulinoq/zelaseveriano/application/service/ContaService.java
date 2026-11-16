@@ -121,6 +121,7 @@ public class ContaService {
         enderecoSalvo.getId(),
         dto.getCpf(),
         dto.getNomeCompleto(),
-        dto.getEmail());
+        dto.getEmail(),
+        "Cidadão registrado com sucesso");
   }
 }

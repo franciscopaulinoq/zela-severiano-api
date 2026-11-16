@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request;
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrocarSenhaRequest {
+public class TrocarSenhaDTO {
   @NotBlank(message = "Senha atual é obrigatória")
   @Size(max = 72, message = "Senha atual deve ter no máximo 72 caracteres")
   private String senhaAtual;

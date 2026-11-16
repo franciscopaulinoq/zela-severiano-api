@@ -1,4 +1,4 @@
-package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.request;
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AtualizarStatusRelatoRequest {
+public class AtualizarStatusRelatoDTO {
 
   @NotNull(message = "Status é obrigatório")
   private StatusRelato status;
