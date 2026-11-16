@@ -30,7 +30,7 @@ como artifact.
 Modelos em `config.py` (`gpt-6.1-sol`, `claude-sonnet-5-5`, `gemini-3.8-flash`),
 temperatura padrão de cada provedor, o mesmo nível de raciocínio nos três
 (`PR_REVIEW_REASONING_EFFORT`, padrão `medium`) e o mesmo limite de saída
-(`PR_REVIEW_MAX_OUTPUT_TOKENS`, padrão 16000).
+(`PR_REVIEW_MAX_OUTPUT_TOKENS`, padrão 32000). Uma resposta cortada pelo limite fica com status `truncado`.
 
 ## Arquivos
 

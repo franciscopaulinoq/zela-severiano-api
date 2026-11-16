@@ -29,6 +29,8 @@ from parser_resposta import extrair_comentarios
 from prompt_builder import NIVEIS_PROMPT, montar_prompt, sha256
 from storage import salvar_revisao
 
+_MOTIVOS_TRUNCADO = {"length", "max_tokens", "FinishReason.MAX_TOKENS"}
+
 
 def montar_clientes(config: Configuracao) -> list[ClienteModelo]:
     parametros = (config.esforco_raciocinio, config.max_tokens_saida)
@@ -83,7 +85,11 @@ async def revisar(
         revisao.tokens_entrada = resposta.tokens_entrada
         revisao.tokens_saida = resposta.tokens_saida
         revisao.tokens_raciocinio = resposta.tokens_raciocinio
-        revisao.json_valido, revisao.comentarios = extrair_comentarios(resposta.texto)
+        if resposta.motivo_parada in _MOTIVOS_TRUNCADO:
+            revisao.status = "truncado"
+            revisao.json_valido = False
+        else:
+            revisao.json_valido, revisao.comentarios = extrair_comentarios(resposta.texto)
     revisao.latencia_ms = int((time.monotonic() - inicio) * 1000)
     return revisao
 
