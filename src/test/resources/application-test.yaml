@@ -9,6 +9,10 @@ cloudflare:
     public-url: http://localhost:9000/test
 
 api:
+  integracoes:
+    cep:
+      url: http://localhost:18080
+      timeout: 1s
   security:
     token:
       secret: segredo-de-acesso-somente-para-testes

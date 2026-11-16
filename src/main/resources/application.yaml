@@ -33,6 +33,10 @@ cloudflare:
     public-url: ${CLOUDFLARE_R2_PUBLIC_URL}
 
 api:
+  integracoes:
+    cep:
+      url: ${CEP_SERVICE_URL:https://viacep.com.br/ws}
+      timeout: ${CEP_SERVICE_TIMEOUT:3s}
   security:
     token:
       secret: ${JWT_SECRET}
