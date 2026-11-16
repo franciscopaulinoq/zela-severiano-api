@@ -37,3 +37,7 @@ api:
     token:
       secret: ${JWT_SECRET}
       refresh-secret: ${JWT_REFRESH_SECRET}
+  recuperacao:
+    entrega-url: ${RECUPERACAO_EMAIL_URL:http://localhost:8081/recuperacao}
+    timeout: ${RECUPERACAO_EMAIL_TIMEOUT:2s}
+    validade: ${RECUPERACAO_CODIGO_VALIDADE:15m}
