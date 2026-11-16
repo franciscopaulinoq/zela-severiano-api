@@ -45,8 +45,13 @@ class RelatoPublicoIntegrationTest {
   }
 
   @Test
-  void listagemPublicaNaoExigeAutenticacao() throws Exception {
-    mockMvc.perform(get("/api/v1/publico/relatos")).andExpect(status().isOk());
+  void listagemPublicaNaoExigeAutenticacaoEUmEnvelopePaginado() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/publico/relatos"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isNotEmpty())
+        .andExpect(jsonPath("$.page.number").value(0))
+        .andExpect(jsonPath("$.page.size").value(10));
   }
 
   @Test
@@ -54,24 +59,24 @@ class RelatoPublicoIntegrationTest {
     mockMvc
         .perform(get("/api/v1/publico/relatos").param("categoriaId", "5"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[*].categoriaNome", everyItem(is("Outro problema"))));
+        .andExpect(jsonPath("$.content[*].categoriaNome", everyItem(is("Outro problema"))));
   }
 
   @Test
-  void respostaNaoExpoeDadosDoCidadaoNemDaFoto() throws Exception {
+  void respostaNaoExpoeDadosDoCidadaoNemDaFotoOuDasCoordenadas() throws Exception {
     mockMvc
         .perform(get("/api/v1/publico/relatos"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].categoriaNome").exists())
-        .andExpect(jsonPath("$[0].status").exists())
-        .andExpect(jsonPath("$[0].criadoEm").exists())
-        .andExpect(jsonPath("$[*].id").doesNotExist())
-        .andExpect(jsonPath("$[*].cidadaoNome").doesNotExist())
-        .andExpect(jsonPath("$[*].perfil").doesNotExist())
-        .andExpect(jsonPath("$[*].perfilId").doesNotExist())
-        .andExpect(jsonPath("$[*].urlFoto").doesNotExist())
-        .andExpect(jsonPath("$[*].descricao").doesNotExist())
-        .andExpect(jsonPath("$[*].latitude").doesNotExist())
-        .andExpect(jsonPath("$[*].longitude").doesNotExist());
+        .andExpect(jsonPath("$.content[0].categoriaNome").exists())
+        .andExpect(jsonPath("$.content[0].status").exists())
+        .andExpect(jsonPath("$.content[0].criadoEm").exists())
+        .andExpect(jsonPath("$.content[*].id").doesNotExist())
+        .andExpect(jsonPath("$.content[*].cidadaoNome").doesNotExist())
+        .andExpect(jsonPath("$.content[*].perfil").doesNotExist())
+        .andExpect(jsonPath("$.content[*].perfilId").doesNotExist())
+        .andExpect(jsonPath("$.content[*].urlFoto").doesNotExist())
+        .andExpect(jsonPath("$.content[*].descricao").doesNotExist())
+        .andExpect(jsonPath("$.content[*].latitude").doesNotExist())
+        .andExpect(jsonPath("$.content[*].longitude").doesNotExist());
   }
 }

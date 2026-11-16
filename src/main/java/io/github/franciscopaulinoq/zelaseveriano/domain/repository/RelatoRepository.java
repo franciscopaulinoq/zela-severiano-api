@@ -18,9 +18,13 @@ public interface RelatoRepository {
 
   Optional<Relato> findById(Long relatoId);
 
+  Optional<Relato> findByIdParaAtualizacao(Long relatoId);
+
+  Optional<Relato> findByPerfilIdAndIdParaAtualizacao(UUID perfilId, Long relatoId);
+
   Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable);
 
-  List<Relato> findAll(FiltroRelatos filtro);
+  Page<Relato> findAll(FiltroRelatos filtro, Pageable pageable);
 
   long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 

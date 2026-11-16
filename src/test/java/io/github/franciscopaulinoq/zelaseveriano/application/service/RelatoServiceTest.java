@@ -84,13 +84,13 @@ class RelatoServiceTest {
   @Test
   void registraRelatoComFotoGuardandoAUrlDoArquivoEnviado() {
     prepararPerfilECategoria();
-    byte[] foto = {1, 2, 3};
-    when(fileStorage.upload(eq(foto), endsWith("_poste.jpg"), eq("image/jpeg")))
+    byte[] foto = fotoJpeg();
+    when(fileStorage.upload(eq(foto), endsWith(".jpg"), eq("image/jpeg")))
         .thenReturn("https://arquivos.example.com/poste.jpg");
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
     Relato relato =
-        relatoService.registrar(USUARIO_ID, novoRelato(), foto, "poste.jpg", "image/jpeg");
+        relatoService.registrar(USUARIO_ID, novoRelato(), foto, "../poste.jpg", "IMAGE/JPEG");
 
     assertThat(relato.getUrlFoto()).isEqualTo("https://arquivos.example.com/poste.jpg");
   }
@@ -102,11 +102,11 @@ class RelatoServiceTest {
         .thenReturn("https://arquivos.example.com/foto");
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
-    relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.png", "image/png");
-    relatoService.registrar(USUARIO_ID, novoRelato(), new byte[] {1}, "buraco.webp", "IMAGE/WEBP");
+    relatoService.registrar(USUARIO_ID, novoRelato(), fotoPng(), "buraco.png", "image/png");
+    relatoService.registrar(USUARIO_ID, novoRelato(), fotoWebp(), "buraco.webp", "IMAGE/WEBP");
 
-    verify(fileStorage).upload(any(), endsWith("_buraco.png"), eq("image/png"));
-    verify(fileStorage).upload(any(), endsWith("_buraco.webp"), eq("IMAGE/WEBP"));
+    verify(fileStorage).upload(any(), endsWith(".png"), eq("image/png"));
+    verify(fileStorage).upload(any(), endsWith(".webp"), eq("image/webp"));
   }
 
   @Test
@@ -131,6 +131,29 @@ class RelatoServiceTest {
   }
 
   @Test
+  void recusaConteudoQueNaoCorrespondeAoTipoDeclarado() {
+    assertThatThrownBy(() ->
+            relatoService.registrar(
+                USUARIO_ID, novoRelato(), new byte[] {1, 2, 3}, "falso.jpg", "image/jpeg"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("conteúdo do arquivo");
+
+    verifyNoInteractions(fileStorage, relatoRepository, perfilRepository);
+  }
+
+  @Test
+  void recusaFotoAcimaDoLimiteMesmoSemPassarPeloServidorHttp() {
+    byte[] foto = new byte[10 * 1024 * 1024 + 1];
+
+    assertThatThrownBy(() ->
+            relatoService.registrar(USUARIO_ID, novoRelato(), foto, "grande.jpg", "image/jpeg"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("10 MB");
+
+    verifyNoInteractions(fileStorage, relatoRepository, perfilRepository);
+  }
+
+  @Test
   void permiteNovoRelatoQuandoOCidadaoTemQuatroPendentes() {
     prepararPerfilECategoria();
     when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
@@ -148,9 +171,7 @@ class RelatoServiceTest {
     when(relatoRepository.countByPerfilIdAndStatus(PERFIL.getId(), StatusRelato.PENDENTE))
         .thenReturn(5L);
 
-    assertThatThrownBy(() ->
-            relatoService.registrar(
-                USUARIO_ID, novoRelato(), new byte[] {1}, "poste.jpg", "image/jpeg"))
+    assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null))
         .isInstanceOf(LimiteRelatosPendentesException.class)
         .hasMessageContaining("aguardando avaliação");
 
@@ -211,8 +232,7 @@ class RelatoServiceTest {
     when(categoriaRepository.findById(1)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() ->
-            relatoService.registrar(
-                USUARIO_ID, novoRelato(), new byte[] {1}, "a.jpg", "image/jpeg"))
+            relatoService.registrar(USUARIO_ID, novoRelato(), fotoJpeg(), "a.jpg", "image/jpeg"))
         .isInstanceOf(IllegalArgumentException.class);
 
     verify(relatoRepository, never()).save(any());
@@ -262,7 +282,7 @@ class RelatoServiceTest {
           assertThat(relato.getCategoriaNome()).isEqualTo("Iluminação");
           assertThat(relato.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
         });
-    verify(relatoRepository, never()).findAll(any());
+    verify(relatoRepository, never()).findAll(any(), any());
   }
 
   @Test
@@ -274,7 +294,7 @@ class RelatoServiceTest {
             .categoria(CATEGORIA)
             .status(StatusRelato.PENDENTE)
             .build();
-    when(relatoRepository.findById(42L)).thenReturn(Optional.of(relato));
+    when(relatoRepository.findByIdParaAtualizacao(42L)).thenReturn(Optional.of(relato));
     when(relatoRepository.save(any())).thenAnswer(invocacao -> invocacao.getArgument(0));
 
     relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null);
@@ -292,7 +312,7 @@ class RelatoServiceTest {
             .categoria(CATEGORIA)
             .status(StatusRelato.CONCLUIDO)
             .build();
-    when(relatoRepository.findById(42L)).thenReturn(Optional.of(concluido));
+    when(relatoRepository.findByIdParaAtualizacao(42L)).thenReturn(Optional.of(concluido));
 
     assertThatThrownBy(() -> relatoService.atualizarStatus(42L, StatusRelato.EM_ANALISE, null))
         .isInstanceOf(TransicaoStatusInvalidaException.class);
@@ -325,7 +345,7 @@ class RelatoServiceTest {
         .containsExactly(
             new EstatisticasRelatosDTO.TotalPorCategoria(1, "Iluminação", 6),
             new EstatisticasRelatosDTO.TotalPorCategoria(3, "Limpeza", 0));
-    verify(relatoRepository, never()).findAll(any());
+    verify(relatoRepository, never()).findAll(any(), any());
     verify(categoriaRepository, never()).findAll();
   }
 
@@ -348,6 +368,18 @@ class RelatoServiceTest {
   private void prepararPerfilECategoria() {
     when(perfilRepository.findByUsuarioId(USUARIO_ID)).thenReturn(Optional.of(PERFIL));
     when(categoriaRepository.findById(1)).thenReturn(Optional.of(CATEGORIA));
+  }
+
+  private static byte[] fotoJpeg() {
+    return new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0};
+  }
+
+  private static byte[] fotoPng() {
+    return new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+  }
+
+  private static byte[] fotoWebp() {
+    return new byte[] {0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50};
   }
 
   private RelatoRegistroDTO novoRelato() {

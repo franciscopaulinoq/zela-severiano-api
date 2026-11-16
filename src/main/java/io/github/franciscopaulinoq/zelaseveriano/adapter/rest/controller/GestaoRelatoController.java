@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,13 +32,16 @@ public class GestaoRelatoController {
   private final RelatoRestMapper mapper;
 
   @GetMapping
-  public ResponseEntity<List<RelatoGestaoResponse>> listarTodos(
+  public ResponseEntity<Page<RelatoGestaoResponse>> listarTodos(
       @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
           StatusRelato status,
       @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
-          Integer categoriaId) {
+          Integer categoriaId,
+      @Parameter(hidden = true) Pageable pageable) {
     return ResponseEntity.ok(
-        mapper.mapGestao(relatoService.listarTodos(new FiltroRelatos(status, categoriaId))));
+        relatoService
+            .listarTodos(new FiltroRelatos(status, categoriaId), pageable)
+            .map(mapper::mapGestao));
   }
 
   @GetMapping("/estatisticas")

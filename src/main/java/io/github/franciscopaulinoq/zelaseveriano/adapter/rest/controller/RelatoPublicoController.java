@@ -4,8 +4,9 @@ import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.mapper.RelatoRestM
 import io.github.franciscopaulinoq.zelaseveriano.adapter.rest.response.RelatoPublicoResponse;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.swagger.v3.oas.annotations.Parameter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,9 +22,11 @@ public class RelatoPublicoController {
   private final RelatoRestMapper mapper;
 
   @GetMapping
-  public ResponseEntity<List<RelatoPublicoResponse>> listar(
+  public ResponseEntity<Page<RelatoPublicoResponse>> listar(
       @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
-          Integer categoriaId) {
-    return ResponseEntity.ok(mapper.mapPublico(relatoService.listarPublicos(categoriaId)));
+          Integer categoriaId,
+      @Parameter(hidden = true) Pageable pageable) {
+    return ResponseEntity.ok(
+        relatoService.listarPublicos(categoriaId, pageable).map(mapper::mapPublico));
   }
 }

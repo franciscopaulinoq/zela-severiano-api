@@ -60,10 +60,8 @@ public class RelatoService {
           "A localização informada fica fora do município de Doutor Severiano.");
     }
 
-    boolean temFoto = fileBytes != null && fileBytes.length > 0;
-    if (temFoto) {
-      validarTipoDaFoto(contentType);
-    }
+    boolean temFoto = fileBytes != null;
+    String tipoFoto = temFoto ? validarFoto(fileBytes, contentType) : null;
 
     Perfil perfil =
         perfilRepository
@@ -86,8 +84,8 @@ public class RelatoService {
 
     String urlFoto = null;
     if (temFoto) {
-      String fileName = UUID.randomUUID() + "_" + originalFilename;
-      urlFoto = fileStorage.upload(fileBytes, fileName, contentType);
+      String fileName = UUID.randomUUID() + extensaoDaFoto(tipoFoto, originalFilename);
+      urlFoto = fileStorage.upload(fileBytes, fileName, tipoFoto);
     }
 
     Relato relato =
@@ -135,22 +133,22 @@ public class RelatoService {
   }
 
   @Transactional(readOnly = true)
-  public List<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro) {
-    return relatoRepository.findAll(filtro).stream().map(this::toGestaoDTO).toList();
+  public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
+    return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
   }
 
   @Transactional(readOnly = true)
-  public List<RelatoPublicoDTO> listarPublicos(Integer categoriaId) {
-    return relatoRepository.findAll(new FiltroRelatos(null, categoriaId)).stream()
-        .map(this::toPublicoDTO)
-        .toList();
+  public Page<RelatoPublicoDTO> listarPublicos(Integer categoriaId, Pageable pageable) {
+    return relatoRepository
+        .findAll(new FiltroRelatos(null, categoriaId), pageable)
+        .map(this::toPublicoDTO);
   }
 
   @Transactional
   public Relato atualizarStatus(Long relatoId, StatusRelato novoStatus, String observacao) {
     Relato relato =
         relatoRepository
-            .findById(relatoId)
+            .findByIdParaAtualizacao(relatoId)
             .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
 
     StatusRelato statusAnterior = relato.getStatus();
@@ -213,7 +211,7 @@ public class RelatoService {
 
     Relato relato =
         relatoRepository
-            .findByPerfilIdAndId(perfil.getId(), relatoId)
+            .findByPerfilIdAndIdParaAtualizacao(perfil.getId(), relatoId)
             .orElseThrow(() ->
                 new IllegalArgumentException(
                     "Relato não encontrado ou não pertence a este usuário."));
@@ -248,12 +246,60 @@ public class RelatoService {
         .toList();
   }
 
-  private void validarTipoDaFoto(String contentType) {
-    if (contentType == null
-        || !TIPOS_DE_FOTO_PERMITIDOS.contains(contentType.toLowerCase(Locale.ROOT))) {
+  private String validarFoto(byte[] fileBytes, String contentType) {
+    if (fileBytes.length > 10 * 1024 * 1024) {
+      throw new IllegalArgumentException("A foto deve ter no máximo 10 MB.");
+    }
+    if (contentType == null) {
       throw new IllegalArgumentException(
           "Tipo de arquivo não permitido para a foto. Envie uma imagem JPEG, PNG ou WebP.");
     }
+
+    String tipo = contentType.toLowerCase(Locale.ROOT);
+    if (!TIPOS_DE_FOTO_PERMITIDOS.contains(tipo)) {
+      throw new IllegalArgumentException(
+          "Tipo de arquivo não permitido para a foto. Envie uma imagem JPEG, PNG ou WebP.");
+    }
+
+    boolean conteudoValido =
+        switch (tipo) {
+          case "image/jpeg" -> assinaturaConfere(fileBytes, 0, 0xFF, 0xD8, 0xFF);
+          case "image/png" ->
+              assinaturaConfere(fileBytes, 0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+          case "image/webp" ->
+              assinaturaConfere(fileBytes, 0, 0x52, 0x49, 0x46, 0x46)
+                  && assinaturaConfere(fileBytes, 8, 0x57, 0x45, 0x42, 0x50);
+          default -> false;
+        };
+    if (!conteudoValido) {
+      throw new IllegalArgumentException(
+          "O conteúdo do arquivo não corresponde a uma imagem JPEG, PNG ou WebP válida.");
+    }
+    return tipo;
+  }
+
+  private String extensaoDaFoto(String tipo, String originalFilename) {
+    if ("image/png".equals(tipo)) {
+      return ".png";
+    }
+    if ("image/webp".equals(tipo)) {
+      return ".webp";
+    }
+    return originalFilename != null && originalFilename.toLowerCase(Locale.ROOT).endsWith(".jpeg")
+        ? ".jpeg"
+        : ".jpg";
+  }
+
+  private static boolean assinaturaConfere(byte[] bytes, int offset, int... assinatura) {
+    if (bytes.length < offset + assinatura.length) {
+      return false;
+    }
+    for (int i = 0; i < assinatura.length; i++) {
+      if ((bytes[offset + i] & 0xFF) != assinatura[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private RelatoListagemDTO toListagemDTO(Relato relato) {

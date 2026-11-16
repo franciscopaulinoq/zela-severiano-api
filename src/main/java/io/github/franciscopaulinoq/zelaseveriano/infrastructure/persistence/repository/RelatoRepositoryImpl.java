@@ -21,9 +21,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class RelatoRepositoryImpl implements RelatoRepository {
-  private final JpaRelatoRepository jpaRepository;
-  private static final Sort MAIS_RECENTES_PRIMEIRO = Sort.by(Sort.Direction.DESC, "criadoEm");
+  private static final Sort MAIS_RECENTES_PRIMEIRO =
+      Sort.by(Sort.Direction.DESC, "criadoEm").and(Sort.by(Sort.Direction.DESC, "id"));
 
+  private final JpaRelatoRepository jpaRepository;
   private final RelatoMapper mapper;
 
   @Override
@@ -44,13 +45,28 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public Optional<Relato> findByIdParaAtualizacao(Long relatoId) {
+    return jpaRepository.findByIdParaAtualizacao(relatoId).map(mapper::map);
+  }
+
+  @Override
+  public Optional<Relato> findByPerfilIdAndIdParaAtualizacao(UUID perfilId, Long relatoId) {
+    return jpaRepository.findByPerfilIdAndIdParaAtualizacao(perfilId, relatoId).map(mapper::map);
+  }
+
+  @Override
   public Page<Relato> findAllByPerfilId(UUID perfilId, FiltroRelatos filtro, Pageable pageable) {
-    PageRequest pageRequest =
-        PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
     return jpaRepository
         .findAll(
             RelatoSpecifications.doPerfil(perfilId).and(RelatoSpecifications.comFiltro(filtro)),
-            pageRequest)
+            paginar(pageable))
+        .map(mapper::map);
+  }
+
+  @Override
+  public Page<Relato> findAll(FiltroRelatos filtro, Pageable pageable) {
+    return jpaRepository
+        .findAll(RelatoSpecifications.comFiltro(filtro), paginar(pageable))
         .map(mapper::map);
   }
 
@@ -62,15 +78,6 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   @Override
   public boolean existsByCategoriaId(Integer categoriaId) {
     return jpaRepository.existsByCategoriaId(categoriaId);
-  }
-
-  @Override
-  public List<Relato> findAll(FiltroRelatos filtro) {
-    return jpaRepository
-        .findAll(RelatoSpecifications.comFiltro(filtro), MAIS_RECENTES_PRIMEIRO)
-        .stream()
-        .map(mapper::map)
-        .toList();
   }
 
   @Override
@@ -86,5 +93,9 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   @Override
   public List<TotalRelatosPorCategoria> contarPorCategoria() {
     return jpaRepository.contarPorCategoria();
+  }
+
+  private static PageRequest paginar(Pageable pageable) {
+    return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), MAIS_RECENTES_PRIMEIRO);
   }
 }

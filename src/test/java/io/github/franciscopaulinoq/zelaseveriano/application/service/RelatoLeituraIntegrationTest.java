@@ -42,7 +42,8 @@ class RelatoLeituraIntegrationTest {
             .visualizarMeus(cidadao.usuarioId(), FiltroRelatos.semFiltro(), PageRequest.of(0, 10))
             .getContent();
     RelatoDetalheDTO detalhe = relatoService.obterDetalhe(cidadao.usuarioId(), criado.getId());
-    List<RelatoGestaoDTO> todos = relatoService.listarTodos(FiltroRelatos.semFiltro());
+    List<RelatoGestaoDTO> todos =
+        relatoService.listarTodos(FiltroRelatos.semFiltro(), PageRequest.of(0, 10)).getContent();
     Relato atualizado =
         relatoService.atualizarStatus(criado.getId(), StatusRelato.EM_ANALISE, null);
 
