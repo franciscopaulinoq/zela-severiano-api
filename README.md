@@ -14,14 +14,14 @@ API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
 
 ## ⚙️ Como executar
 1. Clone o repositório.
-2. Copie o arquivo de exemplo de ambiente: `cp .env.example .env`
-3. Suba o banco de dados: `docker-compose up -d`
-4. Execute a aplicação: `./mvnw spring-boot:run`
+2. Copie o arquivo de exemplo de ambiente: `cp .env.example .env`.
+3. Preencha as configurações do banco e do R2 e dois segredos JWT diferentes, com pelo menos 32 bytes cada.
+4. Suba o banco de dados: `docker compose -f docker-compose-local.yml up -d`.
+5. Execute a aplicação com o perfil de desenvolvimento: `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`.
 
 ### Acesso como gestor (desenvolvimento local)
-O banco de desenvolvimento já vem com um usuário gestor, criado pelas
-migrações, para testar as rotas de `/api/v1/gestao/**` sem alterar o banco
-à mão:
+Com o perfil `dev` ativo, a aplicação cria um usuário gestor na inicialização,
+para testar as rotas de `/api/v1/gestao/**` sem alterar o banco à mão:
 
 - CPF: `11144477735`
 - Senha: `gestor123`
