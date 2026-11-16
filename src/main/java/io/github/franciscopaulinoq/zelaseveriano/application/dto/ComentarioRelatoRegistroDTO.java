@@ -1,0 +1,9 @@
+package io.github.franciscopaulinoq.zelaseveriano.application.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record ComentarioRelatoRegistroDTO(
+    @NotBlank(message = "O comentário é obrigatório.")
+        @Size(max = 2000, message = "O comentário deve ter no máximo 2000 caracteres.")
+        String texto) {}

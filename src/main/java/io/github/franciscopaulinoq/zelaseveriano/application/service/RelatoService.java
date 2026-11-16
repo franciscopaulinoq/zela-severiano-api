@@ -1,7 +1,10 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.ComentarioRelatoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.DetalheGestaoRelatoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.FotoRelatoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
@@ -12,17 +15,24 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroD
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.ComentarioRelato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.DetalheGestaoRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.LimitesDoMunicipio;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.RelatoFoto;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.ComentarioRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoDetalheRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoFotoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.time.OffsetDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +59,9 @@ public class RelatoService {
   private final CategoriaRepository categoriaRepository;
   private final FileStorage fileStorage;
   private final HistoricoStatusRelatoRepository historicoRepository;
+  private final RelatoDetalheRepository relatoDetalheRepository;
+  private final RelatoFotoRepository relatoFotoRepository;
+  private final ComentarioRelatoRepository comentarioRepository;
 
   @Transactional
   public RelatoCriadoDTO registrar(
@@ -140,6 +153,80 @@ public class RelatoService {
   @Transactional(readOnly = true)
   public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
     return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
+  }
+
+  @Transactional(readOnly = true)
+  public DetalheGestaoRelatoDTO obterDetalheGestao(Long relatoId) {
+    DetalheGestaoRelato detalhe =
+        relatoDetalheRepository
+            .buscarDetalheCompleto(relatoId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
+    Relato relato = detalhe.relato();
+    return new DetalheGestaoRelatoDTO(
+        relato.getId(),
+        relato.getDescricao(),
+        relato.getStatus(),
+        relato.getUrlFoto(),
+        relato.getCriadoEm(),
+        detalhe.fotos().stream().map(this::toFotoDTO).toList(),
+        detalhe.comentarios().stream().map(this::toComentarioDTO).toList());
+  }
+
+  @Transactional
+  public FotoRelatoDTO adicionarFotoGestao(
+      UUID gestorId, Long relatoId, byte[] fileBytes, String originalFilename, String contentType) {
+    if (fileBytes == null) {
+      throw new IllegalArgumentException("A foto é obrigatória.");
+    }
+    String tipoFoto = validarFoto(fileBytes, contentType);
+    relatoRepository
+        .findByIdParaAtualizacao(relatoId)
+        .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
+    if (relatoFotoRepository.countByRelatoId(relatoId) >= 10) {
+      throw new IllegalArgumentException("O relato já possui dez fotos complementares.");
+    }
+
+    String fileName = UUID.randomUUID() + extensaoDaFoto(tipoFoto, originalFilename);
+    String urlFoto = fileStorage.upload(fileBytes, fileName, tipoFoto);
+    RelatoFoto foto =
+        RelatoFoto.builder()
+            .relatoId(relatoId)
+            .autorId(gestorId)
+            .urlFoto(urlFoto)
+            .criadoEm(OffsetDateTime.now())
+            .build();
+    return toFotoDTO(relatoFotoRepository.save(foto));
+  }
+
+  @Transactional
+  public ComentarioRelatoDTO adicionarComentarioGestao(UUID gestorId, Long relatoId, String texto) {
+    if (texto == null || texto.isBlank()) {
+      throw new IllegalArgumentException("O comentário é obrigatório.");
+    }
+    relatoRepository
+        .findById(relatoId)
+        .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
+    ComentarioRelato comentario =
+        ComentarioRelato.builder()
+            .relatoId(relatoId)
+            .autorId(gestorId)
+            .texto(texto.strip())
+            .criadoEm(OffsetDateTime.now())
+            .build();
+    return toComentarioDTO(comentarioRepository.save(comentario));
+  }
+
+  private FotoRelatoDTO toFotoDTO(RelatoFoto foto) {
+    return new FotoRelatoDTO(
+        foto.getId(), foto.getAutorId(), foto.getUrlFoto(), foto.getCriadoEm());
+  }
+
+  private ComentarioRelatoDTO toComentarioDTO(ComentarioRelato comentario) {
+    return new ComentarioRelatoDTO(
+        comentario.getId(),
+        comentario.getAutorId(),
+        comentario.getTexto(),
+        comentario.getCriadoEm());
   }
 
   @Transactional(readOnly = true)
