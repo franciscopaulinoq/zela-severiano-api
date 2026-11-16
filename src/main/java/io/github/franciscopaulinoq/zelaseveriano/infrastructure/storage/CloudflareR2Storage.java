@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Component
@@ -32,5 +33,18 @@ public class CloudflareR2Storage implements FileStorage {
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
 
     return publicUrl + "/" + fileName;
+  }
+
+  @Override
+  public void excluir(String urlFoto) {
+    String prefixo = publicUrl + "/";
+    if (urlFoto == null || !urlFoto.startsWith(prefixo) || urlFoto.length() == prefixo.length()) {
+      throw new IllegalArgumentException(
+          "A URL da foto não pertence ao armazenamento configurado.");
+    }
+    String fileName = urlFoto.substring(prefixo.length());
+    DeleteObjectRequest deleteObjectRequest =
+        DeleteObjectRequest.builder().bucket(bucketName).key(fileName).build();
+    s3Client.deleteObject(deleteObjectRequest);
   }
 }
