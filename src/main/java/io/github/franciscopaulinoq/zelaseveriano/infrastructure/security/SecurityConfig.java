@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.infrastructure.security;
 
+import io.github.franciscopaulinoq.zelaseveriano.application.service.AuditoriaGestaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final SecurityFilter securityFilter;
+  private final AuditoriaGestaoService auditoriaGestaoService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,6 +44,7 @@ public class SecurityConfig {
                 .anyRequest()
                 .authenticated())
         .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(new AuditoriaGestaoFilter(auditoriaGestaoService), SecurityFilter.class)
         .build();
   }
 }
