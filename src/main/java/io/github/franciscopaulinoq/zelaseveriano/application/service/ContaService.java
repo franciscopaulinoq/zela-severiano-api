@@ -3,6 +3,8 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.SessaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
@@ -14,12 +16,16 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ContaService {
+
+  private static final String HASH_USUARIO_INEXISTENTE =
+      "$2a$12$yG48DtlJmfemBdYb7Byuv./c35yRg/MUcOqGrcxZtrEZZ85MZeSm6";
 
   private final UsuarioRepository usuarioRepository;
   private final PerfilRepository perfilRepository;
@@ -29,13 +35,10 @@ public class ContaService {
 
   @Transactional(readOnly = true)
   public SessaoDTO autenticar(String cpf, String senha) {
-    Usuario usuario =
-        usuarioRepository
-            .findByCpf(cpf)
-            .orElseThrow(() -> new IllegalArgumentException("CPF ou senha inválidos"));
-
-    if (!passwordHasher.matches(senha, usuario.getSenhaHash())) {
-      throw new IllegalArgumentException("CPF ou senha inválidos");
+    Usuario usuario = usuarioRepository.findByCpf(cpf).orElse(null);
+    String senhaHash = usuario == null ? HASH_USUARIO_INEXISTENTE : usuario.getSenhaHash();
+    if (!passwordHasher.matches(senha, senhaHash) || usuario == null) {
+      throw new CredenciaisInvalidasException("CPF ou senha inválidos");
     }
 
     return new SessaoDTO(
@@ -59,7 +62,7 @@ public class ContaService {
     Usuario usuario =
         usuarioRepository
             .findById(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
     if (senhaAtual == null
         || senhaAtual.isBlank()
@@ -82,7 +85,12 @@ public class ContaService {
     Usuario usuario =
         Usuario.builder().id(UUID.randomUUID()).cpf(dto.getCpf()).senhaHash(senhaHash).build();
 
-    Usuario usuarioSalvo = usuarioRepository.save(usuario);
+    Usuario usuarioSalvo;
+    try {
+      usuarioSalvo = usuarioRepository.save(usuario);
+    } catch (DataIntegrityViolationException exception) {
+      throw new CidadaoJaRegistradoException("CPF já registrado no sistema", exception);
+    }
     dto.setUsuarioId(usuarioSalvo.getId());
 
     Perfil perfil =

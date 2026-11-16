@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarPerfilDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import java.util.UUID;
@@ -32,8 +33,8 @@ public class PerfilService {
   private Perfil buscarPerfil(UUID usuarioId) {
     return perfilRepository
         .findByUsuarioId(usuarioId)
-        .orElseThrow(
-            () -> new IllegalArgumentException("Perfil não encontrado para o usuário logado."));
+        .orElseThrow(() ->
+            new RecursoNaoEncontradoException("Perfil não encontrado para o usuário logado."));
   }
 
   private PerfilMeDTO toPerfilMeDTO(Perfil perfil) {

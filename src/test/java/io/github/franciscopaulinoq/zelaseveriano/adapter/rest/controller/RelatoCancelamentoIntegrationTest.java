@@ -67,7 +67,7 @@ class RelatoCancelamentoIntegrationTest {
         .perform(
             patch("/api/v1/relatos/{id}/cancelamento", relatoId)
                 .header("Authorization", "Bearer " + tokenDeOutro))
-        .andExpect(status().isUnprocessableContent());
+        .andExpect(status().isNotFound());
 
     mockMvc
         .perform(get("/api/v1/relatos/{id}", relatoId).header("Authorization", "Bearer " + token))

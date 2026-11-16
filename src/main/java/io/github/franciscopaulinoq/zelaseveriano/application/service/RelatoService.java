@@ -9,6 +9,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemD
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
@@ -66,7 +67,8 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     perfilRepository.bloquear(perfil.getId());
     long pendentes =
@@ -80,7 +82,7 @@ public class RelatoService {
     Categoria categoria =
         categoriaRepository
             .findById(dto.getCategoriaId())
-            .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada."));
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
 
     String urlFoto = null;
     if (temFoto) {
@@ -108,7 +110,8 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     return relatoRepository
         .findAllByPerfilId(perfil.getId(), filtro, pageable)
@@ -120,13 +123,14 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     Relato relato =
         relatoRepository
             .findByPerfilIdAndId(perfil.getId(), relatoId)
             .orElseThrow(() ->
-                new IllegalArgumentException(
+                new RecursoNaoEncontradoException(
                     "Relato não encontrado ou não pertence a este usuário."));
 
     return toDetalheDTO(relato);
@@ -149,7 +153,7 @@ public class RelatoService {
     Relato relato =
         relatoRepository
             .findByIdParaAtualizacao(relatoId)
-            .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
 
     StatusRelato statusAnterior = relato.getStatus();
     relato.atualizarStatus(novoStatus, observacao);
@@ -164,12 +168,14 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     relatoRepository
         .findByPerfilIdAndId(perfil.getId(), relatoId)
         .orElseThrow(() ->
-            new IllegalArgumentException("Relato não encontrado ou não pertence a este usuário."));
+            new RecursoNaoEncontradoException(
+                "Relato não encontrado ou não pertence a este usuário."));
 
     return listarHistorico(relatoId);
   }
@@ -197,7 +203,7 @@ public class RelatoService {
   public List<HistoricoStatusDTO> obterHistoricoGestao(Long relatoId) {
     relatoRepository
         .findById(relatoId)
-        .orElseThrow(() -> new IllegalArgumentException("Relato não encontrado."));
+        .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
 
     return listarHistorico(relatoId);
   }
@@ -207,13 +213,14 @@ public class RelatoService {
     Perfil perfil =
         perfilRepository
             .findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new IllegalArgumentException("Perfil do usuário não encontrado."));
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     Relato relato =
         relatoRepository
             .findByPerfilIdAndIdParaAtualizacao(perfil.getId(), relatoId)
             .orElseThrow(() ->
-                new IllegalArgumentException(
+                new RecursoNaoEncontradoException(
                     "Relato não encontrado ou não pertence a este usuário."));
 
     StatusRelato statusAnterior = relato.getStatus();

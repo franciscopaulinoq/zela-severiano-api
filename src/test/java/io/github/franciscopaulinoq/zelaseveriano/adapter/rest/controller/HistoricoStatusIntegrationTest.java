@@ -80,6 +80,6 @@ class HistoricoStatusIntegrationTest {
         .perform(
             get("/api/v1/relatos/{id}/historico", relatoId)
                 .header("Authorization", "Bearer " + outro))
-        .andExpect(status().isUnprocessableContent());
+        .andExpect(status().isNotFound());
   }
 }

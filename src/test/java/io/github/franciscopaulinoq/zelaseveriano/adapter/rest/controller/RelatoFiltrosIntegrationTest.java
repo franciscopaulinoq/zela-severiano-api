@@ -116,6 +116,13 @@ class RelatoFiltrosIntegrationTest {
   }
 
   @Test
+  void gestorNaoAcessaAListagemExclusivaDoCidadao() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/relatos").header("Authorization", bearer(tokenGestor)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void gestorCombinaOsDoisFiltros() throws Exception {
     mockMvc
         .perform(

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
@@ -27,6 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class ContaServiceTest {
@@ -46,6 +48,20 @@ class ContaServiceTest {
   @InjectMocks private ContaService contaService;
 
   @Test
+  void cpfInexistenteTambemPassaPelaVerificacaoDeSenha() {
+    when(usuarioRepository.findByCpf(CPF)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> contaService.autenticar(CPF, "senha-informada"))
+        .isInstanceOf(CredenciaisInvalidasException.class)
+        .hasMessage("CPF ou senha inválidos");
+
+    verify(passwordHasher)
+        .matches("senha-informada", "$2a$12$yG48DtlJmfemBdYb7Byuv./c35yRg/MUcOqGrcxZtrEZZ85MZeSm6");
+    verify(tokenService, never()).gerarToken(any());
+    verify(tokenService, never()).gerarTokenDeRenovacao(any());
+  }
+
+  @Test
   void recusaCadastroDeCpfJaRegistradoSemPersistirNada() {
     when(usuarioRepository.existsByCpf(CPF)).thenReturn(true);
 
@@ -54,6 +70,20 @@ class ContaServiceTest {
 
     verify(passwordHasher, never()).hash(anyString());
     verify(usuarioRepository, never()).save(any());
+    verify(perfilRepository, never()).save(any());
+    verify(enderecoRepository, never()).save(any());
+  }
+
+  @Test
+  void violacaoDeUnicidadeDoCpfViraConflitoDeNegocio() {
+    when(usuarioRepository.existsByCpf(CPF)).thenReturn(false);
+    when(usuarioRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicado"));
+
+    assertThatThrownBy(() -> contaService.registrarCidadao(novoCidadao(), "senha-secreta"))
+        .isInstanceOf(CidadaoJaRegistradoException.class)
+        .hasMessage("CPF já registrado no sistema")
+        .hasCauseInstanceOf(DataIntegrityViolationException.class);
+
     verify(perfilRepository, never()).save(any());
     verify(enderecoRepository, never()).save(any());
   }

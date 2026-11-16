@@ -61,7 +61,7 @@ class LoginIntegrationTest {
   @Test
   void senhaIncorretaEhRecusadaSemToken() throws Exception {
     login(cidadao.cpf(), "senha-errada")
-        .andExpect(status().isUnprocessableContent())
+        .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.token").doesNotExist())
         .andExpect(jsonPath("$.message").value("CPF ou senha inválidos"));
   }
@@ -72,7 +72,7 @@ class LoginIntegrationTest {
         login(cidadao.cpf(), "senha-errada").andReturn().getResponse().getContentAsString();
     String cpfInexistente =
         login(CpfsDeTeste.novo(), CidadaosDeTeste.SENHA)
-            .andExpect(status().isUnprocessableContent())
+            .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.token").doesNotExist())
             .andReturn()
             .getResponse()
@@ -82,6 +82,15 @@ class LoginIntegrationTest {
         .isEqualTo(JsonPath.<String>read(senhaErrada, "$.message"));
     assertThat(JsonPath.<Integer>read(cpfInexistente, "$.status"))
         .isEqualTo(JsonPath.<Integer>read(senhaErrada, "$.status"));
+  }
+
+  @Test
+  void jsonMalformadoEhRecusadoComoRequisicaoInvalida() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content("{cpf:"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Requisição inválida"));
   }
 
   @Test

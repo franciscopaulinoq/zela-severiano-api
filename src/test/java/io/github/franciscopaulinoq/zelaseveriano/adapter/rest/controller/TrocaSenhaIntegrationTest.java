@@ -43,7 +43,7 @@ class TrocaSenhaIntegrationTest {
         .andExpect(status().isNoContent());
 
     login("nova-senha-123").andExpect(status().isOk()).andExpect(jsonPath("$.token").exists());
-    login(CidadaosDeTeste.SENHA).andExpect(status().isUnprocessableContent());
+    login(CidadaosDeTeste.SENHA).andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -55,7 +55,7 @@ class TrocaSenhaIntegrationTest {
         .andExpect(status().isUnprocessableContent());
 
     login(CidadaosDeTeste.SENHA).andExpect(status().isOk());
-    login("nova-senha-123").andExpect(status().isUnprocessableContent());
+    login("nova-senha-123").andExpect(status().isUnauthorized());
   }
 
   @Test
