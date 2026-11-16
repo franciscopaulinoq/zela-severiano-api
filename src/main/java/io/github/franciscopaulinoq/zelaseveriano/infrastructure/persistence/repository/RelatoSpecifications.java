@@ -2,6 +2,7 @@ package io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.rep
 
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.RelatoEntity;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -22,6 +23,15 @@ final class RelatoSpecifications {
       if (filtro.categoriaId() != null) {
         condicoes =
             cb.and(condicoes, cb.equal(root.get("categoria").get("id"), filtro.categoriaId()));
+      }
+      ZoneId zona = ZoneId.systemDefault();
+      if (filtro.dataInicial() != null) {
+        var inicio = filtro.dataInicial().atStartOfDay(zona).toOffsetDateTime();
+        condicoes = cb.and(condicoes, cb.greaterThanOrEqualTo(root.get("criadoEm"), inicio));
+      }
+      if (filtro.dataFinal() != null) {
+        var limite = filtro.dataFinal().plusDays(1).atStartOfDay(zona).toOffsetDateTime();
+        condicoes = cb.and(condicoes, cb.lessThan(root.get("criadoEm"), limite));
       }
       return condicoes;
     };
