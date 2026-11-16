@@ -7,4 +7,8 @@ public interface HistoricoStatusRelatoRepository {
   HistoricoStatusRelato save(HistoricoStatusRelato historico);
 
   List<HistoricoStatusRelato> findAllByRelatoId(Long relatoId);
+
+  List<HistoricoStatusRelato> findAfterId(long id, int limite);
+
+  long maxId();
 }

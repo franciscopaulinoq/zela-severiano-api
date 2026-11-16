@@ -37,3 +37,7 @@ api:
     token:
       secret: ${JWT_SECRET}
       refresh-secret: ${JWT_REFRESH_SECRET}
+  webhooks:
+    initial-delay: 1000
+    intervalo: 1000
+    timeout: 3s

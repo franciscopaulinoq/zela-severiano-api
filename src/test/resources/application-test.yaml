@@ -13,3 +13,7 @@ api:
     token:
       secret: segredo-de-acesso-somente-para-testes
       refresh-secret: segredo-de-renovacao-somente-para-testes
+  webhooks:
+    initial-delay: 600000
+    intervalo: 600000
+    timeout: 3s
