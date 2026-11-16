@@ -2,12 +2,14 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaResumoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.CategoriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,6 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class GestaoCategoriaController {
 
   private final CategoriaService categoriaService;
+
+  @GetMapping("/{id}/resumo")
+  public ResponseEntity<CategoriaResumoDTO> obterResumo(@PathVariable("id") Integer categoriaId) {
+    return ResponseEntity.ok(categoriaService.obterResumo(categoriaId));
+  }
 
   @PostMapping
   public ResponseEntity<CategoriaDTO> criar(@Valid @RequestBody CategoriaRegistroDTO dados) {

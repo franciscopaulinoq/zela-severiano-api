@@ -33,6 +33,9 @@ public interface JpaRelatoRepository
 
   boolean existsByCategoriaId(Integer categoriaId);
 
+  @EntityGraph(attributePaths = {"perfil", "categoria", "perfil.usuario"})
+  List<RelatoEntity> findAllByCategoriaId(Integer categoriaId);
+
   @Query(
       """
       SELECT new io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus(

@@ -11,8 +11,11 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -89,5 +92,33 @@ class CategoriaServiceTest {
         .isInstanceOf(CategoriaEmUsoException.class);
 
     verify(categoriaRepository, never()).deleteById(any());
+  }
+
+  @Test
+  void resumePendenciasDaCategoria() {
+    when(categoriaRepository.findById(3))
+        .thenReturn(
+            Optional.of(Categoria.builder().id(3).nome("Limpeza").iconeNome("trash").build()));
+    when(relatoRepository.findAllByCategoriaId(3))
+        .thenReturn(
+            List.of(
+                Relato.builder().status(StatusRelato.PENDENTE).build(),
+                Relato.builder().status(StatusRelato.CONCLUIDO).build(),
+                Relato.builder().status(StatusRelato.PENDENTE).build()));
+
+    var resumo = categoriaService.obterResumo(3);
+
+    assertThat(resumo.nome()).isEqualTo("Limpeza");
+    assertThat(resumo.totalPendentes()).isEqualTo(2);
+    assertThat(resumo.possuiPendencias()).isTrue();
+  }
+
+  @Test
+  void naoResumeCategoriaInexistente() {
+    when(categoriaRepository.findById(99)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> categoriaService.obterResumo(99))
+        .isInstanceOf(IllegalArgumentException.class);
+    verify(relatoRepository, never()).findAllByCategoriaId(any());
   }
 }
