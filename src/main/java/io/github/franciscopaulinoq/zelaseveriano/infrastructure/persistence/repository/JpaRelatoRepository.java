@@ -31,6 +31,8 @@ public interface JpaRelatoRepository
 
   long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
+  long countByPerfilId(UUID perfilId);
+
   boolean existsByCategoriaId(Integer categoriaId);
 
   @Query(

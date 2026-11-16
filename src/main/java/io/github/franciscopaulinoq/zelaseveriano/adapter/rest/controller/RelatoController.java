@@ -1,13 +1,16 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.MeuResumoRelatoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.service.MeuResumoRelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
@@ -38,6 +41,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class RelatoController {
 
   private final RelatoService relatoService;
+  private final MeuResumoRelatoService meuResumoRelatoService;
+
+  @Operation(summary = "Informa o total de relatos do cidadão autenticado")
+  @GetMapping("/resumo")
+  public ResponseEntity<MeuResumoRelatoDTO> obterResumo(
+      @AuthenticationPrincipal UserDetails userDetails) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    return ResponseEntity.ok(meuResumoRelatoService.obterResumo(usuarioId));
+  }
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<RelatoCriadoDTO> registrar(
