@@ -72,13 +72,7 @@ public class RelatoService {
                 () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
 
     perfilRepository.bloquear(perfil.getId());
-    long pendentes =
-        relatoRepository.countByPerfilIdAndStatus(perfil.getId(), StatusRelato.PENDENTE);
-    if (pendentes >= LIMITE_RELATOS_PENDENTES) {
-      throw new LimiteRelatosPendentesException(
-          "Você já tem %d relatos aguardando avaliação. Aguarde a avaliação de algum deles para registrar um novo."
-              .formatted(LIMITE_RELATOS_PENDENTES));
-    }
+    validarLimiteDePendentes(perfil, "registrar um novo");
 
     Categoria categoria =
         categoriaRepository
@@ -230,6 +224,38 @@ public class RelatoService {
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, null);
+  }
+
+  @Transactional
+  public void reabrir(UUID usuarioId, Long relatoId) {
+    Perfil perfil =
+        perfilRepository
+            .findByUsuarioId(usuarioId)
+            .orElseThrow(
+                () -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
+    perfilRepository.bloquear(perfil.getId());
+
+    Relato relato =
+        relatoRepository
+            .findByPerfilIdAndIdParaAtualizacao(perfil.getId(), relatoId)
+            .orElseThrow(() ->
+                new RecursoNaoEncontradoException(
+                    "Relato não encontrado ou não pertence a este usuário."));
+    StatusRelato statusAnterior = relato.getStatus();
+    relato.reabrir();
+
+    Relato salvo = relatoRepository.save(relato);
+    registrarHistorico(salvo, statusAnterior, null);
+  }
+
+  private void validarLimiteDePendentes(Perfil perfil, String acao) {
+    long pendentes =
+        relatoRepository.countByPerfilIdAndStatus(perfil.getId(), StatusRelato.PENDENTE);
+    if (pendentes >= LIMITE_RELATOS_PENDENTES) {
+      throw new LimiteRelatosPendentesException(
+          "Você já tem %d relatos aguardando avaliação. Aguarde a avaliação de algum deles para %s."
+              .formatted(LIMITE_RELATOS_PENDENTES, acao));
+    }
   }
 
   private void registrarHistorico(Relato relato, StatusRelato statusAnterior, String observacao) {
