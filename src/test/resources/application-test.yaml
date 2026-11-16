@@ -13,3 +13,6 @@ api:
     token:
       secret: segredo-de-acesso-somente-para-testes
       refresh-secret: segredo-de-renovacao-somente-para-testes
+  confirmacao-email:
+    entrega-url: http://localhost:18080/confirmacoes-email
+    timeout: 2s

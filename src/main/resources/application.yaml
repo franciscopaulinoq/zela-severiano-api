@@ -37,3 +37,6 @@ api:
     token:
       secret: ${JWT_SECRET}
       refresh-secret: ${JWT_REFRESH_SECRET}
+  confirmacao-email:
+    entrega-url: ${CONFIRMACAO_EMAIL_ENTREGA_URL}
+    timeout: 2s

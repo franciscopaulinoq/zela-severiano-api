@@ -36,6 +36,9 @@ public class PerfilEntity {
   @Column(name = "email", nullable = true, length = 255)
   private String email;
 
+  @Column(name = "email_pendente", length = 255)
+  private String emailPendente;
+
   @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   @CreationTimestamp
   private OffsetDateTime criadoEm;
