@@ -26,6 +26,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorCat
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.TotalRelatosPorStatus;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.EnderecoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
@@ -58,6 +59,8 @@ class RelatoServiceTest {
   @Mock private PerfilRepository perfilRepository;
 
   @Mock private CategoriaRepository categoriaRepository;
+
+  @Mock private EnderecoRepository enderecoRepository;
 
   @Mock private FileStorage fileStorage;
 

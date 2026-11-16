@@ -22,6 +22,10 @@ public class CidadaosDeTeste {
   private final PasswordHasher passwordHasher;
 
   public Cidadao cadastrar(String nomeCompleto) {
+    return cadastrar(nomeCompleto, "Centro");
+  }
+
+  public Cidadao cadastrar(String nomeCompleto, String bairro) {
     String cpf = CpfsDeTeste.novo();
     RegistrarCidadaoDTO dto =
         RegistrarCidadaoDTO.builder()
@@ -30,7 +34,7 @@ public class CidadaosDeTeste {
             .email("cidadao@example.com")
             .logradouro("Rua Principal")
             .numero("10")
-            .bairro("Centro")
+            .bairro(bairro)
             .build();
     CidadaoRegistradoDTO registrado = contaService.registrarCidadao(dto, SENHA);
     return new Cidadao(registrado.usuarioId(), registrado.perfilId(), cpf);
