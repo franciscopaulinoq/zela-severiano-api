@@ -37,3 +37,6 @@ api:
     token:
       secret: ${JWT_SECRET}
       refresh-secret: ${JWT_REFRESH_SECRET}
+  integracoes:
+    estatisticas:
+      api-key: ${INTEGRACOES_ESTATISTICAS_API_KEY}

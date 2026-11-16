@@ -13,3 +13,6 @@ api:
     token:
       secret: segredo-de-acesso-somente-para-testes
       refresh-secret: segredo-de-renovacao-somente-para-testes
+  integracoes:
+    estatisticas:
+      api-key: chave-de-integracao-somente-para-testes
