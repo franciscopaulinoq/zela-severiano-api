@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "relatos")
@@ -31,6 +31,9 @@ public class RelatoEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(name = "identificador_externo", length = 100)
+  private String identificadorExterno;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "perfil_id", nullable = false)
@@ -60,9 +63,15 @@ public class RelatoEntity {
   private String observacaoResolucao;
 
   @Column(name = "criado_em", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-  @CreationTimestamp
   private OffsetDateTime criadoEm;
 
   @Column(name = "atualizado_em", nullable = true, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime atualizadoEm;
+
+  @PrePersist
+  void definirDataDeCriacao() {
+    if (criadoEm == null) {
+      criadoEm = OffsetDateTime.now();
+    }
+  }
 }

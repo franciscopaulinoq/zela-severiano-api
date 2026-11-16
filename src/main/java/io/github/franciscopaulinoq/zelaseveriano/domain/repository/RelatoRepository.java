@@ -14,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 public interface RelatoRepository {
   Relato save(Relato relato);
 
+  List<Relato> saveAll(List<Relato> relatos);
+
+  Optional<Relato> findByIdentificadorExterno(String identificadorExterno);
+
   Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
   Optional<Relato> findById(Long relatoId);

@@ -4,7 +4,9 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.entity.PerfilEntity;
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.PerfilMapper;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -30,6 +32,11 @@ public class PerfilRepositoryImpl implements PerfilRepository {
   @Override
   public Optional<Perfil> findByUsuarioId(UUID usuarioId) {
     return jpaRepository.findByUsuarioId(usuarioId).map(mapper::map);
+  }
+
+  @Override
+  public List<Perfil> findAllByUsuarioCpfIn(Set<String> cpfs) {
+    return jpaRepository.findAllByUsuarioCpfIn(cpfs).stream().map(mapper::map).toList();
   }
 
   @Override
