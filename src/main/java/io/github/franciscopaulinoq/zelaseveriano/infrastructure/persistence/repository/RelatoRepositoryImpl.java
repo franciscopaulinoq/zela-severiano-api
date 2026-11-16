@@ -76,6 +76,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public long countByPerfilId(UUID perfilId) {
+    return jpaRepository.countByPerfilId(perfilId);
+  }
+
+  @Override
   public boolean existsByCategoriaId(Integer categoriaId) {
     return jpaRepository.existsByCategoriaId(categoriaId);
   }
