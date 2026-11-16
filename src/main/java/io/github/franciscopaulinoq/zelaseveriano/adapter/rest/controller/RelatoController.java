@@ -8,6 +8,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroD
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
+import io.github.franciscopaulinoq.zelaseveriano.domain.storage.ArquivoArmazenado;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
@@ -91,6 +92,16 @@ public class RelatoController {
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
     return ResponseEntity.ok(relatoService.obterHistorico(usuarioId, relatoId));
+  }
+
+  @GetMapping("/{id}/foto")
+  public ResponseEntity<byte[]> baixarFoto(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    ArquivoArmazenado arquivo = relatoService.baixarFoto(usuarioId, relatoId);
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(arquivo.tipoConteudo()))
+        .body(arquivo.conteudo());
   }
 
   @GetMapping("/{id}")

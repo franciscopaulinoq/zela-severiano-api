@@ -22,6 +22,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepo
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.storage.ArquivoArmazenado;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
 import java.util.EnumMap;
 import java.util.List;
@@ -135,6 +136,22 @@ public class RelatoService {
                     "Relato não encontrado ou não pertence a este usuário."));
 
     return toDetalheDTO(relato);
+  }
+
+  public ArquivoArmazenado baixarFoto(UUID usuarioId, Long relatoId) {
+    perfilRepository
+        .findByUsuarioId(usuarioId)
+        .orElseThrow(() -> new RecursoNaoEncontradoException("Perfil do usuário não encontrado."));
+
+    Relato relato =
+        relatoRepository
+            .findById(relatoId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Relato não encontrado."));
+    if (relato.getUrlFoto() == null || relato.getUrlFoto().isBlank()) {
+      throw new RecursoNaoEncontradoException("Foto não encontrada.");
+    }
+
+    return fileStorage.baixar(relato.getUrlFoto());
   }
 
   @Transactional(readOnly = true)

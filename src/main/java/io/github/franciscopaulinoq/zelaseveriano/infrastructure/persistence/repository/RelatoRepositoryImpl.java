@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,11 +36,13 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId) {
     return jpaRepository.findByPerfilIdAndId(perfilId, relatoId).map(mapper::map);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Relato> findById(Long relatoId) {
     return jpaRepository.findById(relatoId).map(mapper::map);
   }
