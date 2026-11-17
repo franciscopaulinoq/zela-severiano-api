@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.domain.model;
 
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,10 +19,14 @@ public class Perfil {
 
   public void atualizarDados(String novoNomeCompleto, String novoEmail) {
     if (novoNomeCompleto != null) {
-      this.nomeCompleto = novoNomeCompleto;
+      this.nomeCompleto = normalizarTexto(novoNomeCompleto);
     }
     if (novoEmail != null) {
-      this.email = novoEmail;
+      this.email = normalizarTexto(novoEmail).toLowerCase(Locale.ROOT);
     }
+  }
+
+  private String normalizarTexto(String texto) {
+    return texto.trim();
   }
 }
