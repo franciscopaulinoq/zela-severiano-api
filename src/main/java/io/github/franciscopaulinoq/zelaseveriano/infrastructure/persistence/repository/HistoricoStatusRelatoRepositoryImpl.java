@@ -5,6 +5,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.infrastructure.persistence.mapper.HistoricoStatusRelatoMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,5 +24,17 @@ public class HistoricoStatusRelatoRepositoryImpl implements HistoricoStatusRelat
     return jpaRepository.findAllByRelatoIdOrderByAlteradoEmAscIdAsc(relatoId).stream()
         .map(mapper::map)
         .toList();
+  }
+
+  @Override
+  public List<HistoricoStatusRelato> findAfterId(long id, int limite) {
+    return jpaRepository.findAllByIdGreaterThanOrderByIdAsc(id, PageRequest.of(0, limite)).stream()
+        .map(mapper::map)
+        .toList();
+  }
+
+  @Override
+  public long maxId() {
+    return jpaRepository.maxId();
   }
 }
