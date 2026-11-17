@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.Role;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenPayload;
+import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenRenovacaoPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -24,6 +25,7 @@ public class JwtService implements TokenService {
   private static final String ISSUER = "zela-severiano-api";
   private static final String CLAIM_ROLE = "role";
   private static final String CLAIM_TIPO = "tipo";
+  private static final String CLAIM_VERSAO_TOKENS = "versao_tokens";
   private static final String TIPO_ACESSO = "acesso";
   private static final String TIPO_RENOVACAO = "renovacao";
   private static final Duration VALIDADE_TOKEN_ACESSO = Duration.ofHours(24);
@@ -87,6 +89,7 @@ public class JwtService implements TokenService {
           .withIssuer(ISSUER)
           .withSubject(usuario.getId().toString())
           .withClaim(CLAIM_TIPO, TIPO_RENOVACAO)
+          .withClaim(CLAIM_VERSAO_TOKENS, usuario.getVersaoTokens())
           .withExpiresAt(clock.instant().plus(VALIDADE_TOKEN_RENOVACAO))
           .sign(Algorithm.HMAC256(refreshSecret));
     } catch (JWTCreationException exception) {
@@ -95,14 +98,17 @@ public class JwtService implements TokenService {
   }
 
   @Override
-  public Optional<UUID> validarTokenDeRenovacao(String token) {
+  public Optional<TokenRenovacaoPayload> validarTokenDeRenovacao(String token) {
     try {
       DecodedJWT decoded = verificador(refreshSecret).verify(token);
       String subject = decoded.getSubject();
-      if (!TIPO_RENOVACAO.equals(decoded.getClaim(CLAIM_TIPO).asString()) || subject == null) {
+      Long versaoTokens = decoded.getClaim(CLAIM_VERSAO_TOKENS).asLong();
+      if (!TIPO_RENOVACAO.equals(decoded.getClaim(CLAIM_TIPO).asString())
+          || subject == null
+          || versaoTokens == null) {
         return Optional.empty();
       }
-      return Optional.of(UUID.fromString(subject));
+      return Optional.of(new TokenRenovacaoPayload(UUID.fromString(subject), versaoTokens));
     } catch (JWTVerificationException | IllegalArgumentException exception) {
       return Optional.empty();
     }

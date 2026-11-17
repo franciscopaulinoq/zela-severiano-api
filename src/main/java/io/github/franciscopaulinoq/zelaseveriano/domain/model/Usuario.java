@@ -13,17 +13,29 @@ public class Usuario {
   private String senhaHash;
   private Role role;
   private OffsetDateTime criadoEm;
+  private long versaoTokens;
 
   @Builder
-  public Usuario(UUID id, String cpf, String senhaHash, Role role, OffsetDateTime criadoEm) {
+  public Usuario(
+      UUID id,
+      String cpf,
+      String senhaHash,
+      Role role,
+      OffsetDateTime criadoEm,
+      long versaoTokens) {
     this.id = id != null ? id : UUID.randomUUID();
     this.cpf = Cpf.of(cpf).valor();
     this.senhaHash = senhaHash;
     this.role = role != null ? role : Role.CIDADAO;
     this.criadoEm = criadoEm != null ? criadoEm : OffsetDateTime.now();
+    this.versaoTokens = versaoTokens;
   }
 
   public void alterarSenha(String novoSenhaHash) {
     this.senhaHash = novoSenhaHash;
+  }
+
+  public void invalidarTokensDeRenovacao() {
+    this.versaoTokens++;
   }
 }

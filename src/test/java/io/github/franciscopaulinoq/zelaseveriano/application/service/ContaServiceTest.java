@@ -12,6 +12,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.CidadaoRegistra
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RegistrarCidadaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
@@ -20,6 +21,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.EnderecoRepos
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.UsuarioRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.PasswordHasher;
+import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenRenovacaoPayload;
 import io.github.franciscopaulinoq.zelaseveriano.domain.security.TokenService;
 import java.util.Optional;
 import java.util.UUID;
@@ -135,22 +137,60 @@ class ContaServiceTest {
   }
 
   @Test
+  void renovaSessaoQuandoAVersaoDoTokenConfere() {
+    Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash").build();
+    when(tokenService.validarTokenDeRenovacao("refresh"))
+        .thenReturn(Optional.of(new TokenRenovacaoPayload(usuario.getId(), 0)));
+    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+    when(tokenService.gerarToken(usuario)).thenReturn("novo-token");
+
+    assertThat(contaService.renovarSessao("refresh")).isEqualTo("novo-token");
+  }
+
+  @Test
+  void recusaRenovacaoQuandoAVersaoDoTokenEstaDesatualizada() {
+    Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash").versaoTokens(1).build();
+    when(tokenService.validarTokenDeRenovacao("refresh"))
+        .thenReturn(Optional.of(new TokenRenovacaoPayload(usuario.getId(), 0)));
+    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+
+    assertThatThrownBy(() -> contaService.renovarSessao("refresh"))
+        .isInstanceOf(TokenInvalidoException.class);
+    verify(tokenService, never()).gerarToken(any());
+  }
+
+  @Test
+  void recusaRenovacaoQuandoOUsuarioNaoExiste() {
+    UUID usuarioId = UUID.randomUUID();
+    when(tokenService.validarTokenDeRenovacao("refresh"))
+        .thenReturn(Optional.of(new TokenRenovacaoPayload(usuarioId, 0)));
+    when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> contaService.renovarSessao("refresh"))
+        .isInstanceOf(TokenInvalidoException.class);
+    verify(tokenService, never()).gerarToken(any());
+  }
+
+  @Test
   void trocaASenhaQuandoASenhaAtualConfere() {
     Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
-    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByIdParaAtualizacao(usuario.getId()))
+        .thenReturn(Optional.of(usuario));
     when(passwordHasher.matches("senha-antiga", "hash-antigo")).thenReturn(true);
     when(passwordHasher.hash("senha-nova")).thenReturn("hash-novo");
 
     contaService.trocarSenha(usuario.getId(), "senha-antiga", "senha-nova");
 
     assertThat(usuario.getSenhaHash()).isEqualTo("hash-novo");
+    assertThat(usuario.getVersaoTokens()).isEqualTo(1);
     verify(usuarioRepository).save(usuario);
   }
 
   @Test
   void recusaTrocaDeSenhaQuandoASenhaAtualEstaIncorreta() {
     Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
-    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByIdParaAtualizacao(usuario.getId()))
+        .thenReturn(Optional.of(usuario));
     when(passwordHasher.matches("errada", "hash-antigo")).thenReturn(false);
 
     assertThatThrownBy(() -> contaService.trocarSenha(usuario.getId(), "errada", "senha-nova"))
@@ -164,7 +204,8 @@ class ContaServiceTest {
   @Test
   void recusaTrocaDeSenhaSemInformarASenhaAtual() {
     Usuario usuario = Usuario.builder().cpf(CPF).senhaHash("hash-antigo").build();
-    when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+    when(usuarioRepository.findByIdParaAtualizacao(usuario.getId()))
+        .thenReturn(Optional.of(usuario));
 
     assertThatThrownBy(() -> contaService.trocarSenha(usuario.getId(), null, "senha-nova"))
         .isInstanceOf(IllegalArgumentException.class)
@@ -178,7 +219,7 @@ class ContaServiceTest {
   @Test
   void recusaTrocaDeSenhaDeUsuarioInexistente() {
     UUID usuarioId = UUID.randomUUID();
-    when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
+    when(usuarioRepository.findByIdParaAtualizacao(usuarioId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> contaService.trocarSenha(usuarioId, "qualquer", "senha-nova"))
         .isInstanceOf(IllegalArgumentException.class);

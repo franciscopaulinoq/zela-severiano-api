@@ -28,6 +28,11 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
   }
 
   @Override
+  public Optional<Usuario> findByIdParaAtualizacao(UUID usuarioId) {
+    return jpaRepository.findByIdParaAtualizacao(usuarioId).map(mapper::map);
+  }
+
+  @Override
   public Optional<Usuario> findByCpf(String cpf) {
     return jpaRepository.findByCpf(cpf).map(mapper::map);
   }
