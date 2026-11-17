@@ -11,6 +11,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDT
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exportacao.CsvEscritor;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
@@ -23,6 +24,11 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,12 +50,14 @@ public class RelatoService {
 
   private static final Set<String> TIPOS_DE_FOTO_PERMITIDOS =
       Set.of("image/jpeg", "image/png", "image/webp");
+  private static final int TAMANHO_PAGINA_EXPORTACAO = 200;
 
   private final RelatoRepository relatoRepository;
   private final PerfilRepository perfilRepository;
   private final CategoriaRepository categoriaRepository;
   private final FileStorage fileStorage;
   private final HistoricoStatusRelatoRepository historicoRepository;
+  private final CsvEscritor csvEscritor;
 
   @Transactional
   public RelatoCriadoDTO registrar(
@@ -140,6 +149,34 @@ public class RelatoService {
   @Transactional(readOnly = true)
   public Page<RelatoGestaoDTO> listarTodos(FiltroRelatos filtro, Pageable pageable) {
     return relatoRepository.findAll(filtro, pageable).map(this::toGestaoDTO);
+  }
+
+  @Transactional(readOnly = true)
+  public void exportarCsv(FiltroRelatos filtro, OutputStream saida) throws IOException {
+    OutputStreamWriter escritor = new OutputStreamWriter(saida, StandardCharsets.UTF_8);
+    csvEscritor.escreverLinha(
+        escritor,
+        List.of("id", "autor", "categoria", "status", "descricao", "observacao", "criado_em"));
+
+    int numero = 0;
+    Page<Relato> pagina;
+    do {
+      pagina = relatoRepository.findAll(filtro, PageRequest.of(numero, TAMANHO_PAGINA_EXPORTACAO));
+      for (Relato relato : pagina.getContent()) {
+        csvEscritor.escreverLinha(
+            escritor,
+            Arrays.asList(
+                relato.getId().toString(),
+                relato.getPerfil().getNomeCompleto(),
+                relato.getCategoria().getNome(),
+                relato.getStatus().name(),
+                relato.getDescricao(),
+                relato.getObservacaoResolucao(),
+                relato.getCriadoEm().toString()));
+      }
+      numero++;
+    } while (pagina.hasNext());
+    escritor.flush();
   }
 
   @Transactional(readOnly = true)
