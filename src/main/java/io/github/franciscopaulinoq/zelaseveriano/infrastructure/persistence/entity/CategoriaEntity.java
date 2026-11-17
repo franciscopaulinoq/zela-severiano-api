@@ -29,6 +29,9 @@ public class CategoriaEntity {
   @Column(name = "nome", nullable = false, length = 50)
   private String nome;
 
+  @Column(name = "nome_normalizado", nullable = false, length = 100)
+  private String nomeNormalizado;
+
   @Column(name = "icone_nome", nullable = true, length = 50)
   private String iconeNome;
 

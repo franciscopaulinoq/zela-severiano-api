@@ -11,11 +11,17 @@ import lombok.Getter;
 public class Categoria {
   private Integer id;
   private String nome;
+  private String nomeNormalizado;
   private String iconeNome;
   private OffsetDateTime criadoEm;
 
   public void atualizar(String novoNome, String novoIconeNome) {
-    this.nome = novoNome;
+    this.nome = novoNome.trim();
+    this.nomeNormalizado = normalizarNome(novoNome);
     this.iconeNome = novoIconeNome;
+  }
+
+  public static String normalizarNome(String nome) {
+    return nome.trim().toLowerCase();
   }
 }

@@ -148,7 +148,8 @@ class GestaoCategoriaIntegrationTest {
                 post("/api/v1/gestao/categorias")
                     .header("Authorization", "Bearer " + tokenGestor)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(CATEGORIA))
+                    .content(
+                        CATEGORIA.replace("Calçadas", "Calçadas " + java.util.UUID.randomUUID())))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
