@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.IntegracaoCepIndisponivelException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.TokenInvalidoException;
@@ -107,6 +108,13 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleRecursoNaoEncontrado(
       RecursoNaoEncontradoException ex, HttpServletRequest request) {
     return resposta(HttpStatus.NOT_FOUND, "Recurso não encontrado", ex.getMessage(), request, null);
+  }
+
+  @ExceptionHandler(IntegracaoCepIndisponivelException.class)
+  public ResponseEntity<ErrorResponse> handleIntegracaoCepIndisponivel(
+      IntegracaoCepIndisponivelException ex, HttpServletRequest request) {
+    return resposta(
+        HttpStatus.SERVICE_UNAVAILABLE, "Integração indisponível", ex.getMessage(), request, null);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
