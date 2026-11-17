@@ -1,7 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
-import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO.TotalPorCategoria;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoCriadoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoDetalheDTO;
@@ -23,10 +22,8 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStat
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.storage.FileStorage;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +46,7 @@ public class RelatoService {
   private final CategoriaRepository categoriaRepository;
   private final FileStorage fileStorage;
   private final HistoricoStatusRelatoRepository historicoRepository;
+  private final EstatisticasRelatosComposer estatisticasComposer;
 
   @Transactional
   public RelatoCriadoDTO registrar(
@@ -184,21 +182,10 @@ public class RelatoService {
 
   @Transactional(readOnly = true)
   public EstatisticasRelatosDTO obterEstatisticas() {
-    Map<StatusRelato, Long> porStatus = new EnumMap<>(StatusRelato.class);
-    for (StatusRelato status : StatusRelato.values()) {
-      porStatus.put(status, 0L);
-    }
-    relatoRepository
-        .contarPorStatus()
-        .forEach(total -> porStatus.put(total.status(), total.total()));
+    long total = relatoRepository.contarPorStatus().stream().mapToLong(item -> item.total()).sum();
 
-    List<TotalPorCategoria> porCategoria =
-        relatoRepository.contarPorCategoria().stream()
-            .map(total ->
-                new TotalPorCategoria(total.categoriaId(), total.categoriaNome(), total.total()))
-            .toList();
-
-    return new EstatisticasRelatosDTO(relatoRepository.count(), porStatus, porCategoria);
+    return estatisticasComposer.compor(
+        total, relatoRepository.contarPorStatus(), relatoRepository.contarPorCategoria());
   }
 
   @Transactional(readOnly = true)
