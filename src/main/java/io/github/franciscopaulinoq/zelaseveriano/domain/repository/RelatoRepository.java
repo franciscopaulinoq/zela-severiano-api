@@ -26,6 +26,8 @@ public interface RelatoRepository {
 
   Page<Relato> findAll(FiltroRelatos filtro, Pageable pageable);
 
+  List<Relato> findAllByCategoriaId(Integer categoriaId);
+
   long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
   boolean existsByCategoriaId(Integer categoriaId);

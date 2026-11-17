@@ -71,6 +71,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public List<Relato> findAllByCategoriaId(Integer categoriaId) {
+    return jpaRepository.findAllByCategoriaId(categoriaId).stream().map(mapper::map).toList();
+  }
+
+  @Override
   public long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status) {
     return jpaRepository.countByPerfilIdAndStatus(perfilId, status);
   }

@@ -2,9 +2,11 @@ package io.github.franciscopaulinoq.zelaseveriano.application.service;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.CategoriaResumoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
 import java.util.List;
@@ -22,6 +24,21 @@ public class CategoriaService {
   @Transactional(readOnly = true)
   public List<CategoriaDTO> listar() {
     return categoriaRepository.findAll().stream().map(this::toDTO).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public CategoriaResumoDTO obterResumo(Integer categoriaId) {
+    Categoria categoria =
+        categoriaRepository
+            .findById(categoriaId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
+    long totalPendentes =
+        relatoRepository.findAllByCategoriaId(categoriaId).stream()
+            .filter(relato -> relato.getStatus() == StatusRelato.PENDENTE)
+            .count();
+
+    return new CategoriaResumoDTO(
+        categoria.getId(), categoria.getNome(), totalPendentes, totalPendentes > 0);
   }
 
   @Transactional
