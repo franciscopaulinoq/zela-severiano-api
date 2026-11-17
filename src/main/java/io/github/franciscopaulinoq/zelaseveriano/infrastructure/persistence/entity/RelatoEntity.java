@@ -11,8 +11,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,4 +68,12 @@ public class RelatoEntity {
 
   @Column(name = "atualizado_em", nullable = true, columnDefinition = "TIMESTAMP WITH TIME ZONE")
   private OffsetDateTime atualizadoEm;
+
+  @OneToMany(mappedBy = "relato", fetch = FetchType.LAZY)
+  @OrderBy("criadoEm ASC, id ASC")
+  private Set<RelatoFotoEntity> fotos;
+
+  @OneToMany(mappedBy = "relato", fetch = FetchType.LAZY)
+  @OrderBy("criadoEm ASC, id ASC")
+  private Set<ComentarioRelatoEntity> comentarios;
 }
