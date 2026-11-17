@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarStatusRelatoDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.DisponibilidadeFotoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
@@ -38,6 +39,18 @@ public class GestaoRelatoController {
       @Parameter(hidden = true) Pageable pageable) {
     return ResponseEntity.ok(
         relatoService.listarTodos(new FiltroRelatos(status, categoriaId), pageable));
+  }
+
+  @GetMapping("/disponibilidade-fotos")
+  public ResponseEntity<Page<DisponibilidadeFotoDTO>> verificarDisponibilidadeFotos(
+      @Parameter(description = "Filtra pelo status do relato") @RequestParam(required = false)
+          StatusRelato status,
+      @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
+          Integer categoriaId,
+      @Parameter(hidden = true) Pageable pageable) {
+    return ResponseEntity.ok(
+        relatoService.verificarDisponibilidadeFotos(
+            new FiltroRelatos(status, categoriaId), pageable));
   }
 
   @GetMapping("/estatisticas")
