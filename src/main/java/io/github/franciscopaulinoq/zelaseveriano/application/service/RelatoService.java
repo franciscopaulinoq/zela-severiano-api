@@ -9,6 +9,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoListagemDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoPublicoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroDTO;
+import io.github.franciscopaulinoq.zelaseveriano.domain.event.MudancaStatusRelatoEvent;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ public class RelatoService {
   private final CategoriaRepository categoriaRepository;
   private final FileStorage fileStorage;
   private final HistoricoStatusRelatoRepository historicoRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   public RelatoCriadoDTO registrar(
@@ -162,6 +165,7 @@ public class RelatoService {
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, observacao);
+    publicarMudancaDeStatus(salvo);
     return toCriadoDTO(salvo);
   }
 
@@ -230,6 +234,13 @@ public class RelatoService {
 
     Relato salvo = relatoRepository.save(relato);
     registrarHistorico(salvo, statusAnterior, null);
+    publicarMudancaDeStatus(salvo);
+  }
+
+  private void publicarMudancaDeStatus(Relato relato) {
+    eventPublisher.publishEvent(
+        new MudancaStatusRelatoEvent(
+            relato.getId(), relato.getPerfil().getEmail(), relato.getStatus()));
   }
 
   private void registrarHistorico(Relato relato, StatusRelato statusAnterior, String observacao) {

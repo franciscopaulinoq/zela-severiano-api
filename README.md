@@ -15,7 +15,7 @@ API REST para registro de demandas na infraestrutura urbana de Doutor Severiano.
 ## ⚙️ Como executar
 1. Clone o repositório.
 2. Copie o arquivo de exemplo de ambiente: `cp .env.example .env`.
-3. Preencha as configurações do banco e do R2 e dois segredos JWT diferentes, com pelo menos 32 bytes cada.
+3. Preencha as configurações do banco, do R2 e do SMTP, e dois segredos JWT diferentes, com pelo menos 32 bytes cada.
 4. Suba o banco de dados: `docker compose -f docker-compose-local.yml up -d`.
 5. Execute a aplicação com o perfil de desenvolvimento: `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`.
 
