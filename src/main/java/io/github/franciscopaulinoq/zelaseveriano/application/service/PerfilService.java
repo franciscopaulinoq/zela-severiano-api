@@ -21,6 +21,15 @@ public class PerfilService {
     return toPerfilMeDTO(buscarPerfil(usuarioId));
   }
 
+  @Transactional(readOnly = true)
+  public PerfilMeDTO obterContatoCidadao(UUID perfilId) {
+    Perfil perfil =
+        perfilRepository
+            .findById(perfilId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Perfil não encontrado."));
+    return toPerfilMeDTO(perfil);
+  }
+
   @Transactional
   public PerfilMeDTO atualizarMeuPerfil(UUID usuarioId, AtualizarPerfilDTO dados) {
     Perfil perfil = buscarPerfil(usuarioId);
