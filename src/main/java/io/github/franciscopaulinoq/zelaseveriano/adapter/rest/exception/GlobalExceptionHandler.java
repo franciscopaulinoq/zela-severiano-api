@@ -1,5 +1,6 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.exception;
 
+import io.github.franciscopaulinoq.zelaseveriano.domain.exception.ArmazenamentoIndisponivelException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CategoriaEmUsoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CidadaoJaRegistradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.CredenciaisInvalidasException;
@@ -107,6 +108,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleRecursoNaoEncontrado(
       RecursoNaoEncontradoException ex, HttpServletRequest request) {
     return resposta(HttpStatus.NOT_FOUND, "Recurso não encontrado", ex.getMessage(), request, null);
+  }
+
+  @ExceptionHandler(ArmazenamentoIndisponivelException.class)
+  public ResponseEntity<ErrorResponse> handleArmazenamentoIndisponivel(
+      ArmazenamentoIndisponivelException ex, HttpServletRequest request) {
+    return resposta(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        "Armazenamento indisponível",
+        "A foto não pôde ser recuperada. Tente novamente mais tarde.",
+        request,
+        null);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
