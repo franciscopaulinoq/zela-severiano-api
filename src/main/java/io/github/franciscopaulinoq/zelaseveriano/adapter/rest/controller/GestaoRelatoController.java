@@ -3,6 +3,7 @@ package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarStatusRelatoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.EstatisticasRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.HistoricoStatusDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.ReclassificacaoRelatosDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoGestaoDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.RelatoService;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
@@ -38,6 +39,12 @@ public class GestaoRelatoController {
       @Parameter(hidden = true) Pageable pageable) {
     return ResponseEntity.ok(
         relatoService.listarTodos(new FiltroRelatos(status, categoriaId), pageable));
+  }
+
+  @PatchMapping("/reclassificacao")
+  public ResponseEntity<Void> reclassificar(@Valid @RequestBody ReclassificacaoRelatosDTO dados) {
+    relatoService.reclassificar(dados);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/estatisticas")
