@@ -86,6 +86,14 @@ public class RelatoController {
     return ResponseEntity.noContent().build();
   }
 
+  @PatchMapping("/{id}/reabertura")
+  public ResponseEntity<Void> reabrir(
+      @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    relatoService.reabrir(usuarioId, relatoId);
+    return ResponseEntity.noContent().build();
+  }
+
   @GetMapping("/{id}/historico")
   public ResponseEntity<List<HistoricoStatusDTO>> obterHistorico(
       @AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long relatoId) {

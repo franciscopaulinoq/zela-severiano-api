@@ -45,6 +45,14 @@ public class Relato {
     aplicarTransicao(StatusRelato.CANCELADO, null);
   }
 
+  public void reabrir() {
+    if (this.status != StatusRelato.REJEITADO) {
+      throw new TransicaoStatusInvalidaException(
+          "Apenas um relato rejeitado pode ser reaberto pelo autor.");
+    }
+    definirStatus(StatusRelato.PENDENTE, null);
+  }
+
   private void aplicarTransicao(StatusRelato novoStatus, String observacao) {
     Set<StatusRelato> permitidas = TRANSICOES_PERMITIDAS.getOrDefault(this.status, Set.of());
     if (!permitidas.contains(novoStatus)) {
@@ -57,6 +65,10 @@ public class Relato {
           "É necessário informar uma observação ao rejeitar um relato.");
     }
 
+    definirStatus(novoStatus, observacao);
+  }
+
+  private void definirStatus(StatusRelato novoStatus, String observacao) {
     this.status = novoStatus;
     this.observacaoResolucao = observacao;
     this.atualizadoEm = OffsetDateTime.now();
