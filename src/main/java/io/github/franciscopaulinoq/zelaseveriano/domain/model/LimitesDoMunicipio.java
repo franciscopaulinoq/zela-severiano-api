@@ -7,20 +7,12 @@ package io.github.franciscopaulinoq.zelaseveriano.domain.model;
  */
 public final class LimitesDoMunicipio {
 
-  public static final double LATITUDE_MINIMA = -6.20;
-  public static final double LATITUDE_MAXIMA = -5.96;
-  public static final double LONGITUDE_MINIMA = -38.52;
-  public static final double LONGITUDE_MAXIMA = -38.24;
+  private static final RetanguloGeografico RETANGULO =
+      new RetanguloGeografico(-6.20, -5.96, -38.52, -38.24);
 
   private LimitesDoMunicipio() {}
 
   public static boolean contem(Double latitude, Double longitude) {
-    if (latitude == null || longitude == null) {
-      return false;
-    }
-    return latitude >= LATITUDE_MINIMA
-        && latitude <= LATITUDE_MAXIMA
-        && longitude >= LONGITUDE_MINIMA
-        && longitude <= LONGITUDE_MAXIMA;
+    return RETANGULO.contem(latitude, longitude);
   }
 }
