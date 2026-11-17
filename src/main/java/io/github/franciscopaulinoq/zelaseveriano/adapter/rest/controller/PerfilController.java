@@ -1,6 +1,7 @@
 package io.github.franciscopaulinoq.zelaseveriano.adapter.rest.controller;
 
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarPerfilDTO;
+import io.github.franciscopaulinoq.zelaseveriano.application.dto.ConfirmarEmailDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.TrocarSenhaDTO;
 import io.github.franciscopaulinoq.zelaseveriano.application.service.ContaService;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +40,14 @@ public class PerfilController {
       @Valid @RequestBody AtualizarPerfilDTO dados) {
     UUID usuarioId = UUID.fromString(userDetails.getUsername());
     return ResponseEntity.ok(perfilService.atualizarMeuPerfil(usuarioId, dados));
+  }
+
+  @PostMapping("/me/email/confirmacao")
+  public ResponseEntity<PerfilMeDTO> confirmarEmail(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @Valid @RequestBody ConfirmarEmailDTO dados) {
+    UUID usuarioId = UUID.fromString(userDetails.getUsername());
+    return ResponseEntity.ok(perfilService.confirmarEmail(usuarioId, dados.codigo()));
   }
 
   @PatchMapping("/me/senha")

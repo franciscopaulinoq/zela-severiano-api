@@ -9,7 +9,10 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.AtualizarPerfil
 import io.github.franciscopaulinoq.zelaseveriano.application.dto.PerfilMeDTO;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Usuario;
+import io.github.franciscopaulinoq.zelaseveriano.domain.notification.ConfirmacaoEmailGateway;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.SolicitacaoAlteracaoEmailRepository;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,9 @@ class PerfilServiceTest {
   private static final UUID USUARIO_ID = UUID.randomUUID();
 
   @Mock private PerfilRepository perfilRepository;
+  @Mock private SolicitacaoAlteracaoEmailRepository solicitacaoRepository;
+  @Mock private ConfirmacaoEmailGateway emailGateway;
+  @Mock private Clock clock;
 
   @InjectMocks private PerfilService perfilService;
 
@@ -65,30 +71,7 @@ class PerfilServiceTest {
     assertThat(resultado.getNomeCompleto()).isEqualTo("Maria Souza");
     assertThat(resultado.getEmail()).isEqualTo("maria@example.com");
     assertThat(perfil.getNomeCompleto()).isEqualTo("Maria Souza");
-  }
-
-  @Test
-  void atualizaSoOEmailQuandoSoOEmailEhInformado() {
-    perfilExistente();
-
-    PerfilMeDTO resultado =
-        perfilService.atualizarMeuPerfil(
-            USUARIO_ID, new AtualizarPerfilDTO(null, "maria.souza@example.com"));
-
-    assertThat(resultado.getNomeCompleto()).isEqualTo("Maria da Silva");
-    assertThat(resultado.getEmail()).isEqualTo("maria.souza@example.com");
-  }
-
-  @Test
-  void atualizaNomeEEmailJuntos() {
-    perfilExistente();
-
-    PerfilMeDTO resultado =
-        perfilService.atualizarMeuPerfil(
-            USUARIO_ID, new AtualizarPerfilDTO("Maria Souza", "maria.souza@example.com"));
-
-    assertThat(resultado.getNomeCompleto()).isEqualTo("Maria Souza");
-    assertThat(resultado.getEmail()).isEqualTo("maria.souza@example.com");
+    org.mockito.Mockito.verifyNoInteractions(emailGateway);
   }
 
   private Perfil perfilExistente() {
