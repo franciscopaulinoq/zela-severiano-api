@@ -33,6 +33,13 @@ são só para uso local.
 Testes e verificações de qualidade (formatação e PMD): `./mvnw verify`.
 Para formatar o código automaticamente: `./mvnw spotless:apply`.
 
+### Saneamento de URLs de fotos
+
+Para normalizar URLs existentes com barra duplicada após o endereço público do
+R2, execute a aplicação uma vez com `SANEAMENTO_URLS_FOTOS_ENABLED=true`. A
+rotina informa nos logs a quantidade de registros atualizados, preserva URLs de
+outros domínios e não faz novas atualizações em execuções seguintes.
+
 ## 🏗 Arquitetura
 O projeto usa uma variação pragmática da Clean Architecture: 4 camadas, com DTOs
 como contrato HTTP desacoplado do modelo de domínio, mas agrupando casos

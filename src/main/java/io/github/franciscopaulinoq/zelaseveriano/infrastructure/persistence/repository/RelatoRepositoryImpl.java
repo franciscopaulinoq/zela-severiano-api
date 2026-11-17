@@ -71,6 +71,11 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public Page<Relato> findByUrlFotoStartingWith(String prefixo, Pageable pageable) {
+    return jpaRepository.findByUrlFotoStartingWithOrderByIdAsc(prefixo, pageable).map(mapper::map);
+  }
+
+  @Override
   public long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status) {
     return jpaRepository.countByPerfilIdAndStatus(perfilId, status);
   }

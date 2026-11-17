@@ -31,6 +31,9 @@ public interface JpaRelatoRepository
 
   long countByPerfilIdAndStatus(UUID perfilId, StatusRelato status);
 
+  @EntityGraph(attributePaths = {"perfil", "perfil.usuario", "categoria"})
+  Page<RelatoEntity> findByUrlFotoStartingWithOrderByIdAsc(String prefixo, Pageable pageable);
+
   boolean existsByCategoriaId(Integer categoriaId);
 
   @Query(

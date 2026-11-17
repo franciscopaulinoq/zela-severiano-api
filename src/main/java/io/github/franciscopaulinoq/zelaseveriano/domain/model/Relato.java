@@ -45,6 +45,10 @@ public class Relato {
     aplicarTransicao(StatusRelato.CANCELADO, null);
   }
 
+  public void atualizarUrlFoto(String urlFoto) {
+    this.urlFoto = urlFoto;
+  }
+
   private void aplicarTransicao(StatusRelato novoStatus, String observacao) {
     Set<StatusRelato> permitidas = TRANSICOES_PERMITIDAS.getOrDefault(this.status, Set.of());
     if (!permitidas.contains(novoStatus)) {
