@@ -9,10 +9,12 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -35,9 +37,17 @@ public class GestaoRelatoController {
           StatusRelato status,
       @Parameter(description = "Filtra pela categoria do relato") @RequestParam(required = false)
           Integer categoriaId,
+      @Parameter(description = "Inclui relatos criados a partir desta data (AAAA-MM-DD)")
+          @RequestParam(required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate dataInicial,
+      @Parameter(description = "Inclui relatos criados até esta data (AAAA-MM-DD)")
+          @RequestParam(required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate dataFinal,
       @Parameter(hidden = true) Pageable pageable) {
-    return ResponseEntity.ok(
-        relatoService.listarTodos(new FiltroRelatos(status, categoriaId), pageable));
+    FiltroRelatos filtro = new FiltroRelatos(status, categoriaId, dataInicial, dataFinal);
+    return ResponseEntity.ok(relatoService.listarTodos(filtro, pageable));
   }
 
   @GetMapping("/estatisticas")
