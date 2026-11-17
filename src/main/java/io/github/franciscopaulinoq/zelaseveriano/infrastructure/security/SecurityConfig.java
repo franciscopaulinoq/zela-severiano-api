@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                 .permitAll()
-                .requestMatchers("/api/v1/relatos/**")
+                .requestMatchers("/api/v1/relatos/**", "/api/v1/avisos/**")
                 .hasRole("CIDADAO")
                 .requestMatchers("/api/v1/gestao/**")
                 .hasRole("GESTOR")
