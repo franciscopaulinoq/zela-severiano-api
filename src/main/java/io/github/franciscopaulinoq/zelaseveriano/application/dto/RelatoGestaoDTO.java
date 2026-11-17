@@ -16,6 +16,7 @@ import lombok.Setter;
 public class RelatoGestaoDTO {
   private Long id;
   private String cidadaoNome;
+  private String bairro;
   private String categoriaNome;
   private StatusRelato status;
   private String descricao;

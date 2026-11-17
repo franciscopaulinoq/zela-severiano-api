@@ -12,6 +12,7 @@ import io.github.franciscopaulinoq.zelaseveriano.application.dto.RelatoRegistroD
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.LimiteRelatosPendentesException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.exception.RecursoNaoEncontradoException;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Categoria;
+import io.github.franciscopaulinoq.zelaseveriano.domain.model.Endereco;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.FiltroRelatos;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.HistoricoStatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.LimitesDoMunicipio;
@@ -19,6 +20,7 @@ import io.github.franciscopaulinoq.zelaseveriano.domain.model.Perfil;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.Relato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.model.enums.StatusRelato;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.CategoriaRepository;
+import io.github.franciscopaulinoq.zelaseveriano.domain.repository.EnderecoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.HistoricoStatusRelatoRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.PerfilRepository;
 import io.github.franciscopaulinoq.zelaseveriano.domain.repository.RelatoRepository;
@@ -47,6 +49,7 @@ public class RelatoService {
   private final RelatoRepository relatoRepository;
   private final PerfilRepository perfilRepository;
   private final CategoriaRepository categoriaRepository;
+  private final EnderecoRepository enderecoRepository;
   private final FileStorage fileStorage;
   private final HistoricoStatusRelatoRepository historicoRepository;
 
@@ -353,9 +356,16 @@ public class RelatoService {
   }
 
   private RelatoGestaoDTO toGestaoDTO(Relato relato) {
+    String bairro =
+        enderecoRepository
+            .findByPerfilId(relato.getPerfil().getId())
+            .map(Endereco::getBairro)
+            .orElse(null);
+
     return RelatoGestaoDTO.builder()
         .id(relato.getId())
         .cidadaoNome(relato.getPerfil().getNomeCompleto())
+        .bairro(bairro)
         .categoriaNome(relato.getCategoria().getNome())
         .status(relato.getStatus())
         .descricao(relato.getDescricao())

@@ -56,7 +56,10 @@ class RelatoLeituraIntegrationTest {
     assertThat(todos)
         .filteredOn(item -> item.getId().equals(criado.getId()))
         .singleElement()
-        .satisfies(item -> assertThat(item.getCidadaoNome()).isEqualTo("Joana Pereira"));
+        .satisfies(item -> {
+          assertThat(item.getCidadaoNome()).isEqualTo("Joana Pereira");
+          assertThat(item.getBairro()).isEqualTo("Centro");
+        });
     assertThat(atualizado.getStatus()).isEqualTo(StatusRelato.EM_ANALISE);
   }
 }
