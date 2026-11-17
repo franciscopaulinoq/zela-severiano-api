@@ -96,6 +96,7 @@ class RelatoServiceTest {
         relatoService.registrar(USUARIO_ID, novoRelato(), foto, "../poste.jpg", "IMAGE/JPEG");
 
     assertThat(relato.getUrlFoto()).isEqualTo("https://arquivos.example.com/poste.jpg");
+    verify(fileStorage, never()).excluir(anyString());
   }
 
   @Test
@@ -242,6 +243,34 @@ class RelatoServiceTest {
 
     verify(relatoRepository, never()).save(any());
     verify(fileStorage, never()).upload(any(), anyString(), anyString());
+  }
+
+  @Test
+  void removeFotoEnviadaQuandoPersistenciaFalha() {
+    prepararPerfilECategoria();
+    byte[] foto = fotoJpeg();
+    String urlFoto = "https://arquivos.example.com/poste.jpg";
+    RuntimeException falhaOriginal = new IllegalStateException("Falha ao salvar");
+    when(fileStorage.upload(eq(foto), endsWith(".jpg"), eq("image/jpeg"))).thenReturn(urlFoto);
+    when(relatoRepository.save(any())).thenThrow(falhaOriginal);
+
+    assertThatThrownBy(() ->
+            relatoService.registrar(USUARIO_ID, novoRelato(), foto, "poste.jpg", "image/jpeg"))
+        .isSameAs(falhaOriginal);
+
+    verify(fileStorage).excluir(urlFoto);
+  }
+
+  @Test
+  void falhaDePersistenciaSemFotoNaoAcionaArmazenamento() {
+    prepararPerfilECategoria();
+    RuntimeException falhaOriginal = new IllegalStateException("Falha ao salvar");
+    when(relatoRepository.save(any())).thenThrow(falhaOriginal);
+
+    assertThatThrownBy(() -> relatoService.registrar(USUARIO_ID, novoRelato(), null, null, null))
+        .isSameAs(falhaOriginal);
+
+    verifyNoInteractions(fileStorage);
   }
 
   @Test

@@ -102,7 +102,14 @@ public class RelatoService {
             .longitude(dto.getLongitude())
             .build();
 
-    return toCriadoDTO(relatoRepository.save(relato));
+    try {
+      return toCriadoDTO(relatoRepository.save(relato));
+    } catch (RuntimeException ex) {
+      if (urlFoto != null) {
+        fileStorage.excluir(urlFoto);
+      }
+      throw ex;
+    }
   }
 
   @Transactional(readOnly = true)
