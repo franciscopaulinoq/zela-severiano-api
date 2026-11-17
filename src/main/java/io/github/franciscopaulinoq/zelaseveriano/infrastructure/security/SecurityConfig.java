@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final SecurityFilter securityFilter;
+  private final LoginThrottlingFilter loginThrottlingFilter;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,6 +43,7 @@ public class SecurityConfig {
                 .anyRequest()
                 .authenticated())
         .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(loginThrottlingFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 }
