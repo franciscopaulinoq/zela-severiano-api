@@ -45,6 +45,16 @@ public class RelatoRepositoryImpl implements RelatoRepository {
   }
 
   @Override
+  public boolean existsByPerfilIdAndId(UUID perfilId, Long relatoId) {
+    return jpaRepository.existsByPerfilIdAndId(perfilId, relatoId);
+  }
+
+  @Override
+  public boolean existsById(Long relatoId) {
+    return jpaRepository.existsById(relatoId);
+  }
+
+  @Override
   public Optional<Relato> findByIdParaAtualizacao(Long relatoId) {
     return jpaRepository.findByIdParaAtualizacao(relatoId).map(mapper::map);
   }

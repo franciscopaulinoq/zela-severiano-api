@@ -19,6 +19,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface JpaRelatoRepository
     extends JpaRepository<RelatoEntity, Long>, JpaSpecificationExecutor<RelatoEntity> {
+  boolean existsByPerfilIdAndId(UUID perfilId, Long relatoId);
+
   Optional<RelatoEntity> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)

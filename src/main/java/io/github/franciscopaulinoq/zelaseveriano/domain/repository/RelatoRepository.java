@@ -16,7 +16,11 @@ public interface RelatoRepository {
 
   Optional<Relato> findByPerfilIdAndId(UUID perfilId, Long relatoId);
 
+  boolean existsByPerfilIdAndId(UUID perfilId, Long relatoId);
+
   Optional<Relato> findById(Long relatoId);
+
+  boolean existsById(Long relatoId);
 
   Optional<Relato> findByIdParaAtualizacao(Long relatoId);
 
